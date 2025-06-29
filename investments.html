@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Investment Plans | Quantum Rio Uganda</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #ffffff;
+      margin: 0;
+      padding: 0;
+      color: #000;
+    }
+    header {
+      background-color: #2E7D32;
+      text-align: center;
+      padding: 20px;
+      color: white;
+    }
+    .container {
+      padding: 20px;
+    }
+    .intro {
+      background: rgba(0, 0, 0, 0.05);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .plans {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .plan-card {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .plan-card h3 {
+      margin: 0 0 10px 0;
+      color: #2E7D32;
+    }
+    .plan-card p {
+      font-size: 14px;
+      color: #333;
+    }
+    .plan-card button {
+      margin-top: 10px;
+      padding: 10px;
+      width: 100%;
+      background-color: #388E3C;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .popup {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2E7D32;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 8px;
+      display: none;
+      z-index: 999;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Quantum Rio Uganda - Investment Plans</h1>
+  </header>
+
+  <div class="container">
+    <div class="intro">
+      <p>Welcome! Invest today and earn <strong>200% ROI</strong> in <strong>24 hours</strong>.</p>
+    </div>
+    <div class="plans" id="plansContainer"></div>
+  </div>
+
+  <div class="popup" id="popupMsg"></div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+      authDomain: "quantum-rio-uganda.firebaseapp.com",
+      projectId: "quantum-rio-uganda",
+      storageBucket: "quantum-rio-uganda.firebasestorage.app",
+      messagingSenderId: "840875099079",
+      appId: "1:840875099079:web:1cd06a78276842a787cfe2",
+      measurementId: "G-97G1PNQ9JB"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const plans = [
+      [150000, 300000], [200000, 400000], [250000, 500000], [300000, 600000],
+      [350000, 700000], [400000, 800000], [450000, 900000], [500000, 1000000],
+      [600000, 1200000], [700000, 1400000], [800000, 1600000], [900000, 1800000],
+      [1000000, 2000000], [1500000, 3000000], [2000000, 4000000], [2500000, 5000000],
+      [3000000, 6000000], [4000000, 8000000], [5000000, 10000000]
+    ];
+
+    // When user is logged in
+    auth.onAuthStateChanged(async user => {
+      if (!user) {
+        location.href = 'login.html';
+        return;
+      }
+
+      const userDoc = await db.collection("users").doc(user.uid).get();
+      const userData = userDoc.data();
+      const balance = userData?.balance || 0;
+      loadPlans(user.uid, user.email, balance);
+    });
+
+    // Load investment plans
+    function loadPlans(userId, email, balance) {
+      const container = document.getElementById("plansContainer");
+      plans.forEach(([amount, roi]) => {
+        const div = document.createElement("div");
+        div.className = "plan-card";
+        div.innerHTML = `
+          <h3>${amount.toLocaleString()} UGX Plan</h3>
+          <p>Earn <strong>${roi.toLocaleString()} UGX</strong> in 24 hours</p>
+          <button onclick="invest(${amount}, ${roi}, '${userId}', '${email}', ${balance})">Invest Now</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // Handle invest button
+    async function invest(amount, roi, userId, email, balance) {
+      if (balance < amount) {
+        showPopup("❌ Insufficient balance");
+        return;
+      }
+
+      try {
+        await db.collection("users").doc(userId).update({
+          balance: firebase.firestore.FieldValue.increment(-amount)
+        });
+
+        await db.collection("investments").add({
+          userId: userId,
+          email: email,
+          investedAmount: amount,
+          returnAmount: roi,
+          investedAt: new Date(),
+          status: "active"
+        });
+
+        showPopup(`✅ You have successfully invested ${amount.toLocaleString()} UGX`);
+      } catch (error) {
+        console.error("Error investing:", error);
+        showPopup("❌ Investment failed. Try again.");
+      }
+    }
+
+    // Show popup
+    function showPopup(message) {
+      const popup = document.getElementById("popupMsg");
+      popup.innerText = message;
+      popup.style.display = "block";
+      setTimeout(() => {
+        popup.style.display = "none";
+      }, 4000);
+    }
+  </script>
+</body>
+</html>

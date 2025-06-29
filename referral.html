@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Referral - Quantum Rio Uganda</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e8f5e9;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background-color: #0d47a1;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      padding: 20px;
+    }
+    .notice { background-color: #c8e6c9; border-left: 6px solid #2e7d32; padding: 15px; margin-bottom: 20px; border-radius: 8px; font-size: 16px; }
+    .card { background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .label { font-weight: bold; color: #0d47a1; margin-bottom: 8px; }
+    .referral-box { display: flex; align-items: center; gap: 10px; }
+    input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    button { padding: 10px 15px; background-color: #0d47a1; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background-color: #0b3c91; }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>Quantum Rio Uganda</h2>
+    <p>Referral Program</p>
+  </header>
+
+  <div class="container">
+    <div class="notice">
+      For every successful referral who makes their first deposit, you earn <strong>8,760 UGX</strong> instantly!
+    </div>
+
+    <div class="card">
+      <div class="label">Referral Link</div>
+      <div class="referral-box">
+        <input type="text" id="referralLink" readonly />
+        <button onclick="copyLink()">Copy</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Referral Bonus Earned</div>
+      <div id="bonus">UGX 0</div>
+    </div>
+
+    <div class="card">
+      <div class="label">My Referrals</div>
+      <div id="referralCount">0</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+      authDomain: "quantum-rio-uganda.firebaseapp.com",
+      projectId: "quantum-rio-uganda",
+      storageBucket: "quantum-rio-uganda.firebasestorage.app",
+      messagingSenderId: "840875099079",
+      appId: "1:840875099079:web:1cd06a78276842a787cfe2",
+      measurementId: "G-97G1PNQ9JB"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    function copyLink() {
+      const linkInput = document.getElementById("referralLink");
+      linkInput.select();
+      document.execCommand("copy");
+      alert("Referral link copied!");
+    }
+
+    onAuthStateChanged(auth, async user => {
+    
+
+      const link = `${location.origin}/signup.html?ref=${user.uid}`;
+      document.getElementById("referralLink").value = link;
+
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+
+      const data = snap.exists() ? snap.data() : {};
+      document.getElementById("bonus").innerText = `UGX ${data.referralBonus || 0}`;
+      document.getElementById("referralCount").innerText = data.referralCount || 0;
+    });
+  </script>
+</body>
+</html>

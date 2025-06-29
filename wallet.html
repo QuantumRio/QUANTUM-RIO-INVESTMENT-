@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wallet | Quantum Rio</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #005f3c;
+      color: #fff;
+    }
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+    h2, h3 {
+      text-align: center;
+    }
+    .info-box {
+      background: #fff;
+      color: #000;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .copy {
+      background: #2d3436;
+      color: #fff;
+      padding: 10px 15px;
+      display: inline-block;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+      user-select: all;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      background: #00b894;
+      color: #fff;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #019875;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Quantum Rio Wallet</h2>
+    <h3>Total Balance UGX <span id="user-balance">0.00</span></h3>
+
+    <div class="info-box">
+      <strong>Minimum deposit is 150,000 UGX</strong><br><br>
+      Send to the MTN number below:<br>
+      <div class="copy" onclick="copyNumber()" id="copyBtn">0784513172</div><br><br>
+
+      Enter the number you used to make payment:
+      <input type="text" id="sender-phone" placeholder="Your phone number used to send" />
+      <button onclick="submitDeposit()">Submit</button>
+    </div>
+
+    <div class="info-box">
+      <strong>You can withdraw any amount from 20,000 UGX</strong><br><br>
+      Enter amount to withdraw:
+      <input type="number" id="withdraw-amount" placeholder="Enter amount in UGX" />
+      <button onclick="handleWithdraw()">Withdraw</button>
+    </div>
+  </div>
+
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCCW4G9JlVu_xb0bGjlKmsi5mdqXSwvFak",
+      authDomain: "quantum-rio.firebaseapp.com",
+      projectId: "quantum-rio",
+      storageBucket: "quantum-rio.appspot.com",
+      messagingSenderId: "805433999377",
+      appId: "1:805433999377:web:d0efa8c46ec4a0fa30f1b0",
+      measurementId: "G-4RSQXZJX44"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    const adminUID = "rcxWL1mWLFWlflSnVUMNT1nfAhE2";
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return window.location.href = "login.html";
+      currentUser = user;
+
+      const ref = doc(db, "users", user.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const balance = snap.data().balance || 0;
+        document.getElementById("user-balance").innerText = balance.toLocaleString();
+      }
+    });
+
+    window.handleWithdraw = async function () {
+      const amount = parseInt(document.getElementById("withdraw-amount").value);
+      if (!amount || amount < 20000) {
+        alert("Minimum withdraw amount is 20,000 UGX");
+        return;
+      }
+
+      const userRef = doc(db, "users", currentUser.uid);
+      const snap = await getDoc(userRef);
+      const balance = snap.data().balance || 0;
+
+      if (amount > balance) {
+        alert("Insufficient balance");
+        return;
+      }
+
+      await updateDoc(userRef, {
+        balance: balance - amount
+      });
+
+      await addDoc(collection(db, "withdrawals"), {
+        userId: currentUser.uid,
+        email: currentUser.email,
+        amount: amount,
+        status: "pending",
+        requestedAt: new Date()
+      });
+
+      sendWithdrawalEmail(currentUser.email, amount);
+
+      alert("Withdrawal request sent for approval.");
+      document.getElementById("withdraw-amount").value = "";
+      document.getElementById("user-balance").innerText = (balance - amount).toLocaleString();
+    }
+
+    window.submitDeposit = async function () {
+      const phone = document.getElementById("sender-phone").value.trim();
+      if (!phone) return alert("Please enter the phone number used for deposit.");
+
+      await addDoc(collection(db, "deposits"), {
+        uid: currentUser.uid,
+        phoneNumber: phone,
+        status: "pending",
+        createdAt: new Date()
+      });
+
+      alert("Your deposit request has been submitted for review.");
+      document.getElementById("sender-phone").value = "";
+    }
+
+    window.copyNumber = function () {
+      const number = "0784513172";
+      navigator.clipboard.writeText(number).then(() => {
+        const btn = document.getElementById("copyBtn");
+        const original = btn.innerText;
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = original, 1500);
+      });
+    }
+
+    function sendWithdrawalEmail(userEmail, amount) {
+      emailjs.init("mTX_PX7QZOS64sLRP");
+
+      const templateParams = {
+        user_email: userEmail,
+        amount: amount
+      };
+
+      emailjs.send("service_dpo29p5", "template_withdrawal_received", templateParams)
+        .then(() => {
+          console.log("Email sent");
+        })
+        .catch((error) => {
+          console.error("EmailJS error:", error);
+        });
+    }
+  </script>
+</body>
+</html>

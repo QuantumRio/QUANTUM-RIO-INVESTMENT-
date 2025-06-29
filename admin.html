@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard | Quantum Rio</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f1f1;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+    }
+    .section {
+      background: #fff;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    .request {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    button {
+      margin-right: 10px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .approve { background-color: #28a745; color: white; }
+    .reject { background-color: #dc3545; color: white; }
+  </style>
+</head>
+<body>
+  <h2>Quantum Rio Admin Panel</h2>
+
+  <div class="section">
+    <h3>Pending Withdrawals</h3>
+    <div id="withdrawals"></div>
+  </div>
+
+  <div class="section">
+    <h3>Pending Deposits</h3>
+    <div id="deposits"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, updateDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCCW4G9JlVu_xb0bGjlKmsi5mdqXSwvFak",
+      authDomain: "quantum-rio.firebaseapp.com",
+      projectId: "quantum-rio",
+      storageBucket: "quantum-rio.appspot.com",
+      messagingSenderId: "805433999377",
+      appId: "1:805433999377:web:d0efa8c46ec4a0fa30f1b0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const adminUID = "rcxWL1mWLFWlflSnVUMNT1nfAhE2";
+    emailjs.init("mTX_PX7QZOS64sLRP");
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user || user.uid !== adminUID) {
+        alert("Access denied. Admins only.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      loadWithdrawals();
+      loadDeposits();
+    });
+
+    async function loadWithdrawals() {
+      const querySnapshot = await getDocs(collection(db, "withdrawals"));
+      const container = document.getElementById("withdrawals");
+      container.innerHTML = "";
+
+      querySnapshot.forEach(async (docSnap) => {
+        const data = docSnap.data();
+        if (data.status === "pending") {
+          const div = document.createElement("div");
+          div.className = "request";
+          div.innerHTML = `
+            <strong>Email:</strong> ${data.email}<br>
+            <strong>Amount:</strong> ${data.amount} UGX<br>
+            <button class="approve" onclick="approveWithdrawal('${docSnap.id}', ${data.amount}, '${data.userId}', '${data.email}')">Approve</button>
+            <button class="reject" onclick="rejectWithdrawal('${docSnap.id}', '${data.email}')">Reject</button>
+          `;
+          container.appendChild(div);
+        }
+      });
+    }
+
+    async function loadDeposits() {
+      const querySnapshot = await getDocs(collection(db, "deposits"));
+      const container = document.getElementById("deposits");
+      container.innerHTML = "";
+
+      querySnapshot.forEach(async (docSnap) => {
+        const data = docSnap.data();
+        if (data.status === "pending") {
+          const div = document.createElement("div");
+          div.className = "request";
+          div.innerHTML = `
+            <strong>Phone:</strong> ${data.phoneNumber}<br>
+            <button class="approve" onclick="approveDeposit('${docSnap.id}', '${data.uid}')">Mark as Received</button>
+          `;
+          container.appendChild(div);
+        }
+      });
+    }
+
+    window.approveWithdrawal = async (id, amount, uid, email) => {
+      await updateDoc(doc(db, "withdrawals", id), { status: "approved" });
+      await sendEmail(email, "Quantum Rio - Withdrawal Approved", `Your withdrawal of ${amount} UGX has been approved and will be sent shortly.`);
+      alert("Withdrawal approved.");
+      loadWithdrawals();
+    }
+
+    window.rejectWithdrawal = async (id, email) => {
+      await updateDoc(doc(db, "withdrawals", id), { status: "rejected" });
+      await sendEmail(email, "Quantum Rio - Withdrawal Rejected", "Your withdrawal request was rejected. Please contact support if you need help.");
+      alert("Withdrawal rejected.");
+      loadWithdrawals();
+    }
+
+    window.approveDeposit = async (id, uid) => {
+      const userRef = doc(db, "users", uid);
+      const userSnap = await getDoc(userRef);
+      const currentBalance = userSnap.data().balance || 0;
+
+      await updateDoc(doc(db, "deposits", id), { status: "approved" });
+      await updateDoc(userRef, { balance: currentBalance + 150000 });
+      alert("Deposit approved and user balance updated.");
+      loadDeposits();
+    }
+
+    async function sendEmail(to, subject, message) {
+      await emailjs.send("service_dpo29p5", "template_approval_status", {
+        to_email: to,
+        subject: subject,
+        message: message
+      });
+    }
+  </script>
+</body>
+</html>

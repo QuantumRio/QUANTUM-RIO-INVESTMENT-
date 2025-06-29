@@ -94,7 +94,12 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      setPersistence,
+      browserLocalPersistence
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCCW4G9JlVu_xb0bGjlKmsi5mdqXSwvFak",
@@ -109,24 +114,30 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-
     let currentUser = null;
-    const adminUID = "rcxWL1mWLFWlflSnVUMNT1nfAhE2";
+
+    await setPersistence(auth, browserLocalPersistence);
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        window.location.href = "signin.html";
+        console.log("Redirecting to login...");
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 1000);
         return;
       }
 
       currentUser = user;
 
-      const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-
-      if (snap.exists()) {
-        const balance = snap.data().balance || 0;
-        document.getElementById("user-balance").innerText = balance.toLocaleString();
+      try {
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const balance = snap.data().balance || 0;
+          document.getElementById("user-balance").innerText = balance.toLocaleString();
+        }
+      } catch (err) {
+        console.error("Error loading balance:", err);
       }
     });
 
@@ -199,12 +210,8 @@
       };
 
       emailjs.send("service_dpo29p5", "template_withdrawal_received", templateParams)
-        .then(() => {
-          console.log("Email sent");
-        })
-        .catch((error) => {
-          console.error("EmailJS error:", error);
-        });
+        .then(() => console.log("Email sent"))
+        .catch((error) => console.error("EmailJS error:", error));
     }
   </script>
 </body>

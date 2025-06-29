@@ -88,7 +88,6 @@
     </div>
   </div>
 
-  <!-- EmailJS -->
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
   <script type="module">
@@ -114,39 +113,58 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+
     let currentUser = null;
 
+    // Always persist session locally across tabs
     await setPersistence(auth, browserLocalPersistence);
 
+    // Only act if user is confirmed available
     onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        console.log("Redirecting to login...");
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 1000);
-        return;
-      }
-
-      currentUser = user;
-
-      try {
+      if (user) {
+        currentUser = user;
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
         if (snap.exists()) {
           const balance = snap.data().balance || 0;
           document.getElementById("user-balance").innerText = balance.toLocaleString();
         }
-      } catch (err) {
-        console.error("Error loading balance:", err);
+      } else {
+        // Wait 1 second before redirect to avoid false triggers
+        setTimeout(() => {
+          if (!auth.currentUser) {
+            window.location.href = "login.html";
+          }
+        }, 1000);
       }
     });
 
+    window.copyNumber = function () {
+      const number = "0784513172";
+      navigator.clipboard.writeText(number).then(() => {
+        const btn = document.getElementById("copyBtn");
+        const original = btn.innerText;
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = original, 1500);
+      });
+    }
+
+    window.submitDeposit = async function () {
+      const phone = document.getElementById("sender-phone").value.trim();
+      if (!phone) return alert("Please enter the phone number used for deposit.");
+      await addDoc(collection(db, "deposits"), {
+        uid: currentUser.uid,
+        phoneNumber: phone,
+        status: "pending",
+        createdAt: new Date()
+      });
+      alert("Your deposit request has been submitted for review.");
+      document.getElementById("sender-phone").value = "";
+    }
+
     window.handleWithdraw = async function () {
       const amount = parseInt(document.getElementById("withdraw-amount").value);
-      if (!amount || amount < 20000) {
-        alert("Minimum withdraw amount is 20,000 UGX");
-        return;
-      }
+      if (!amount || amount < 20000) return alert("Minimum withdraw is 20,000 UGX");
 
       const userRef = doc(db, "users", currentUser.uid);
       const snap = await getDoc(userRef);
@@ -170,45 +188,17 @@
       });
 
       sendWithdrawalEmail(currentUser.email, amount);
-
       alert("Withdrawal request sent for approval.");
       document.getElementById("withdraw-amount").value = "";
       document.getElementById("user-balance").innerText = (balance - amount).toLocaleString();
     }
 
-    window.submitDeposit = async function () {
-      const phone = document.getElementById("sender-phone").value.trim();
-      if (!phone) return alert("Please enter the phone number used for deposit.");
-
-      await addDoc(collection(db, "deposits"), {
-        uid: currentUser.uid,
-        phoneNumber: phone,
-        status: "pending",
-        createdAt: new Date()
-      });
-
-      alert("Your deposit request has been submitted for review.");
-      document.getElementById("sender-phone").value = "";
-    }
-
-    window.copyNumber = function () {
-      const number = "0784513172";
-      navigator.clipboard.writeText(number).then(() => {
-        const btn = document.getElementById("copyBtn");
-        const original = btn.innerText;
-        btn.innerText = "Copied!";
-        setTimeout(() => btn.innerText = original, 1500);
-      });
-    }
-
     function sendWithdrawalEmail(userEmail, amount) {
       emailjs.init("mTX_PX7QZOS64sLRP");
-
       const templateParams = {
         user_email: userEmail,
         amount: amount
       };
-
       emailjs.send("service_dpo29p5", "template_withdrawal_received", templateParams)
         .then(() => console.log("Email sent"))
         .catch((error) => console.error("EmailJS error:", error));

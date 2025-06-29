@@ -114,11 +114,16 @@
     const adminUID = "rcxWL1mWLFWlflSnVUMNT1nfAhE2";
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) return window.location.href = "login.html";
+      if (!user) {
+        window.location.href = "signin.html";
+        return;
+      }
+
       currentUser = user;
 
       const ref = doc(db, "users", user.uid);
       const snap = await getDoc(ref);
+
       if (snap.exists()) {
         const balance = snap.data().balance || 0;
         document.getElementById("user-balance").innerText = balance.toLocaleString();

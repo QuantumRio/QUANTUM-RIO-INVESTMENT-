@@ -63,6 +63,23 @@
     button:hover {
       background: #019875;
     }
+
+    .notification {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      text-align: center;
+      display: none;
+    }
+    .notification.error {
+      background-color: #ffcccc;
+      color: #c0392b;
+    }
+    .notification.success {
+      background-color: #d4edda;
+      color: #155724;
+    }
   </style>
 </head>
 <body>
@@ -86,6 +103,8 @@
       <input type="number" id="withdraw-amount" placeholder="Enter amount in UGX" />
       <button onclick="handleWithdraw()">Withdraw</button>
     </div>
+
+    <div id="notify" class="notification"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
@@ -125,8 +144,10 @@
 
     window.handleWithdraw = async function () {
       const amount = parseInt(document.getElementById("withdraw-amount").value);
+      const notify = document.getElementById("notify");
+
       if (!amount || amount < 20000) {
-        alert("Minimum withdraw amount is 20,000 UGX");
+        showNotification("Minimum withdraw amount is 20,000 UGX", "error");
         return;
       }
 
@@ -135,7 +156,7 @@
       const balance = snap.data().balance || 0;
 
       if (amount > balance) {
-        alert("Insufficient balance");
+        showNotification("Insufficient balance", "error");
         return;
       }
 
@@ -153,14 +174,17 @@
 
       sendWithdrawalEmail(currentUser.email, amount);
 
-      alert("Withdrawal request sent for approval.");
+      showNotification("Withdrawal request sent for approval.", "success");
       document.getElementById("withdraw-amount").value = "";
       document.getElementById("user-balance").innerText = (balance - amount).toLocaleString();
     }
 
     window.submitDeposit = async function () {
       const phone = document.getElementById("sender-phone").value.trim();
-      if (!phone) return alert("Please enter the phone number used for deposit.");
+      if (!phone) {
+        showNotification("Please enter the phone number used for deposit.", "error");
+        return;
+      }
 
       await addDoc(collection(db, "deposits"), {
         uid: currentUser.uid,
@@ -169,7 +193,7 @@
         createdAt: new Date()
       });
 
-      alert("Your deposit request has been submitted for review.");
+      showNotification("Deposit submitted for approval.", "success");
       document.getElementById("sender-phone").value = "";
     }
 
@@ -181,6 +205,16 @@
         btn.innerText = "Copied!";
         setTimeout(() => btn.innerText = original, 1500);
       });
+    }
+
+    function showNotification(message, type) {
+      const notify = document.getElementById("notify");
+      notify.textContent = message;
+      notify.className = `notification ${type}`;
+      notify.style.display = "block";
+      setTimeout(() => {
+        notify.style.display = "none";
+      }, 3000);
     }
 
     function sendWithdrawalEmail(userEmail, amount) {

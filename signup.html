@@ -3,26 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Signup</title>
+  <title>Sign Up - Quantum Rio Uganda</title>
   <style>
-    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; }
-    .form-box { padding: 20px; background: #f2f2f2; border-radius: 8px; width: 300px; }
-    input, button { width: 100%; padding: 10px; margin: 10px 0; }
+    body {
+      background-color: #f0f2f5;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    h2 {
+      text-align: center;
+      color: #0d47a1;
+      margin-bottom: 20px;
+    }
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #0d47a1;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0b3c91;
+    }
+    p {
+      text-align: center;
+      margin-top: 15px;
+    }
+    a {
+      color: #0d47a1;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
-
-  <div class="form-box">
-    <h2>Sign Up</h2>
+  <div class="container">
+    <h2>Create Account</h2>
     <input type="email" id="email" placeholder="Email" required />
     <input type="password" id="password" placeholder="Password" required />
     <button id="signupBtn">Sign Up</button>
+    <p>Already have an account? <a href="login.html">Log In</a></p>
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -38,29 +87,29 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const signupBtn = document.getElementById("signupBtn");
-
-    signupBtn.addEventListener("click", async () => {
+    document.getElementById("signupBtn").addEventListener("click", async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+
+        // Save user to Firestore
         await setDoc(doc(db, "users", user.uid), {
           email: user.email,
           uid: user.uid,
-          balance: 0,
           referralBonus: 0,
-          referralCount: 0
+          referralCount: 0,
+          createdAt: new Date()
         });
-        alert("Signup successful!");
+
+        alert("Account created! Redirecting to dashboard...");
         window.location.href = "dashboard.html";
       } catch (error) {
-        alert("Error: " + error.message);
+        alert(error.message);
       }
     });
   </script>
-
 </body>
 </html>

@@ -1,170 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Investments | Quantum Rio Uganda</title>
+  <meta charset="UTF-8" />
+  <title>My Investments | Quantum Rio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #0e1a2b; /* professional background */
-      margin: 0;
-      padding: 0;
-      color: #A5D6A7;
+      background: #003d29;
+      color: #fff;
+      padding: 20px;
     }
-
-    .main-container {
-      padding: 15px;
-    }
-
-    .floating-header {
-      background: rgba(255,255,255,0.05);
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 20px;
-      font-weight: bold;
-    }
-
-    .stat-box {
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-      border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 15px;
-    }
-
-    .stat-box h3 {
-      margin: 0 0 8px;
-      font-size: 16px;
-      color: #81C784;
-    }
-
-    .stat-box p {
-      font-size: 16px;
-      margin: 0;
-    }
-
-    .investment {
+    .container {
+      max-width: 600px;
+      margin: auto;
       background: rgba(255, 255, 255, 0.05);
-      margin-bottom: 15px;
-      padding: 15px;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .summary-box {
+      background: #ffffff10;
+      padding: 15px 20px;
+      margin: 10px 0;
       border-radius: 10px;
+      font-size: 1.1rem;
     }
-
-    .investment h3 {
-      margin: 0 0 10px;
-      color: #81C784;
+    span {
+      font-weight: bold;
+      color: #00e676;
     }
-
-    .investment p {
-      margin: 5px 0;
-    }
-
-    .status {
-      padding: 5px 10px;
-      border-radius: 5px;
-      display: inline-block;
-    }
-
-    .active { background-color: #FFC107; color: #000; }
-    .matured { background-color: #4CAF50; color: white; }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2>My Investments</h2>
 
-  <div class="main-container">
-    <div class="floating-header">My Investments - Quantum Rio Uganda</div>
-
-    <div class="stat-box">
-      <h3>Total Profits Earned</h3>
-      <p id="totalProfits">0</p>
+    <div class="summary-box">
+      Total Invested: UGX <span id="total-invested">0</span>
     </div>
-    <div class="stat-box">
-      <h3>Active Investments</h3>
-      <p id="activeCount">0</p>
+    <div class="summary-box">
+      Active Investments: <span id="active-count">0</span>
     </div>
-    <div class="stat-box">
-      <h3>Matured Investments</h3>
-      <p id="maturedCount">0</p>
+    <div class="summary-box">
+      Matured Investments: <span id="matured-count">0</span>
     </div>
-
-    <div id="investmentsContainer"></div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
-  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
       authDomain: "quantum-rio-uganda.firebaseapp.com",
       projectId: "quantum-rio-uganda",
-      storageBucket: "quantum-rio-uganda.firebasestorage.app",
+      storageBucket: "quantum-rio-uganda.appspot.com",
       messagingSenderId: "840875099079",
-      appId: "1:840875099079:web:1cd06a78276842a787cfe2",
-      measurementId: "G-97G1PNQ9JB"
+      appId: "1:840875099079:web:1cd06a78276842a787cfe2"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    auth.onAuthStateChanged(async user => {
-      if (!user) return location.href = "login.html";
-      loadInvestments(user.uid);
-    });
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return window.location.href = "login.html";
 
-    async function loadInvestments(userId) {
-      const container = document.getElementById("investmentsContainer");
-      const totalProfitsEl = document.getElementById("totalProfits");
-      const activeEl = document.getElementById("activeCount");
-      const maturedEl = document.getElementById("maturedCount");
+      const q = query(collection(db, "investments"), where("userId", "==", user.uid));
+      const snapshot = await getDocs(q);
 
-      let totalProfits = 0;
+      let total = 0;
       let active = 0;
       let matured = 0;
 
-      const snapshot = await db.collection("investments")
-        .where("userId", "==", userId)
-        .orderBy("investedAt", "desc")
-        .get();
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        total += data.amount || 0;
+        if (data.status === "active") active++;
+        if (data.status === "matured") matured++;
+      });
 
-      container.innerHTML = "";
-
-      if (!snapshot.empty) {
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const investedDate = new Date(data.investedAt.seconds * 1000).toLocaleString();
-          const status = data.status || "active";
-          const statusClass = status === "matured" ? "matured" : "active";
-
-          if (status === "matured") {
-            totalProfits += data.returnAmount;
-            matured++;
-          } else {
-            active++;
-          }
-
-          const div = document.createElement("div");
-          div.className = "investment";
-          div.innerHTML = `
-            <h3>${data.investedAmount.toLocaleString()} UGX</h3>
-            <p>Return: <strong>${data.returnAmount.toLocaleString()} UGX</strong></p>
-            <p>Invested At: ${investedDate}</p>
-            <p>Status: <span class="status ${statusClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></p>
-          `;
-          container.appendChild(div);
-        });
-      }
-
-      totalProfitsEl.innerText = totalProfits.toLocaleString();
-      activeEl.innerText = active.toString();
-      maturedEl.innerText = matured.toString();
-    }
+      document.getElementById("total-invested").innerText = total.toLocaleString();
+      document.getElementById("active-count").innerText = active;
+      document.getElementById("matured-count").innerText = matured;
+    });
   </script>
 </body>
 </html>

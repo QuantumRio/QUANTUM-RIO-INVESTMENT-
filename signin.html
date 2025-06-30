@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign Up - Quantum Rio Uganda</title>
+  <title>Login - Quantum Rio Uganda</title>
   <style>
     body {
       background-color: #f0f2f5;
@@ -61,17 +61,16 @@
 </head>
 <body>
   <div class="container">
-    <h2>Create Account</h2>
+    <h2>Log In</h2>
     <input type="email" id="email" placeholder="Email" required />
     <input type="password" id="password" placeholder="Password" required />
-    <button id="signupBtn">Sign Up</button>
-    <p>Already have an account? <a href="login.html">Log In</a></p>
+    <button id="loginBtn">Sign In</button>
+    <p>Don't have an account? <a href="signup.html">Create One</a></p>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -85,26 +84,14 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
 
-    document.getElementById("signupBtn").addEventListener("click", async () => {
+    document.getElementById("loginBtn").addEventListener("click", async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
       try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Save user to Firestore
-        await setDoc(doc(db, "users", user.uid), {
-          email: user.email,
-          uid: user.uid,
-          referralBonus: 0,
-          referralCount: 0,
-          createdAt: new Date()
-        });
-
-        alert("Account created! Redirecting to dashboard...");
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Login successful!");
         window.location.href = "dashboard.html";
       } catch (error) {
         alert(error.message);

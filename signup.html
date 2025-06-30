@@ -3,85 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign Up - Quantum Rio Uganda</title>
+  <title>Signup</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #ffffff;
-      color: #333;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .container {
-      background: #f7f7f7;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 400px;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 24px;
-      color: #005f3c;
-    }
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-    button {
-      width: 100%;
-      background: #00b894;
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background: #009f7c;
-    }
-    .login-link {
-      text-align: center;
-      margin-top: 16px;
-      font-size: 0.9rem;
-    }
-    .login-link a {
-      color: #005f3c;
-      text-decoration: none;
-    }
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; }
+    .form-box { padding: 20px; background: #f2f2f2; border-radius: 8px; width: 300px; }
+    input, button { width: 100%; padding: 10px; margin: 10px 0; }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h2>Create Your Account</h2>
-    <form id="signupForm">
-      <label for="email">Email Address</label>
-      <input type="email" id="email" required placeholder="Enter your email">
-
-      <label for="password">Password</label>
-      <input type="password" id="password" required placeholder="Enter password (min 6 characters)">
-
-      <button type="submit">Sign Up</button>
-    </form>
-    <div class="signin-link">
-      Already have an account? <a href="signin.html">sign in</a>
-    </div>
+  <div class="form-box">
+    <h2>Sign Up</h2>
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button id="signupBtn">Sign Up</button>
   </div>
 
   <script type="module">
@@ -103,27 +38,23 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const signupForm = document.getElementById('signupForm');
+    const signupBtn = document.getElementById("signupBtn");
 
-    signupForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
+    signupBtn.addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
 
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-
-        // Store user data in Firestore
         await setDoc(doc(db, "users", user.uid), {
           email: user.email,
           uid: user.uid,
-          referralCount: 0,
+          balance: 0,
           referralBonus: 0,
-          balance: 0
+          referralCount: 0
         });
-
-        alert("Account created successfully!");
+        alert("Signup successful!");
         window.location.href = "dashboard.html";
       } catch (error) {
         alert("Error: " + error.message);

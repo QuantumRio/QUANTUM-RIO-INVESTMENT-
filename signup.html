@@ -3,120 +3,133 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Signup - Quantum Rio Uganda</title>
+  <title>Sign Up - Quantum Rio Uganda</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #e3f2fd;
       margin: 0;
-      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffffff;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
     }
     .container {
+      background: #f7f7f7;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      width: 100%;
       max-width: 400px;
-      margin: 60px auto;
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     h2 {
       text-align: center;
-      color: #0d47a1;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      color: #005f3c;
     }
-    input, select, button {
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    input {
       width: 100%;
-      margin-bottom: 15px;
       padding: 12px;
-      border-radius: 6px;
+      margin-bottom: 16px;
+      border-radius: 8px;
       border: 1px solid #ccc;
-      font-size: 16px;
+      font-size: 1rem;
     }
     button {
-      background: #0d47a1;
+      width: 100%;
+      background: #00b894;
       color: white;
-      cursor: pointer;
       border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
     }
     button:hover {
-      background: #0b3c91;
+      background: #009f7c;
     }
-    .message {
+    .login-link {
       text-align: center;
-      margin-top: 15px;
-      color: green;
+      margin-top: 16px;
+      font-size: 0.9rem;
+    }
+    .login-link a {
+      color: #005f3c;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
+
   <div class="container">
-    <h2>Create Account</h2>
-    <input type="text" id="phone" placeholder="Phone Number (+256...)" />
-    <select id="country">
-      <option value="Uganda">Uganda</option>
-      <option value="Kenya">Kenya</option>
-      <option value="Tanzania">Tanzania</option>
-      <option value="Rwanda">Rwanda</option>
-      <option value="Zambia">Zambia</option>
-      <option value="Botswana">Botswana</option>
-    </select>
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="register()">Sign Up</button>
-    <div class="message" id="message"></div>
+    <h2>Create Your Account</h2>
+    <form id="signupForm">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" required placeholder="Enter your email">
+
+      <label for="password">Password</label>
+      <input type="password" id="password" required placeholder="Enter password (min 6 characters)">
+
+      <button type="submit">Sign Up</button>
+    </form>
+    <div class="signin-link">
+      Already have an account? <a href="signin.html">sign in</a>
+    </div>
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
       authDomain: "quantum-rio-uganda.firebaseapp.com",
       projectId: "quantum-rio-uganda",
-      storageBucket: "quantum-rio-uganda.appspot.com",
+      storageBucket: "quantum-rio-uganda.firebasestorage.app",
       messagingSenderId: "840875099079",
-      appId: "1:840875099079:web:1cd06a78276842a787cfe2"
+      appId: "1:840875099079:web:1cd06a78276842a787cfe2",
+      measurementId: "G-97G1PNQ9JB"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const referredBy = urlParams.get("ref");
+    const signupForm = document.getElementById('signupForm');
 
-    window.register = async function() {
-      const phone = document.getElementById("phone").value.trim();
-      const password = document.getElementById("password").value;
-      const country = document.getElementById("country").value;
-      const emailLike = `${phone.replace("+", "")}@quantumrio.com`;
-
-      const message = document.getElementById("message");
-      message.textContent = "Registering...";
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
 
       try {
-        const cred = await createUserWithEmailAndPassword(auth, emailLike, password);
-        const uid = cred.user.uid;
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-        await setDoc(doc(db, "users", uid), {
-          phone,
-          country,
-          balance: 0,
-          referralBonus: 0,
+        // Store user data in Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          email: user.email,
+          uid: user.uid,
           referralCount: 0,
-          referredBy: referredBy || null,
-          createdAt: new Date().toISOString()
+          referralBonus: 0,
+          balance: 0
         });
 
-        message.textContent = "Account created successfully! 🎉";
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 1500);
+        alert("Account created successfully!");
+        window.location.href = "dashboard.html";
       } catch (error) {
-        message.textContent = error.message;
+        alert("Error: " + error.message);
       }
-    };
+    });
   </script>
+
 </body>
 </html>

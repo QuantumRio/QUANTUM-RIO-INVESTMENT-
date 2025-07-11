@@ -97,8 +97,9 @@
 
         // Save user to Firestore
         await setDoc(doc(db, "users", user.uid), {
-          email: user.email,
           uid: user.uid,
+          email: user.email,
+          balance: 0,
           referralBonus: 0,
           referralCount: 0,
           createdAt: new Date()

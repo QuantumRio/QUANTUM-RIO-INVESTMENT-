@@ -63,7 +63,6 @@
     button:hover {
       background: #019875;
     }
-
     .notification {
       margin-top: 10px;
       padding: 10px;
@@ -91,7 +90,6 @@
       <strong>Minimum deposit is 100,000 UGX</strong><br><br>
       Send to the MTN number below:<br>
       <div class="copy" onclick="copyNumber()" id="copyBtn">0784513172</div><br><br>
-
       Enter the number you used to make payment:
       <input type="text" id="sender-phone" placeholder="Your phone number used to send" />
       <button onclick="submitDeposit()">Submit</button>
@@ -108,10 +106,12 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import {
+      getFirestore, doc, getDoc, updateDoc, collection,
+      addDoc, query, where, getDocs
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -134,50 +134,34 @@
       if (!user) return window.location.href = "login.html";
       currentUser = user;
 
-      const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const balance = snap.data().balance || 0;
-        document.getElementById("user-balance").innerText = balance.toLocaleString();
+      try {
+        const q = query(
+          collection(db, "deposits"),
+          where("uid", "==", user.uid),
+          where("status", "==", "approved")
+        );
+        const snapshot = await getDocs(q);
+        let totalBalance = 0;
+        snapshot.forEach(doc => {
+          const depositAmount = Number(doc.data().amount || 0);
+          totalBalance += depositAmount;
+        });
+
+        // fallback to users collection if needed
+        if (totalBalance === 0) {
+          const ref = doc(db, "users", user.uid);
+          const snap = await getDoc(ref);
+          if (snap.exists()) {
+            totalBalance = snap.data().balance || 0;
+          }
+        }
+
+        document.getElementById("user-balance").innerText = totalBalance.toLocaleString();
+      } catch (error) {
+        console.error("Balance fetch error:", error);
+        showNotification("Error loading balance", "error");
       }
     });
-
-    window.handleWithdraw = async function () {
-      const amount = parseInt(document.getElementById("withdraw-amount").value);
-      const notify = document.getElementById("notify");
-
-      if (!amount || amount < 20000) {
-        showNotification("Minimum withdraw amount is 20,000 UGX", "error");
-        return;
-      }
-
-      const userRef = doc(db, "users", currentUser.uid);
-      const snap = await getDoc(userRef);
-      const balance = snap.data().balance || 0;
-
-      if (amount > balance) {
-        showNotification("Insufficient balance", "error");
-        return;
-      }
-
-      await updateDoc(userRef, {
-        balance: balance - amount
-      });
-
-      await addDoc(collection(db, "withdrawals"), {
-        userId: currentUser.uid,
-        email: currentUser.email,
-        amount: amount,
-        status: "pending",
-        requestedAt: new Date()
-      });
-
-      sendWithdrawalEmail(currentUser.email, amount);
-
-      showNotification("Withdrawal request sent for approval.", "success");
-      document.getElementById("withdraw-amount").value = "";
-      document.getElementById("user-balance").innerText = (balance - amount).toLocaleString();
-    }
 
     window.submitDeposit = async function () {
       const phone = document.getElementById("sender-phone").value.trim();
@@ -195,6 +179,40 @@
 
       showNotification("Deposit submitted for approval.", "success");
       document.getElementById("sender-phone").value = "";
+    }
+
+    window.handleWithdraw = async function () {
+      const amount = parseInt(document.getElementById("withdraw-amount").value);
+      const notify = document.getElementById("notify");
+
+      if (!amount || amount < 20000) {
+        showNotification("Minimum withdraw amount is 20,000 UGX", "error");
+        return;
+      }
+
+      const ref = doc(db, "users", currentUser.uid);
+      const snap = await getDoc(ref);
+      const balance = snap.exists() ? snap.data().balance || 0 : 0;
+
+      if (amount > balance) {
+        showNotification("Insufficient balance", "error");
+        return;
+      }
+
+      await updateDoc(ref, { balance: balance - amount });
+
+      await addDoc(collection(db, "withdrawals"), {
+        userId: currentUser.uid,
+        email: currentUser.email,
+        amount: amount,
+        status: "pending",
+        requestedAt: new Date()
+      });
+
+      sendWithdrawalEmail(currentUser.email, amount);
+      showNotification("Withdrawal request sent for approval.", "success");
+      document.getElementById("withdraw-amount").value = "";
+      document.getElementById("user-balance").innerText = (balance - amount).toLocaleString();
     }
 
     window.copyNumber = function () {

@@ -63,7 +63,6 @@
     button:hover {
       background: #019875;
     }
-
     .notification {
       margin-top: 10px;
       padding: 10px;
@@ -94,6 +93,10 @@
 
       Enter the number you used to make payment:
       <input type="text" id="sender-phone" placeholder="Your phone number used to send" />
+
+      Enter the amount you deposited:
+      <input type="number" id="amount-deposited" placeholder="Amount deposited (UGX)" />
+
       <button id="submit-btn">Submit</button>
     </div>
 
@@ -118,7 +121,7 @@
       apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
       authDomain: "quantum-rio-uganda.firebaseapp.com",
       projectId: "quantum-rio-uganda",
-      storageBucket: "quantum-rio-uganda.firebasestorage.app",
+      storageBucket: "quantum-rio-uganda.appspot.com",
       messagingSenderId: "840875099079",
       appId: "1:840875099079:web:1cd06a78276842a787cfe2",
       measurementId: "G-97G1PNQ9JB"
@@ -144,20 +147,24 @@
 
     document.getElementById("submit-btn").addEventListener("click", async () => {
       const phone = document.getElementById("sender-phone").value.trim();
-      if (!phone) {
-        showNotification("Please enter the phone number used for deposit.", "error");
+      const amount = parseInt(document.getElementById("amount-deposited").value.trim());
+
+      if (!phone || !amount || amount < 100000) {
+        showNotification("Please enter phone number and valid amount (min 100,000 UGX).", "error");
         return;
       }
 
       await addDoc(collection(db, "deposits"), {
         uid: currentUser.uid,
         phoneNumber: phone,
+        amount: amount,
         status: "pending",
         createdAt: new Date()
       });
 
       showNotification("Deposit submitted for approval.", "success");
       document.getElementById("sender-phone").value = "";
+      document.getElementById("amount-deposited").value = "";
     });
 
     window.handleWithdraw = async function () {

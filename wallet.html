@@ -3,253 +3,112 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Wallet | Quantum Rio</title>
+  <title>Wallet - Quantum Rio Investment</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #005f3c;
-      color: #fff;
+      font-family: Arial, sans-serif;
+      background: #e8f5e9; /* Corporate green background */
+      padding: 20px;
     }
+
     .container {
-      max-width: 500px;
-      margin: 40px auto;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 30px;
-      border-radius: 16px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    }
-    h2, h3 {
-      text-align: center;
-    }
-    .info-box {
-      background: #fff;
-      color: #000;
+      max-width: 400px;
+      margin: auto;
+      background: white;
       padding: 20px;
       border-radius: 12px;
-      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .copy {
-      background: #2d3436;
-      color: #fff;
-      padding: 10px 15px;
-      display: inline-block;
-      border-radius: 5px;
-      margin-top: 10px;
-      cursor: pointer;
-      user-select: all;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-    }
-    button {
-      width: 100%;
-      background: #00b894;
-      color: #fff;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #019875;
-    }
-    .notification {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 6px;
-      font-weight: bold;
+
+    h2 {
       text-align: center;
-      display: none;
+      color: #2e7d32;
     }
-    .notification.error {
-      background-color: #ffcccc;
-      color: #c0392b;
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
-    .notification.success {
-      background-color: #d4edda;
-      color: #155724;
+
+    button {
+      background-color: #2e7d32;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1b5e20;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Quantum Rio Wallet</h2>
-    <h3>Total Balance UGX <span id="user-balance">0.00</span></h3>
-
-    <div class="info-box">
-      <strong>Minimum deposit is 100,000 UGX</strong><br><br>
-      Send to the MTN number below:<br>
-      <div class="copy" onclick="copyNumber()" id="copyBtn">0784513172</div><br><br>
-      Enter the number you used to make payment:
-      <input type="text" id="sender-phone" placeholder="Your phone number used to send" />
-      <button onclick="submitDeposit()">Submit</button>
-    </div>
-
-    <div class="info-box">
-      <strong>You can withdraw any amount from 20,000 UGX</strong><br><br>
-      Enter amount to withdraw:
-      <input type="number" id="withdraw-amount" placeholder="Enter amount in UGX" />
-      <button onclick="handleWithdraw()">Withdraw</button>
-    </div>
-
-    <div id="notify" class="notification"></div>
+    <h2>Deposit to Wallet</h2>
+    <form id="deposit-form">
+      <input type="number" id="deposit-amount" placeholder="Enter amount (UGX)" required />
+      <button type="submit">Submit</button>
+    </form>
+    <p style="font-size: 14px; color: gray; text-align: center;">
+      Send to MTN: <strong>0784513172</strong><br/>
+      Or Airtel: <strong>0717427604</strong>
+    </p>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import {
-      getFirestore, doc, getDoc, updateDoc, collection,
-      addDoc, query, where, getDocs
-    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
+  <script>
+    // Your Firebase config here
     const firebaseConfig = {
-      apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
-      authDomain: "quantum-rio-uganda.firebaseapp.com",
-      projectId: "quantum-rio-uganda",
-      storageBucket: "quantum-rio-uganda.firebasestorage.app",
-      messagingSenderId: "840875099079",
-      appId: "1:840875099079:web:1cd06a78276842a787cfe2",
-      measurementId: "G-97G1PNQ9JB"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+  <script>
+    // Submit form
+    document.getElementById('deposit-form').addEventListener('submit', function(e) {
+      e.preventDefault();
 
-    let currentUser = null;
+      const amount = parseInt(document.getElementById('deposit-amount').value);
+      if (!amount || amount < 1000) {
+        alert("Enter a valid amount (min 1000 UGX)");
+        return;
+      }
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return window.location.href = "login.html";
-      currentUser = user;
-
-      try {
-        const q = query(
-          collection(db, "deposits"),
-          where("uid", "==", user.uid),
-          where("status", "==", "approved")
-        );
-        const snapshot = await getDocs(q);
-        let totalBalance = 0;
-        snapshot.forEach(doc => {
-          const depositAmount = Number(doc.data().amount || 0);
-          totalBalance += depositAmount;
-        });
-
-        // fallback to users collection if needed
-        if (totalBalance === 0) {
-          const ref = doc(db, "users", user.uid);
-          const snap = await getDoc(ref);
-          if (snap.exists()) {
-            totalBalance = snap.data().balance || 0;
-          }
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          db.collection('deposits').add({
+            uid: user.uid,
+            amount: amount,
+            status: 'pending',
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          })
+          .then(() => {
+            alert('Deposit submitted successfully. Wait for approval.');
+            document.getElementById('deposit-form').reset();
+          })
+          .catch((error) => {
+            alert('Error: ' + error.message);
+          });
+        } else {
+          alert("Please log in to deposit.");
         }
-
-        document.getElementById("user-balance").innerText = totalBalance.toLocaleString();
-      } catch (error) {
-        console.error("Balance fetch error:", error);
-        showNotification("Error loading balance", "error");
-      }
+      });
     });
-
-    window.submitDeposit = async function () {
-      const phone = document.getElementById("sender-phone").value.trim();
-      if (!phone) {
-        showNotification("Please enter the phone number used for deposit.", "error");
-        return;
-      }
-
-      await addDoc(collection(db, "deposits"), {
-        uid: currentUser.uid,
-        phoneNumber: phone,
-        status: "pending",
-        createdAt: new Date()
-      });
-
-      showNotification("Deposit submitted for approval.", "success");
-      document.getElementById("sender-phone").value = "";
-    }
-
-    window.handleWithdraw = async function () {
-      const amount = parseInt(document.getElementById("withdraw-amount").value);
-      const notify = document.getElementById("notify");
-
-      if (!amount || amount < 20000) {
-        showNotification("Minimum withdraw amount is 20,000 UGX", "error");
-        return;
-      }
-
-      const ref = doc(db, "users", currentUser.uid);
-      const snap = await getDoc(ref);
-      const balance = snap.exists() ? snap.data().balance || 0 : 0;
-
-      if (amount > balance) {
-        showNotification("Insufficient balance", "error");
-        return;
-      }
-
-      await updateDoc(ref, { balance: balance - amount });
-
-      await addDoc(collection(db, "withdrawals"), {
-        userId: currentUser.uid,
-        email: currentUser.email,
-        amount: amount,
-        status: "pending",
-        requestedAt: new Date()
-      });
-
-      sendWithdrawalEmail(currentUser.email, amount);
-      showNotification("Withdrawal request sent for approval.", "success");
-      document.getElementById("withdraw-amount").value = "";
-      document.getElementById("user-balance").innerText = (balance - amount).toLocaleString();
-    }
-
-    window.copyNumber = function () {
-      const number = "0784513172";
-      navigator.clipboard.writeText(number).then(() => {
-        const btn = document.getElementById("copyBtn");
-        const original = btn.innerText;
-        btn.innerText = "Copied!";
-        setTimeout(() => btn.innerText = original, 1500);
-      });
-    }
-
-    function showNotification(message, type) {
-      const notify = document.getElementById("notify");
-      notify.textContent = message;
-      notify.className = `notification ${type}`;
-      notify.style.display = "block";
-      setTimeout(() => {
-        notify.style.display = "none";
-      }, 3000);
-    }
-
-    function sendWithdrawalEmail(userEmail, amount) {
-      emailjs.init("mTX_PX7QZOS64sLRP");
-      const templateParams = {
-        user_email: userEmail,
-        amount: amount
-      };
-
-      emailjs.send("service_dpo29p5", "template_withdrawal_received", templateParams)
-        .then(() => {
-          console.log("Email sent");
-        })
-        .catch((error) => {
-          console.error("EmailJS error:", error);
-        });
-    }
   </script>
 </body>
 </html>

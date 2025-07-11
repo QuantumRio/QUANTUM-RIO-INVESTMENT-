@@ -21,7 +21,9 @@
       backdrop-filter: blur(10px);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     }
-    h2, h3 { text-align: center; }
+    h2, h3 {
+      text-align: center;
+    }
     .info-box {
       background: #fff;
       color: #000;
@@ -43,7 +45,7 @@
       width: 100%;
       padding: 12px;
       margin-top: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       border: none;
       border-radius: 8px;
       font-size: 1rem;
@@ -58,7 +60,9 @@
       font-size: 1rem;
       cursor: pointer;
     }
-    button:hover { background: #019875; }
+    button:hover {
+      background: #019875;
+    }
     .notification {
       margin-top: 10px;
       padding: 10px;
@@ -84,16 +88,21 @@
 
     <div class="info-box">
       <strong>Minimum deposit is 100,000 UGX</strong><br><br>
-      Send to the MTN number below:<br>
+      Send to MTN number:<br>
       <div class="copy" onclick="copyNumber()" id="copyBtn">0784513172</div><br><br>
 
-      <input type="text" id="sender-phone" placeholder="Phone number used to deposit" />
-      <input type="number" id="deposit-amount" placeholder="Amount deposited (UGX)" />
-      <button id="submit-btn">Submit Deposit</button>
+      Enter the phone number used to send:
+      <input type="text" id="sender-phone" placeholder="Phone number used to send" />
+
+      Enter the amount you deposited:
+      <input type="number" id="deposit-amount" placeholder="Amount sent in UGX" />
+
+      <button id="submit-btn">Submit</button>
     </div>
 
     <div class="info-box">
-      <strong>You can withdraw any amount from 20,000 UGX</strong><br><br>
+      <strong>You can withdraw from 20,000 UGX</strong><br><br>
+      Enter amount to withdraw:
       <input type="number" id="withdraw-amount" placeholder="Enter amount in UGX" />
       <button onclick="handleWithdraw()">Withdraw</button>
     </div>
@@ -105,9 +114,10 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
+    // Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
       authDomain: "quantum-rio-uganda.firebaseapp.com",
@@ -121,19 +131,21 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+
+    emailjs.init("mTX_PX7QZOS64sLRP");
+
     let currentUser = null;
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = "signin.html";
       currentUser = user;
 
       const ref = doc(db, "users", user.uid);
-      onSnapshot(ref, (snap) => {
-        if (snap.exists()) {
-          const balance = snap.data().balance || 0;
-          document.getElementById("user-balance").innerText = balance.toLocaleString();
-        }
-      });
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const balance = snap.data().balance || 0;
+        document.getElementById("user-balance").innerText = balance.toLocaleString();
+      }
     });
 
     document.getElementById("submit-btn").addEventListener("click", async () => {
@@ -141,7 +153,7 @@
       const amount = parseInt(document.getElementById("deposit-amount").value.trim());
 
       if (!phone || !amount || amount < 100000) {
-        showNotification("Enter valid phone and amount (min 100,000 UGX).", "error");
+        showNotification("Enter a valid phone number and deposit of at least 100,000 UGX.", "error");
         return;
       }
 
@@ -153,6 +165,15 @@
         createdAt: new Date()
       });
 
+      // Send Email Notification to Admin
+      emailjs.send("service_dpo29p5", "template_deposit_notify", {
+        to_email: "forexinvestmentclubkampala@gmail.com",
+        user_email: currentUser.email,
+        phone: phone,
+        amount: amount,
+        message: `Deposit request from ${currentUser.email}: UGX ${amount} - Phone: ${phone}`
+      });
+
       showNotification("Deposit submitted for approval.", "success");
       document.getElementById("sender-phone").value = "";
       document.getElementById("deposit-amount").value = "";
@@ -161,7 +182,7 @@
     window.handleWithdraw = async function () {
       const amount = parseInt(document.getElementById("withdraw-amount").value);
       if (!amount || amount < 20000) {
-        showNotification("Minimum withdraw amount is 20,000 UGX", "error");
+        showNotification("Minimum withdrawal is 20,000 UGX.", "error");
         return;
       }
 
@@ -170,7 +191,7 @@
       const balance = snap.data().balance || 0;
 
       if (amount > balance) {
-        showNotification("Insufficient balance", "error");
+        showNotification("Insufficient balance.", "error");
         return;
       }
 
@@ -184,9 +205,19 @@
         requestedAt: new Date()
       });
 
+      // Email admin
+      emailjs.send("service_dpo29p5", "template_withdraw_notify", {
+        to_email: "forexinvestmentclubkampala@gmail.com",
+        user_email: currentUser.email,
+        phone: "N/A",
+        amount: amount,
+        message: `Withdrawal request from ${currentUser.email}: UGX ${amount}`
+      });
+
       showNotification("Withdrawal request sent for approval.", "success");
       document.getElementById("withdraw-amount").value = "";
-    }
+      document.getElementById("user-balance").innerText = (balance - amount).toLocaleString();
+    };
 
     window.copyNumber = function () {
       const number = "0784513172";
@@ -196,16 +227,14 @@
         btn.innerText = "Copied!";
         setTimeout(() => btn.innerText = original, 1500);
       });
-    }
+    };
 
     function showNotification(message, type) {
       const notify = document.getElementById("notify");
       notify.textContent = message;
       notify.className = `notification ${type}`;
       notify.style.display = "block";
-      setTimeout(() => {
-        notify.style.display = "none";
-      }, 3000);
+      setTimeout(() => notify.style.display = "none", 3000);
     }
   </script>
 </body>

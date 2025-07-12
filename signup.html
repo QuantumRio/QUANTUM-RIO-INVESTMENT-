@@ -29,7 +29,8 @@
       margin-bottom: 20px;
     }
     input[type="email"],
-    input[type="password"] {
+    input[type="password"],
+    input[type="tel"] {
       width: 100%;
       padding: 12px;
       margin: 10px 0;
@@ -63,6 +64,7 @@
   <div class="container">
     <h2>Create Account</h2>
     <input type="email" id="email" placeholder="Email" required />
+    <input type="tel" id="phone" placeholder="Phone Number" required />
     <input type="password" id="password" placeholder="Password" required />
     <button id="signupBtn">Sign Up</button>
     <p>Already have an account? <a href="signin.html">Sign In</a></p>
@@ -71,6 +73,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -84,18 +87,30 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
     document.getElementById("signupBtn").addEventListener("click", async () => {
       const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
       const password = document.getElementById("password").value.trim();
 
-      if (!email || !password) {
-        alert("Please fill in both email and password.");
+      if (!email || !phone || !password) {
+        alert("Please fill in all fields.");
         return;
       }
 
       try {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Save user info to Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          email: user.email,
+          phone: phone,
+          uid: user.uid,
+          createdAt: serverTimestamp()
+        });
+
         alert("Account created successfully!");
         window.location.href = "dashboard.html";
       } catch (error) {

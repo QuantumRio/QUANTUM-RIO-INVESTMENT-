@@ -1,191 +1,232 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quantum Rio Dashboard</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
     :root {
       --green: #0b6623;
       --blue: #005bea;
       --white: #ffffff;
-    }body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: var(--white);
-  color: var(--green);
-  padding-bottom: 80px;
-}
+    }
 
-.container {
-  max-width: 500px;
-  margin: auto;
-  padding: 1.5rem 1rem;
-}
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--white);
+      color: var(--green);
+      padding-bottom: 80px;
+    }
 
-.card {
-  background: var(--white);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 1.5rem 1rem;
+    }
 
-h2 {
-  text-align: center;
-  color: var(--green);
-}
+    .card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
 
-.welcome, .referral-note {
-  text-align: center;
-  font-size: 1rem;
-  margin-bottom: 1rem;
-}
+    h2 {
+      text-align: center;
+      color: var(--green);
+    }
 
-.referral-note {
-  color: #27ae60;
-  font-weight: bold;
-}
+    .welcome {
+      text-align: center;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--green);
+    }
 
-.label {
-  font-weight: bold;
-  margin-top: 1.2rem;
-}
+    .referral-note {
+      color: #27ae60;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
 
-.balance {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
+    .label {
+      font-weight: bold;
+      margin-top: 1.2rem;
+      color: var(--green);
+    }
 
-.greenbox {
-  background-color: var(--green);
-  color: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  margin-top: 2rem;
-  line-height: 1.6;
-}
+    .balance {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--green);
+    }
 
-.btn {
-  display: block;
-  width: 100%;
-  padding: 1rem;
-  margin-top: 1.5rem;
-  font-size: 1rem;
-  border: none;
-  border-radius: 12px;
-  background-color: #e74c3c;
-  color: white;
-}
+    .chart-tabs {
+      overflow-x: auto;
+      white-space: nowrap;
+      margin-top: 1rem;
+      display: flex;
+      gap: 8px;
+    }
 
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 65px;
-  background: var(--blue);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
-}
+    .chart-tabs button {
+      flex: 0 0 auto;
+      background-color: var(--blue);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
 
-.nav-item {
-  color: white;
-  text-align: center;
-  font-size: 0.75rem;
-  text-decoration: none;
-}
+    .chart-container {
+      width: 100%;
+      height: 380px;
+      margin-top: 1rem;
+      border-radius: 10px;
+      overflow: hidden;
+    }
 
-.nav-item i {
-  font-size: 1.2rem;
-  display: block;
-}
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
 
-.tabs {
-  display: flex;
-  overflow-x: auto;
-  margin: 1rem 0;
-}
+    .greenbox {
+      background-color: var(--green);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-top: 2rem;
+      line-height: 1.6;
+    }
 
-.tabs button {
-  flex: none;
-  padding: 0.5rem 1rem;
-  margin-right: 0.5rem;
-  border: 1px solid var(--green);
-  background: none;
-  color: var(--green);
-  border-radius: 8px;
-  cursor: pointer;
-}
+    .greenbox strong {
+      font-size: 1.1rem;
+    }
 
-iframe {
-  border: none;
-  width: 100%;
-  height: 400px;
-}
+    .support-links {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
 
+    .support-links a {
+      display: block;
+      margin: 0.5rem 0;
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      color: white;
+      background-color: #e74c3c;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: var(--blue);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .nav-item {
+      color: white;
+      text-align: center;
+      font-size: 0.75rem;
+      text-decoration: none;
+    }
+
+    .nav-item i {
+      font-size: 1.2rem;
+      display: block;
+      margin-bottom: 2px;
+    }
   </style>
 </head>
 <body>
+
   <div class="container">
     <div class="card">
       <h2>Welcome to Quantum Rio Investment</h2>
       <p class="welcome">Fast and secure investment platform | Invest smart, Invest with Quantum</p>
       <p class="referral-note">🎯 For every referral who makes a deposit, you earn <strong>UGX 17,760</strong> instantly!</p>
+
       <div class="label">Total Balance</div>
-      <div class="balance" id="balance">UGX 0.00</div><!-- Trading Tabs -->
-  <div class="tabs">
-    <button onclick="loadChart('BTCUSD')">BTC/USD</button>
-    <button onclick="loadChart('ETHUSD')">ETH/USD</button>
-    <button onclick="loadChart('XAUUSD')">Gold</button>
-    <button onclick="loadChart('SOLUSD')">Solana</button>
-    <button onclick="loadChart('XRPUSD')">XRP</button>
-    <button onclick="loadChart('PEPEUSD')">PEPE</button>
-    <button onclick="loadChart('EURJPY')">EUR/JPY</button>
-    <button onclick="loadChart('GBPJPY')">GBP/JPY</button>
+      <div class="balance" id="balance">UGX 0.00</div>
+
+      <div class="chart-tabs" id="tab-buttons">
+        <button onclick="loadChart('BTCUSD')">BTC/USD</button>
+        <button onclick="loadChart('ETHUSD')">ETH/USD</button>
+        <button onclick="loadChart('XAUUSD')">Gold</button>
+        <button onclick="loadChart('SOLUSD')">Solana</button>
+        <button onclick="loadChart('EURJPY')">EUR/JPY</button>
+        <button onclick="loadChart('GBPJPY')">GBP/JPY</button>
+      </div>
+
+      <div class="chart-container" id="tradingview-frame">
+        <iframe src="https://s.tradingview.com/embed-widget/mini-symbol-overview/?symbol=BINANCE:BTCUSDT&locale=en" allowtransparency="true"></iframe>
+      </div>
+
+      <div class="greenbox">
+        <strong>Quantum Rio has been transforming lives since 2009.</strong><br><br>
+        With over 1,000,000 investors across Uganda and beyond, our platform has empowered thousands to achieve financial independence through our AI-powered trading strategies in Bitcoin, forex, and binary markets. We believe in transparency, security, and consistency. Our mission is to help every Ugandan grow wealth through smart, risk-managed investments. <br><br>
+        Invest more and watch your returns grow — the more you invest, the more profit you unlock. Our traders work around the clock to ensure you get up to 200% ROI within 12–24 hours.
+      </div>
+
+      <div class="support-links">
+        <a href="https://wa.me/256784513172" target="_blank">📱 WhatsApp Support</a>
+        <a href="https://t.me/QuantumRIO_support" target="_blank">📩 Telegram Support</a>
+      </div>
+
+      <button class="btn" onclick="logout()">Logout</button>
+    </div>
   </div>
 
-  <div id="chart-area">
-    <iframe id="tradingview" src="https://s.tradingview.com/widgetembed/?symbol=FX:BTCUSD&interval=30&hidesidetoolbar=1&symboledit=1&saveimage=1&theme=light&style=1&timezone=Etc/UTC&studies=[]&hideideas=1" allowfullscreen></iframe>
-  </div>
-
-  <!-- History -->
-  <div class="greenbox">
-    <strong>Quantum Rio has been transforming lives since 2009.</strong><br><br>
-    With over 1,000,000 investors across Uganda and beyond, our platform has empowered thousands to achieve financial independence through our AI-powered trading strategies in Bitcoin, forex, and binary markets.
-    <br><br>Our mission is to help every Ugandan grow wealth through smart, risk-managed investments.
-  </div>
-
-  <button class="btn" onclick="logout()">Logout</button>
-
-  <!-- Support Links -->
-  <p style="text-align:center; margin-top:2rem;">
-    💬 Need Help? <br>
-    <a href="https://wa.me/256784513172" target="_blank">Chat on WhatsApp</a><br>
-    <a href="https://t.me/QuantumRIO_support" target="_blank">Join Telegram</a>
-  </p>
-</div>
-
-  </div>  <div class="bottom-nav">
+  <div class="bottom-nav">
     <a class="nav-item" href="dashboard.html">
-      <i class="fas fa-home"></i>Home
+      <i class="fas fa-home"></i>
+      Home
     </a>
     <a class="nav-item" href="wallet.html">
-      <i class="fas fa-wallet"></i>Wallet
+      <i class="fas fa-wallet"></i>
+      Wallet
     </a>
     <a class="nav-item" href="investments.html">
-      <i class="fas fa-chart-line"></i>Plans
+      <i class="fas fa-chart-line"></i>
+      Plans
     </a>
     <a class="nav-item" href="investment.html">
-      <i class="fas fa-briefcase"></i>Active
+      <i class="fas fa-briefcase"></i>
+      Active
     </a>
-  </div>  <!-- Firebase + Trading Script -->  <script type="module">
+  </div>
+
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -202,23 +243,36 @@ iframe {
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = "signin.html";
+
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
-        const data = userSnap.data();
-        document.getElementById("balance").textContent = `UGX ${data.balance?.toLocaleString() || '0.00'}`;
+        const userData = userSnap.data();
+        document.getElementById("balance").textContent = `UGX ${userData.balance?.toLocaleString() || "0.00"}`;
+
+        const invSnap = await getDocs(collection(db, "investments"));
+        const now = Date.now();
+
+        invSnap.forEach(async (docu) => {
+          const inv = docu.data();
+          const invId = docu.id;
+
+          if (inv.userId === user.uid && inv.status === "active" && inv.investedAt?.toMillis && (now - inv.investedAt.toMillis()) >= 86400000) {
+            await updateDoc(doc(db, "investments", invId), { status: "matured" });
+            await updateDoc(userRef, { balance: increment(inv.returnAmount || 0) });
+          }
+        });
       }
     });
 
     window.logout = function () {
-      signOut(auth).then(() => {
-        window.location.href = "signin.html";
-      });
+      signOut(auth).then(() => window.location.href = "signin.html");
     };
 
     window.loadChart = function(symbol) {
-      const chart = document.getElementById('tradingview');
-      chart.src = `https://s.tradingview.com/widgetembed/?symbol=FX:${symbol}&interval=30&hidesidetoolbar=1&symboledit=1&saveimage=1&theme=light&style=1&timezone=Etc/UTC&studies=[]&hideideas=1`;
+      const iframe = document.querySelector("#tradingview-frame iframe");
+      iframe.src = `https://s.tradingview.com/embed-widget/mini-symbol-overview/?symbol=FOREXCOM:${symbol}&locale=en`;
     };
-  </script></body>
+  </script>
+</body>
 </html>

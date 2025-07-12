@@ -64,12 +64,23 @@
       background: #019875;
     }
     .notification {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 6px;
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      padding: 14px 24px;
+      border-radius: 8px;
       font-weight: bold;
       text-align: center;
       display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .notification.show {
+      display: block;
+      opacity: 1;
     }
     .notification.error {
       background-color: #ffcccc;
@@ -106,9 +117,9 @@
       <input type="number" id="withdraw-amount" placeholder="Enter amount in UGX" />
       <button onclick="handleWithdraw()">Withdraw</button>
     </div>
-
-    <div id="notify" class="notification"></div>
   </div>
+
+  <div id="notify" class="notification"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
@@ -117,7 +128,6 @@
     import { getFirestore, doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
-    // Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
       authDomain: "quantum-rio-uganda.firebaseapp.com",
@@ -131,7 +141,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-
     emailjs.init("mTX_PX7QZOS64sLRP");
 
     let currentUser = null;
@@ -165,7 +174,6 @@
         createdAt: new Date()
       });
 
-      // Send Email Notification to Admin
       emailjs.send("service_dpo29p5", "template_deposit_notify", {
         to_email: "forexinvestmentclubkampala@gmail.com",
         user_email: currentUser.email,
@@ -205,7 +213,6 @@
         requestedAt: new Date()
       });
 
-      // Email admin
       emailjs.send("service_dpo29p5", "template_withdraw_notify", {
         to_email: "forexinvestmentclubkampala@gmail.com",
         user_email: currentUser.email,
@@ -232,9 +239,11 @@
     function showNotification(message, type) {
       const notify = document.getElementById("notify");
       notify.textContent = message;
-      notify.className = `notification ${type}`;
-      notify.style.display = "block";
-      setTimeout(() => notify.style.display = "none", 3000);
+      notify.className = `notification ${type} show`;
+      setTimeout(() => {
+        notify.classList.remove("show");
+        setTimeout(() => notify.style.display = "none", 300); // Smooth fade-out
+      }, 3000);
     }
   </script>
 </body>

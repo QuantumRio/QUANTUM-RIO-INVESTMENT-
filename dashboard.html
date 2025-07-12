@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -10,231 +9,143 @@
       --green: #0b6623;
       --blue: #005bea;
       --white: #ffffff;
-      --dark-bg: #111;
-      --dark-text: #eee;
-    }
+    }body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--white);
+  color: var(--green);
+  padding-bottom: 80px; /* space for bottom nav */
+}
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--white);
-      color: var(--green);
-      padding-bottom: 80px;
-      transition: background 0.3s, color 0.3s;
-    }
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 1.5rem 1rem;
+}
 
-    body.dark {
-      background: var(--dark-bg);
-      color: var(--dark-text);
-    }
+.card {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
 
-    .container {
-      max-width: 500px;
-      margin: auto;
-      padding: 1.5rem 1rem;
-    }
+h2 {
+  text-align: center;
+  color: var(--green);
+}
 
-    .card {
-      background: var(--white);
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
+.welcome {
+  text-align: center;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--green);
+}
 
-    body.dark .card {
-      background: #1c1c1c;
-    }
+.referral-note {
+  color: #27ae60;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
 
-    h2, .label {
-      text-align: center;
-      color: var(--green);
-    }
+.label {
+  font-weight: bold;
+  margin-top: 1.2rem;
+  color: var(--green);
+}
 
-    body.dark h2, body.dark .label {
-      color: var(--dark-text);
-    }
+.balance {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--green);
+}
 
-    .welcome, .referral-note {
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
+.chart {
+  margin-top: 1rem;
+  height: 100px;
+}
 
-    .referral-note {
-      font-weight: bold;
-      color: #27ae60;
-    }
+.greenbox {
+  background-color: var(--green);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-top: 2rem;
+  line-height: 1.6;
+}
 
-    .balance {
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
+.greenbox strong {
+  font-size: 1.1rem;
+}
 
-    .greenbox {
-      background-color: var(--green);
-      color: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      margin-top: 2rem;
-      line-height: 1.6;
-    }
+.btn {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  color: white;
+  background-color: #e74c3c;
+}
 
-    .greenbox strong {
-      font-size: 1.1rem;
-    }
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: var(--blue);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
+}
 
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 1rem;
-      margin-top: 1.5rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      color: white;
-      background-color: #e74c3c;
-    }
+.nav-item {
+  color: white;
+  text-align: center;
+  font-size: 0.75rem;
+  text-decoration: none;
+}
 
-    /* Tabs */
-    .tab-buttons {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 2rem;
-    }
-
-    .tab-buttons button {
-      flex: 1;
-      padding: 0.8rem;
-      margin: 0 5px;
-      background: var(--blue);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .charts-container {
-      margin-top: 1rem;
-    }
-
-    .chart {
-      width: 100%;
-      height: 400px;
-      margin-bottom: 1rem;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    /* Bottom Nav */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 65px;
-      background: var(--blue);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
-    }
-
-    .nav-item {
-      color: white;
-      text-align: center;
-      font-size: 0.75rem;
-      text-decoration: none;
-    }
-
-    .nav-item i {
-      font-size: 1.2rem;
-      display: block;
-      margin-bottom: 2px;
-    }
-
-    /* Dark Toggle */
-    .toggle {
-      margin: 1rem auto;
-      text-align: center;
-    }
-
-    .toggle button {
-      background: none;
-      border: 2px solid var(--green);
-      color: var(--green);
-      padding: 0.5rem 1rem;
-      font-weight: bold;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    body.dark .toggle button {
-      color: var(--dark-text);
-      border-color: var(--dark-text);
-    }
+.nav-item i {
+  font-size: 1.2rem;
+  display: block;
+  margin-bottom: 2px;
+}
 
   </style>
 </head>
-<body>
-
-  <div class="container">
+<body>  <div class="container">
     <div class="card">
       <h2>Welcome to Quantum Rio Investment</h2>
       <p class="welcome">Fast and secure investment platform | Invest smart, Invest with Quantum</p>
-      <p class="referral-note">🎯 For every referral who makes a deposit, you earn <strong>UGX 17,760</strong> instantly!</p>
+      <p class="referral-note">🎯 For every referral who makes a deposit, you earn <strong>UGX 17,760</strong> instantly!</p><div class="label">Total Balance</div>
+  <div class="balance" id="balance">UGX 0.00</div>
 
-      <div class="label">Total Balance</div>
-      <div class="balance" id="balance">UGX 0.00</div>
+  <!-- Charts Section -->
+  <div class="chart"><iframe src="https://s.tradingview.com/embed-widget/mini-symbol-overview/?symbol=BINANCE:BTCUSDT&width=100%&height=100&locale=en" frameborder="0" width="100%" height="100" allowtransparency="true" scrolling="no"></iframe></div>
+  <div class="chart"><iframe src="https://s.tradingview.com/embed-widget/mini-symbol-overview/?symbol=BINANCE:ETHUSDT&width=100%&height=100&locale=en" frameborder="0" width="100%" height="100" allowtransparency="true" scrolling="no"></iframe></div>
+  <div class="chart"><iframe src="https://s.tradingview.com/embed-widget/mini-symbol-overview/?symbol=BINANCE:SOLUSDT&width=100%&height=100&locale=en" frameborder="0" width="100%" height="100" allowtransparency="true" scrolling="no"></iframe></div>
+  <div class="chart"><iframe src="https://s.tradingview.com/embed-widget/mini-symbol-overview/?symbol=OANDA:XAUUSD&width=100%&height=100&locale=en" frameborder="0" width="100%" height="100" allowtransparency="true" scrolling="no"></iframe></div>
+  <div class="chart"><iframe src="https://s.tradingview.com/embed-widget/mini-symbol-overview/?symbol=OANDA:EURJPY&width=100%&height=100&locale=en" frameborder="0" width="100%" height="100" allowtransparency="true" scrolling="no"></iframe></div>
 
-      <!-- Theme Toggle -->
-      <div class="toggle">
-        <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-      </div>
-
-      <!-- Chart Tabs -->
-      <div class="tab-buttons">
-        <button onclick="showCharts('crypto')">Crypto Charts</button>
-        <button onclick="showCharts('forex')">Forex Charts</button>
-      </div>
-
-      <div class="charts-container">
-        <!-- Crypto Charts -->
-        <div id="crypto" class="chart-group">
-          <div class="chart"><iframe src="https://www.tradingview.com/chart/?symbol=BINANCE:BTCUSDT" frameborder="0" width="100%" height="100%"></iframe></div>
-          <div class="chart"><iframe src="https://www.tradingview.com/chart/?symbol=BINANCE:ETHUSDT" frameborder="0" width="100%" height="100%"></iframe></div>
-          <div class="chart"><iframe src="https://www.tradingview.com/chart/?symbol=BINANCE:SOLUSDT" frameborder="0" width="100%" height="100%"></iframe></div>
-          <div class="chart"><iframe src="https://www.tradingview.com/chart/?symbol=BINANCE:XRPUSDT" frameborder="0" width="100%" height="100%"></iframe></div>
-          <div class="chart"><iframe src="https://www.tradingview.com/chart/?symbol=BINANCE:PEPEUSDT" frameborder="0" width="100%" height="100%"></iframe></div>
-        </div>
-
-        <!-- Forex Charts -->
-        <div id="forex" class="chart-group hidden">
-          <div class="chart"><iframe src="https://www.tradingview.com/chart/?symbol=OANDA:XAUUSD" frameborder="0" width="100%" height="100%"></iframe></div>
-          <div class="chart"><iframe src="https://www.tradingview.com/chart/?symbol=OANDA:EURJPY" frameborder="0" width="100%" height="100%"></iframe></div>
-          <div class="chart"><iframe src="https://www.tradingview.com/chart/?symbol=OANDA:GBPJPY" frameborder="0" width="100%" height="100%"></iframe></div>
-        </div>
-      </div>
-
-      <!-- History Section -->
-      <div class="greenbox">
-        <strong>Quantum Rio has been transforming lives since 2009.</strong><br><br>
-        With over 1,000,000 investors across Uganda and beyond, our platform has empowered thousands to achieve financial independence through our AI-powered trading strategies in Bitcoin, forex, and binary markets. We believe in transparency, security, and consistency. Our mission is to help every Ugandan grow wealth through smart, risk-managed investments.<br><br>
-        Invest more and watch your returns grow — the more you invest, the more profit you unlock. Our traders work around the clock to ensure you get up to 200% ROI within 12–24 hours.
-      </div>
-
-      <button class="btn" onclick="logout()">Logout</button>
-    </div>
+  <div class="greenbox">
+    <strong>Quantum Rio has been transforming lives since 2009.</strong><br><br>
+    With over 1,000,000 investors across Uganda and beyond, our platform has empowered thousands to achieve financial independence through our AI-powered trading strategies in Bitcoin, forex, and binary markets. We believe in transparency, security, and consistency. Our mission is to help every Ugandan grow wealth through smart, risk-managed investments. <br><br>
+    Invest more and watch your returns grow — the more you invest, the more profit you unlock. Our traders work around the clock to ensure you get up to 200% ROI within 12–24 hours.
   </div>
 
-  <!-- Bottom Navigation -->
-  <div class="bottom-nav">
+  <button class="btn" onclick="logout()">Logout</button>
+</div>
+
+  </div>  <div class="bottom-nav">
     <a class="nav-item" href="dashboard.html">
       <i class="fas fa-home"></i>
       Home
@@ -251,10 +162,7 @@
       <i class="fas fa-briefcase"></i>
       Active
     </a>
-  </div>
-
-  <!-- Firebase Script -->
-  <script type="module">
+  </div>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, collection, getDocs, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
@@ -274,6 +182,7 @@
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) return window.location.href = "signin.html";
+
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
@@ -282,16 +191,19 @@
 
         const invSnap = await getDocs(collection(db, "investments"));
         const now = Date.now();
+
         invSnap.forEach(async (docu) => {
           const inv = docu.data();
           const invId = docu.id;
-          if (inv.userId === user.uid && inv.status === "active" && inv.investedAt?.toMillis && (now - inv.investedAt.toMillis()) >= 86400000) {
+
+          if (inv.userId === user.uid && inv.status === "active" && inv.investedAt?.toMillis && (now - inv.investedAt.toMillis()) >= 24 * 60 * 60 * 1000) {
             await updateDoc(doc(db, "investments", invId), {
               status: "matured"
             });
             await updateDoc(userRef, {
               balance: increment(inv.returnAmount || 0)
             });
+            console.log("Investment matured and ROI added.");
           }
         });
       }
@@ -302,16 +214,5 @@
         window.location.href = "signin.html";
       });
     };
-
-    window.toggleDarkMode = () => {
-      document.body.classList.toggle("dark");
-    };
-
-    window.showCharts = (type) => {
-      document.getElementById("crypto").classList.add("hidden");
-      document.getElementById("forex").classList.add("hidden");
-      document.getElementById(type).classList.remove("hidden");
-    };
-  </script>
-</body>
+  </script></body>
 </html>

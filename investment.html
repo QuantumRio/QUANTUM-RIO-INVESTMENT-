@@ -6,60 +6,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
-    :root {
-      --green: #0b6623;
-      --blue: #005bea;
-      --white: #ffffff;
-    }
-
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: var(--white);
-      color: var(--green);
-      margin: 0;
-      padding-bottom: 80px;
+      background: #ffffff;
+      color: #003d29;
+      padding: 20px;
+      margin-bottom: 80px; /* leave space for bottom nav */
     }
 
     .container {
       max-width: 600px;
       margin: auto;
-      background: var(--white);
+      background: #f0fff4;
       padding: 25px;
       border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
     }
 
     h2 {
       text-align: center;
       margin-bottom: 30px;
+      color: #003d29;
     }
 
     .summary-box {
-      background: #f5f5f5;
+      background: #e6f9ed;
       padding: 15px 20px;
       margin: 10px 0;
       border-radius: 10px;
       font-size: 1.1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
 
     span {
       font-weight: bold;
-      color: var(--green);
+      color: #008000;
     }
 
+    /* Bottom Navigation */
     .bottom-nav {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
       height: 65px;
-      background: var(--blue);
+      background: #005bea;
       display: flex;
       justify-content: space-around;
       align-items: center;
       border-top-left-radius: 20px;
       border-top-right-radius: 20px;
       box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
+      z-index: 999;
     }
 
     .nav-item {
@@ -111,6 +108,7 @@
     </a>
   </div>
 
+  <!-- Firebase Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
@@ -152,4 +150,4 @@
     });
   </script>
 </body>
-  </html>
+</html>

@@ -1,8 +1,10 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quantum Rio Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
     body {
       margin: 0;
@@ -10,122 +12,153 @@
       background: #0d1117 url('https://www.transparenttextures.com/patterns/candles.png');
       background-size: cover;
       color: #2c3e50;
-    }.container {
-  max-width: 500px;
-  margin: auto;
-  padding: 1.5rem 1rem;
-}
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-around;
+      background: #005bea;
+      padding: 1rem 0;
+      color: white;
+      font-size: 0.95rem;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      color: white;
+      text-decoration: none;
+    }
+    .nav-item:hover {
+      opacity: 0.9;
+    }
+    .nav-item i {
+      font-size: 1.2rem;
+      margin-bottom: 0.25rem;
+    }
 
-.card {
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 1.5rem 1rem;
+    }
 
-h2 {
-  text-align: center;
-  color: #005bea;
-}
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
 
-.welcome {
-  text-align: center;
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-  color: #333;
-}
+    h2 {
+      text-align: center;
+      color: #005bea;
+    }
 
-.referral-note {
-  color: #27ae60;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
+    .welcome {
+      text-align: center;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
 
-.label {
-  font-weight: bold;
-  margin-top: 1.2rem;
-}
+    .referral-note {
+      color: #27ae60;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
 
-.balance {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: green;
-}
+    .label {
+      font-weight: bold;
+      margin-top: 1.2rem;
+    }
 
-.btn {
-  display: block;
-  width: 100%;
-  padding: 1rem;
-  margin-top: 1rem;
-  font-size: 1rem;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  color: #fff;
-}
+    .balance {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: green;
+    }
 
-.blue {
-  background-color: #005bea;
-}
+    .greenbox {
+      background-color: #27ae60;
+      color: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-top: 2rem;
+      line-height: 1.6;
+    }
 
-.greenbox {
-  background-color: #27ae60;
-  color: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  margin-top: 2rem;
-  line-height: 1.6;
-}
+    .greenbox strong {
+      font-size: 1.1rem;
+    }
 
-.greenbox strong {
-  font-size: 1.1rem;
-}
-
-.logout {
-  background-color: #e74c3c;
-}
-
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      color: #fff;
+      background-color: #e74c3c;
+    }
   </style>
 </head>
 <body>
+
+  <div class="navbar">
+    <a class="nav-item" href="dashboard.html">
+      <i class="fas fa-home"></i>
+      Home
+    </a>
+    <a class="nav-item" href="wallet.html">
+      <i class="fas fa-wallet"></i>
+      Wallet
+    </a>
+    <a class="nav-item" href="investments.html">
+      <i class="fas fa-chart-line"></i>
+      Invest Plans
+    </a>
+    <a class="nav-item" href="myinvestment.html">
+      <i class="fas fa-briefcase"></i>
+      Active
+    </a>
+  </div>
+
   <div class="container">
     <div class="card">
       <h2>Welcome to Quantum Rio Investment</h2>
-      <p class="welcome">Fast and secure investment platform | Invest smart, Invest with Quantum</p><p class="referral-note">
-    🎯 For every referral who makes a deposit, you earn <strong>UGX 17,760</strong> instantly!
-  </p>
+      <p class="welcome">Fast and secure investment platform | Invest smart, Invest with Quantum</p>
+      <p class="referral-note">🎯 For every referral who makes a deposit, you earn <strong>UGX 17,760</strong> instantly!</p>
 
-  <div class="label">Total Balance</div>
-  <div class="balance" id="balance">UGX 0.00</div>
+      <div class="label">Total Balance</div>
+      <div class="balance" id="balance">UGX 0.00</div>
 
-  <button class="btn blue" onclick="location.href='wallet.html'">My Wallet</button>
-  <button class="btn blue" onclick="location.href='investment.html'">My Investments</button>
-  <button class="btn blue" onclick="location.href='investments.html'">Investment Plans</button>
-  <button class="btn blue" onclick="location.href='referral.html'">My Referrals</button>
+      <div class="greenbox">
+        <strong>Quantum Rio has been transforming lives since 2009.</strong><br><br>
+        With over 1,000,000 investors across Uganda and beyond, our platform has empowered thousands to achieve financial independence through our AI-powered trading strategies in Bitcoin, forex, and binary markets. We believe in transparency, security, and consistency. Our mission is to help every Ugandan grow wealth through smart, risk-managed investments. <br><br>
+        Invest more and watch your returns grow — the more you invest, the more profit you unlock. Our traders work around the clock to ensure you get up to 200% ROI within 12–24 hours.
+      </div>
 
-  <div class="greenbox">
-    <strong>Quantum Rio has been transforming lives since 2009.</strong><br><br>
-    With over 1,000,000 investors across Uganda and beyond, our platform has empowered thousands to achieve financial independence through our AI-powered trading strategies in Bitcoin, forex, and binary markets. We believe in transparency, security, and consistency. Our mission is to help every Ugandan grow wealth through smart, risk-managed investments. <br><br>
-    Invest more and watch your returns grow — the more you invest, the more profit you unlock. Our traders work around the clock to ensure you get up to 200% ROI within 12–24 hours.
+      <button class="btn" onclick="logout()">Logout</button>
+    </div>
   </div>
 
-  <button class="btn logout" onclick="logout()">Logout</button>
-</div>
-
-  </div>  <script type="module">
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, getDocs, updateDoc, increment, Timestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
       authDomain: "quantum-rio-uganda.firebaseapp.com",
       projectId: "quantum-rio-uganda",
-      storageBucket: "quantum-rio-uganda.firebasestorage.app",
+      storageBucket: "quantum-rio-uganda.appspot.com",
       messagingSenderId: "840875099079",
-      appId: "1:840875099079:web:1cd06a78276842a787cfe2",
-      measurementId: "G-97G1PNQ9JB"
+      appId: "1:840875099079:web:1cd06a78276842a787cfe2"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -133,19 +166,15 @@ h2 {
     const db = getFirestore(app);
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "login.html";
-        return;
-      }
+      if (!user) return window.location.href = "signin.html";
 
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
-
       if (userSnap.exists()) {
         const userData = userSnap.data();
         document.getElementById("balance").textContent = `UGX ${userData.balance?.toLocaleString() || "0.00"}`;
 
-        // Auto-mature logic
+        // Optional: Auto-mature logic
         const invSnap = await getDocs(collection(db, "investments"));
         const now = Date.now();
 
@@ -171,5 +200,7 @@ h2 {
         window.location.href = "signin.html";
       });
     };
-  </script></body>
+  </script>
+
+</body>
 </html>

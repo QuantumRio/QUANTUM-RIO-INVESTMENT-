@@ -1,160 +1,217 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard | Quantum Rio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel | Quantum Rio</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f1f1f1;
       margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #002b20;
+      color: #fff;
+    }
+    header {
+      background-color: #004d3c;
       padding: 20px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 20px;
+    }
+    section {
+      margin-bottom: 40px;
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      border-radius: 10px;
     }
     h2 {
-      text-align: center;
+      margin-bottom: 15px;
+      color: #00e676;
     }
-    .section {
-      background: #fff;
-      padding: 20px;
-      margin-bottom: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #ccc;
-    }
-    .request {
-      border: 1px solid #ddd;
+    .item {
+      background: rgba(255,255,255,0.08);
       padding: 15px;
-      border-radius: 8px;
       margin-bottom: 10px;
+      border-radius: 8px;
+    }
+    input, select, button {
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.9rem;
+      width: 100%;
     }
     button {
-      margin-right: 10px;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 6px;
+      background-color: #00c853;
+      color: white;
       cursor: pointer;
     }
-    .approve { background-color: #28a745; color: white; }
-    .reject { background-color: #dc3545; color: white; }
+    button.reject {
+      background-color: #d50000;
+    }
+    label {
+      margin-top: 10px;
+      display: block;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <h2>Quantum Rio Admin Panel</h2>
+  <header>Quantum Rio Admin Dashboard</header>
+  <main>
+    <section id="user-management">
+      <h2>Edit User Information</h2>
+      <input type="text" id="userEmail" placeholder="Enter User Email to Edit">
+      <label>New Balance (UGX)</label>
+      <input type="number" id="newBalance">
+      <button onclick="updateUserBalance()">Update Balance</button>
+    </section><section id="deposits">
+  <h2>Pending Deposits</h2>
+  <div id="deposit-list"></div>
+</section>
 
-  <div class="section">
-    <h3>Pending Withdrawals</h3>
-    <div id="withdrawals"></div>
-  </div>
+<section id="withdrawals">
+  <h2>Pending Withdrawals</h2>
+  <div id="withdrawal-list"></div>
+</section>
 
-  <div class="section">
-    <h3>Pending Deposits</h3>
-    <div id="deposits"></div>
-  </div>
+<section id="investments">
+  <h2>Mark Investments</h2>
+  <input type="text" id="investmentUser" placeholder="User Email">
+  <label>Status</label>
+  <select id="investmentStatus">
+    <option value="active">Active</option>
+    <option value="matured">Matured</option>
+  </select>
+  <button onclick="updateInvestmentStatus()">Update Status</button>
+</section>
 
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, updateDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  </main>  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where, updateDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyCCW4G9JlVu_xb0bGjlKmsi5mdqXSwvFak",
-      authDomain: "quantum-rio.firebaseapp.com",
-      projectId: "quantum-rio",
-      storageBucket: "quantum-rio.appspot.com",
-      messagingSenderId: "805433999377",
-      appId: "1:805433999377:web:d0efa8c46ec4a0fa30f1b0"
+      apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+      authDomain: "quantum-rio-uganda.firebaseapp.com",
+      projectId: "quantum-rio-uganda",
+      storageBucket: "quantum-rio-uganda.appspot.com",
+      messagingSenderId: "840875099079",
+      appId: "1:840875099079:web:1cd06a78276842a787cfe2"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-    const adminUID = "rcxWL1mWLFWlflSnVUMNT1nfAhE2";
-    emailjs.init("mTX_PX7QZOS64sLRP");
+
+    let currentUser = null;
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user || user.uid !== adminUID) {
-        alert("Access denied. Admins only.");
-        window.location.href = "login.html";
-        return;
-      }
+      if (!user) return location.href = "signin.html";
+      currentUser = user;
 
-      loadWithdrawals();
-      loadDeposits();
+      const ref = doc(db, "users", user.uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists() || !snap.data().isAdmin) {
+        alert("Access denied. Admins only.");
+        location.href = "dashboard.html";
+      } else {
+        loadDeposits();
+        loadWithdrawals();
+      }
     });
 
-    async function loadWithdrawals() {
-      const querySnapshot = await getDocs(collection(db, "withdrawals"));
-      const container = document.getElementById("withdrawals");
-      container.innerHTML = "";
-
-      querySnapshot.forEach(async (docSnap) => {
-        const data = docSnap.data();
-        if (data.status === "pending") {
-          const div = document.createElement("div");
-          div.className = "request";
-          div.innerHTML = `
-            <strong>Email:</strong> ${data.email}<br>
-            <strong>Amount:</strong> ${data.amount} UGX<br>
-            <button class="approve" onclick="approveWithdrawal('${docSnap.id}', ${data.amount}, '${data.userId}', '${data.email}')">Approve</button>
-            <button class="reject" onclick="rejectWithdrawal('${docSnap.id}', '${data.email}')">Reject</button>
-          `;
-          container.appendChild(div);
-        }
-      });
-    }
-
     async function loadDeposits() {
-      const querySnapshot = await getDocs(collection(db, "deposits"));
-      const container = document.getElementById("deposits");
-      container.innerHTML = "";
-
-      querySnapshot.forEach(async (docSnap) => {
+      const q = query(collection(db, "deposits"), where("status", "==", "pending"));
+      const snapshot = await getDocs(q);
+      const list = document.getElementById("deposit-list");
+      list.innerHTML = "";
+      snapshot.forEach(docSnap => {
         const data = docSnap.data();
-        if (data.status === "pending") {
-          const div = document.createElement("div");
-          div.className = "request";
-          div.innerHTML = `
-            <strong>Phone:</strong> ${data.phoneNumber}<br>
-            <button class="approve" onclick="approveDeposit('${docSnap.id}', '${data.uid}')">Mark as Received</button>
-          `;
-          container.appendChild(div);
-        }
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `Deposit UGX ${data.amount} from ${data.phoneNumber} <br>
+          <button onclick="approveDeposit('${docSnap.id}')">Approve</button>
+          <button class='reject' onclick="rejectDeposit('${docSnap.id}')">Reject</button>`;
+        list.appendChild(div);
       });
     }
 
-    window.approveWithdrawal = async (id, amount, uid, email) => {
-      await updateDoc(doc(db, "withdrawals", id), { status: "approved" });
-      await sendEmail(email, "Quantum Rio - Withdrawal Approved", `Your withdrawal of ${amount} UGX has been approved and will be sent shortly.`);
-      alert("Withdrawal approved.");
-      loadWithdrawals();
+    async function loadWithdrawals() {
+      const q = query(collection(db, "withdrawals"), where("status", "==", "pending"));
+      const snapshot = await getDocs(q);
+      const list = document.getElementById("withdrawal-list");
+      list.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `Withdraw UGX ${data.amount} by ${data.email} <br>
+          <button onclick="approveWithdrawal('${docSnap.id}', '${data.uid}', ${data.amount})">Approve</button>
+          <button class='reject' onclick="rejectWithdrawal('${docSnap.id}')">Reject</button>`;
+        list.appendChild(div);
+      });
     }
 
-    window.rejectWithdrawal = async (id, email) => {
-      await updateDoc(doc(db, "withdrawals", id), { status: "rejected" });
-      await sendEmail(email, "Quantum Rio - Withdrawal Rejected", "Your withdrawal request was rejected. Please contact support if you need help.");
-      alert("Withdrawal rejected.");
-      loadWithdrawals();
-    }
-
-    window.approveDeposit = async (id, uid) => {
+    window.approveDeposit = async function(id) {
+      const depositRef = doc(db, "deposits", id);
+      const snap = await getDoc(depositRef);
+      const { uid, amount } = snap.data();
       const userRef = doc(db, "users", uid);
       const userSnap = await getDoc(userRef);
-      const currentBalance = userSnap.data().balance || 0;
-
-      await updateDoc(doc(db, "deposits", id), { status: "approved" });
-      await updateDoc(userRef, { balance: currentBalance + 150000 });
-      alert("Deposit approved and user balance updated.");
+      const current = userSnap.data().balance || 0;
+      await updateDoc(userRef, { balance: current + amount });
+      await updateDoc(depositRef, { status: "approved" });
+      alert("Deposit approved");
       loadDeposits();
     }
 
-    async function sendEmail(to, subject, message) {
-      await emailjs.send("service_dpo29p5", "template_approval_status", {
-        to_email: to,
-        subject: subject,
-        message: message
+    window.rejectDeposit = async function(id) {
+      await updateDoc(doc(db, "deposits", id), { status: "rejected" });
+      alert("Deposit rejected");
+      loadDeposits();
+    }
+
+    window.approveWithdrawal = async function(id, uid, amount) {
+      await updateDoc(doc(db, "withdrawals", id), { status: "approved" });
+      alert("Withdrawal approved");
+      loadWithdrawals();
+    }
+
+    window.rejectWithdrawal = async function(id) {
+      await updateDoc(doc(db, "withdrawals", id), { status: "rejected" });
+      alert("Withdrawal rejected");
+      loadWithdrawals();
+    }
+
+    window.updateUserBalance = async function() {
+      const email = document.getElementById("userEmail").value.trim();
+      const newBal = parseInt(document.getElementById("newBalance").value);
+      const users = await getDocs(collection(db, "users"));
+      users.forEach(async (u) => {
+        if (u.data().email === email) {
+          await updateDoc(doc(db, "users", u.id), { balance: newBal });
+          alert("Balance updated");
+        }
       });
     }
-  </script>
-</body>
+
+    window.updateInvestmentStatus = async function() {
+      const email = document.getElementById("investmentUser").value.trim();
+      const status = document.getElementById("investmentStatus").value;
+      const investments = await getDocs(collection(db, "investments"));
+      investments.forEach(async (inv) => {
+        if (inv.data().email === email) {
+          await updateDoc(doc(db, "investments", inv.id), { status });
+        }
+      });
+      alert("Investment status updated");
+    }
+
+  </script></body>
 </html>

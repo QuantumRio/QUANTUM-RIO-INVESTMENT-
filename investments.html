@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Investment Plans | Quantum Rio Uganda</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -72,6 +73,33 @@
       font-size: 14px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: #005bea;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+      z-index: 999;
+    }
+    .nav-item {
+      color: white;
+      text-align: center;
+      font-size: 0.75rem;
+      text-decoration: none;
+    }
+    .nav-item i {
+      font-size: 1.2rem;
+      display: block;
+      margin-bottom: 2px;
+    }
   </style>
 </head>
 <body>
@@ -88,13 +116,32 @@
 
   <div class="popup" id="popupMsg"></div>
 
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <a class="nav-item" href="dashboard.html">
+      <i class="fas fa-home"></i>
+      Home
+    </a>
+    <a class="nav-item" href="wallet.html">
+      <i class="fas fa-wallet"></i>
+      Wallet
+    </a>
+    <a class="nav-item" href="investments.html">
+      <i class="fas fa-chart-line"></i>
+      Plans
+    </a>
+    <a class="nav-item" href="investment.html">
+      <i class="fas fa-briefcase"></i>
+      Active
+    </a>
+  </div>
+
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
       authDomain: "quantum-rio-uganda.firebaseapp.com",
@@ -116,7 +163,6 @@
       [3000000, 6000000], [4000000, 8000000], [5000000, 10000000]
     ];
 
-    // When user is logged in
     auth.onAuthStateChanged(async user => {
       if (!user) {
         location.href = 'login.html';
@@ -129,7 +175,6 @@
       loadPlans(user.uid, user.email, balance);
     });
 
-    // Load investment plans
     function loadPlans(userId, email, balance) {
       const container = document.getElementById("plansContainer");
       plans.forEach(([amount, roi]) => {
@@ -144,7 +189,6 @@
       });
     }
 
-    // Handle invest button
     async function invest(amount, roi, userId, email, balance) {
       if (balance < amount) {
         showPopup("❌ Insufficient balance");
@@ -172,7 +216,6 @@
       }
     }
 
-    // Show popup
     function showPopup(message) {
       const popup = document.getElementById("popupMsg");
       popup.innerText = message;

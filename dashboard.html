@@ -6,35 +6,18 @@
   <title>Quantum Rio Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
+    :root {
+      --green: #0b6623;
+      --blue: #005bea;
+      --white: #ffffff;
+    }
+
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #0d1117 url('https://www.transparenttextures.com/patterns/candles.png');
-      background-size: cover;
-      color: #2c3e50;
-    }
-    .navbar {
-      display: flex;
-      justify-content: space-around;
-      background: #005bea;
-      padding: 1rem 0;
-      color: white;
-      font-size: 0.95rem;
-    }
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-      color: white;
-      text-decoration: none;
-    }
-    .nav-item:hover {
-      opacity: 0.9;
-    }
-    .nav-item i {
-      font-size: 1.2rem;
-      margin-bottom: 0.25rem;
+      background: var(--white);
+      color: var(--green);
+      padding-bottom: 80px; /* space for bottom nav */
     }
 
     .container {
@@ -44,22 +27,22 @@
     }
 
     .card {
-      background: white;
+      background: var(--white);
       border-radius: 16px;
       padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
     h2 {
       text-align: center;
-      color: #005bea;
+      color: var(--green);
     }
 
     .welcome {
       text-align: center;
       font-size: 1rem;
       margin-bottom: 0.5rem;
-      color: #333;
+      color: var(--green);
     }
 
     .referral-note {
@@ -72,16 +55,17 @@
     .label {
       font-weight: bold;
       margin-top: 1.2rem;
+      color: var(--green);
     }
 
     .balance {
       font-size: 1.5rem;
       font-weight: bold;
-      color: green;
+      color: var(--green);
     }
 
     .greenbox {
-      background-color: #27ae60;
+      background-color: var(--green);
       color: white;
       padding: 1.5rem;
       border-radius: 12px;
@@ -97,36 +81,46 @@
       display: block;
       width: 100%;
       padding: 1rem;
-      margin-top: 1rem;
+      margin-top: 1.5rem;
       font-size: 1rem;
       border: none;
       border-radius: 12px;
       cursor: pointer;
-      color: #fff;
+      color: white;
       background-color: #e74c3c;
+    }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: var(--blue);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .nav-item {
+      color: white;
+      text-align: center;
+      font-size: 0.75rem;
+      text-decoration: none;
+    }
+
+    .nav-item i {
+      font-size: 1.2rem;
+      display: block;
+      margin-bottom: 2px;
     }
   </style>
 </head>
 <body>
-
-  <div class="navbar">
-    <a class="nav-item" href="dashboard.html">
-      <i class="fas fa-home"></i>
-      Home
-    </a>
-    <a class="nav-item" href="wallet.html">
-      <i class="fas fa-wallet"></i>
-      Wallet
-    </a>
-    <a class="nav-item" href="investments.html">
-      <i class="fas fa-chart-line"></i>
-      Invest Plans
-    </a>
-    <a class="nav-item" href="myinvestment.html">
-      <i class="fas fa-briefcase"></i>
-      Active
-    </a>
-  </div>
 
   <div class="container">
     <div class="card">
@@ -147,6 +141,27 @@
     </div>
   </div>
 
+  <!-- Floating Bottom Navigation -->
+  <div class="bottom-nav">
+    <a class="nav-item" href="dashboard.html">
+      <i class="fas fa-home"></i>
+      Home
+    </a>
+    <a class="nav-item" href="wallet.html">
+      <i class="fas fa-wallet"></i>
+      Wallet
+    </a>
+    <a class="nav-item" href="investments.html">
+      <i class="fas fa-chart-line"></i>
+      Plans
+    </a>
+    <a class="nav-item" href="myinvestment.html">
+      <i class="fas fa-briefcase"></i>
+      Active
+    </a>
+  </div>
+
+  <!-- Firebase Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
@@ -201,6 +216,5 @@
       });
     };
   </script>
-
 </body>
 </html>

@@ -25,7 +25,7 @@
       text-align: center;
     }
     .info-box {
-      background: #fff;
+      background: #ffffff;
       color: #000;
       padding: 20px;
       border-radius: 12px;
@@ -97,6 +97,7 @@
     <h2>Quantum Rio Wallet</h2>
     <h3>Total Balance UGX <span id="user-balance">0.00</span></h3>
 
+    <!-- Deposit Box -->
     <div class="info-box">
       <strong>Minimum deposit is 100,000 UGX</strong><br><br>
       Send to MTN number:<br>
@@ -108,13 +109,19 @@
       Enter the amount you deposited:
       <input type="number" id="deposit-amount" placeholder="Amount sent in UGX" />
 
-      <button id="submit-btn">Submit</button>
+      <button id="submit-btn">Submit Deposit</button>
     </div>
 
+    <!-- Withdrawal Box -->
     <div class="info-box">
       <strong>You can withdraw from 20,000 UGX</strong><br><br>
+
+      Phone number to receive payment:
+      <input type="text" id="withdraw-phone" placeholder="Phone number to receive UGX" />
+
       Enter amount to withdraw:
       <input type="number" id="withdraw-amount" placeholder="Enter amount in UGX" />
+
       <button onclick="handleWithdraw()">Withdraw</button>
     </div>
   </div>
@@ -189,8 +196,10 @@
 
     window.handleWithdraw = async function () {
       const amount = parseInt(document.getElementById("withdraw-amount").value);
-      if (!amount || amount < 20000) {
-        showNotification("Minimum withdrawal is 20,000 UGX.", "error");
+      const phone = document.getElementById("withdraw-phone").value.trim();
+
+      if (!phone || !amount || amount < 20000) {
+        showNotification("Enter valid phone and minimum 20,000 UGX to withdraw.", "error");
         return;
       }
 
@@ -208,6 +217,7 @@
       await addDoc(collection(db, "withdrawals"), {
         uid: currentUser.uid,
         email: currentUser.email,
+        phone: phone,
         amount: amount,
         status: "pending",
         requestedAt: new Date()
@@ -216,12 +226,13 @@
       emailjs.send("service_dpo29p5", "template_withdraw_notify", {
         to_email: "forexinvestmentclubkampala@gmail.com",
         user_email: currentUser.email,
-        phone: "N/A",
+        phone: phone,
         amount: amount,
-        message: `Withdrawal request from ${currentUser.email}: UGX ${amount}`
+        message: `Withdrawal request from ${currentUser.email}: UGX ${amount} - To: ${phone}`
       });
 
       showNotification("Withdrawal request sent for approval.", "success");
+      document.getElementById("withdraw-phone").value = "";
       document.getElementById("withdraw-amount").value = "";
       document.getElementById("user-balance").innerText = (balance - amount).toLocaleString();
     };
@@ -242,7 +253,7 @@
       notify.className = `notification ${type} show`;
       setTimeout(() => {
         notify.classList.remove("show");
-        setTimeout(() => notify.style.display = "none", 300); // Smooth fade-out
+        setTimeout(() => notify.style.display = "none", 300);
       }, 3000);
     }
   </script>

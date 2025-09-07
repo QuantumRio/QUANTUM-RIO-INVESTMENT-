@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>QUANTUM RIO – Team</title>
 
-<!-- Firebase SDK -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
 <script>
 const firebaseConfig = {
@@ -24,13 +24,34 @@ const db   = firebase.database();
 </script>
 
 <style>
+/* --- Block accidental selection / tap-to-search --- */
 html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#001f3f;color:#fff;}
-header{background:#002f6c;display:flex;align-items:center;gap:10px;padding:12px 16px;}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#001f3f;
+  color:#fff;
+  padding-bottom:1cm; /* requested space */
+}
+
+header{
+  background:#002f6c;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 16px;
+}
 header img{height:32px;}
 header h2{margin:0;font-size:1.2rem;}
-.section{margin:12px;padding:12px;background:#003366;border-radius:8px;}
+
+.section{
+  margin:12px;
+  padding:12px;
+  background:#003366;
+  border-radius:8px;
+}
 h3{margin:0 0 8px 0;color:#ffcc00;}
+
 .stats-grid{
   display:grid;
   grid-template-columns: repeat(3, 1fr);
@@ -46,18 +67,43 @@ h3{margin:0 0 8px 0;color:#ffcc00;}
 }
 .stat-label{color:#cfe6ff;font-size:0.75rem;}
 .stat-value{color:#ffd966;font-size:1rem;font-weight:600;}
-.copy-btn{background:#ffcc00;color:#002244;border:none;padding:6px 12px;border-radius:6px;font-weight:600;cursor:pointer;}
-.level-box{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);margin:8px 0;padding:8px;border-radius:6px;}
+
+.copy-btn{
+  background:#ffcc00;
+  color:#002244;
+  border:none;
+  padding:6px 12px;
+  border-radius:6px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.level-box{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  margin:8px 0;
+  padding:8px;
+  border-radius:6px;
+}
 .level-box h4{margin:0 0 4px 0;color:#ffd966;font-size:0.95rem;}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:#002244;padding:8px 0;}
+
+nav{
+  position:fixed;bottom:0;left:0;right:0;
+  display:flex;justify-content:space-around;
+  background:#002244;padding:8px 0;
+}
 nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}
 nav i{font-size:18px;}
+
 .toast{
-  position:fixed;bottom:60px;left:50%;transform:translateX(-50%);
-  background:#222;padding:10px 20px;color:#fff;border-radius:6px;
+  position:fixed;bottom:70px;left:50%;transform:translateX(-50%);
+  padding:10px 20px;color:#fff;border-radius:6px;
   opacity:0;transition:opacity .3s;
+  font-size:0.85rem;
 }
 .toast.show{opacity:1;}
+.toast.success{background:#28a745;}
+.toast.error{background:#c0392b;}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -106,37 +152,33 @@ nav i{font-size:18px;}
 <div id="toast" class="toast"></div>
 
 <script>
-function showToast(msg){
+function showToast(msg, type='success'){
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2500);
+  t.className = 'toast show ' + type;
+  setTimeout(()=>{t.classList.remove('show');}, 2500);
 }
-
 function copyRef(){
   const input = document.getElementById('ref-link');
   input.select(); document.execCommand('copy');
-  showToast('Referral link copied!');
+  showToast('Referral link copied!','success');
 }
 
-// realtime
 auth.onAuthStateChanged(user=>{
   if(!user){window.location='signin.html';return;}
   const uid = user.uid;
   document.getElementById('ref-link').value = window.location.origin + '/signup.html?ref=' + uid;
 
-  // Team stats
   db.ref('users/'+uid+'/teamStats').on('value', snap=>{
     const s = snap.val() || {};
-    document.getElementById('team-size').textContent = s.size || 0;
-    document.getElementById('team-recharge').textContent = (s.recharge||0).toLocaleString();
-    document.getElementById('team-withdraw').textContent = (s.withdraw||0).toLocaleString();
-    document.getElementById('new-team').textContent = s.newTeam || 0;
-    document.getElementById('first-recharge').textContent = (s.firstRecharge||0).toLocaleString();
-    document.getElementById('first-withdraw').textContent = (s.firstWithdraw||0).toLocaleString();
+    document.getElementById('team-size').textContent    = s.size || 0;
+    document.getElementById('team-recharge').textContent= (s.recharge||0).toLocaleString();
+    document.getElementById('team-withdraw').textContent= (s.withdraw||0).toLocaleString();
+    document.getElementById('new-team').textContent     = s.newTeam || 0;
+    document.getElementById('first-recharge').textContent= (s.firstRecharge||0).toLocaleString();
+    document.getElementById('first-withdraw').textContent= (s.firstWithdraw||0).toLocaleString();
   });
 
-  // Commissions
   db.ref('users/'+uid+'/commissions').on('value', snap=>{
     const c = snap.val() || {};
     document.getElementById('lvl1-total').textContent = (c.level1||0).toLocaleString();

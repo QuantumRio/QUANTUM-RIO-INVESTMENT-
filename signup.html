@@ -1,123 +1,274 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign Up - Quantum Rio Uganda</title>
-  <style>
-    body {
-      background-color: #f0f2f5;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
-    }
-    h2 {
-      text-align: center;
-      color: #0d47a1;
-      margin-bottom: 20px;
-    }
-    input[type="email"],
-    input[type="password"],
-    input[type="tel"] {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #0d47a1;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0b3c91;
-    }
-    p {
-      text-align: center;
-      margin-top: 15px;
-    }
-    a {
-      color: #0d47a1;
-      text-decoration: none;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign Up – QUAANTUM RIO INVESTMENT</title>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 48px;
+
+    /* vivid gradient background */
+    background:
+      radial-gradient(circle at 25% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
+      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1) 0%, transparent 55%),
+      linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    background-attachment: fixed;
+  }
+
+  /* Floating card */
+  .card {
+    background: rgba(13, 27, 63, 0.92);  /* deep navy */
+    color: #fff;
+    padding: 28px;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    max-width: 420px;
+    width: 90%;
+    animation: fadeIn .6s ease;
+  }
+
+  @keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+
+  .brand { text-align: center; margin-bottom: 20px; }
+  .brand h1 { font-size: 22px; color: #fff; margin: 6px 0 4px; }
+  .brand span { font-size: 13px; color: #e0e0e0; }
+
+  .ref-banner {
+    display: none;
+    background: rgba(227,242,253,0.3);
+    color: #fff;
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+  }
+
+  label { font-size: 14px; display: block; margin: 10px 0 4px; color: #f5f5f5; }
+
+  /* Phone row */
+  .phone-row {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .phone-code {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 10px 12px;
+    border-radius: 6px;
+    display: flex; align-items: center;
+    gap: 6px;
+    font-size: 14px;
+  }
+  .phone-code span { font-size: 18px; }
+  .phone-number {
+    flex: 1;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+  }
+  .phone-number::placeholder { color: #ccc; }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+  }
+  input::placeholder { color: #ccc; }
+  input:focus { outline: none; border-color: #90caf9; }
+
+  /* gold CTA button */
+  button {
+    width: 100%;
+    padding: 12px;
+    background-color: #ffcc00;   /* bright gold */
+    color: #0d1b3f;              /* dark navy text */
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    margin-top: 15px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    background-color: #fbc02d;  /* slightly deeper gold */
+  }
+
+  .links {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 14px;
+    color: #e0e0e0;
+  }
+  .links a { color: #90caf9; text-decoration: none; }
+  .links a:hover { text-decoration: underline; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #323232;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+    z-index: 9999;
+    font-size: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .toast.show { opacity: 1; }
+  .toast.success { background: #2e7d32; }
+  .toast.error   { background: #c62828; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>Create Account</h2>
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="tel" id="phone" placeholder="Phone Number" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button id="signupBtn">Sign Up</button>
-    <p>Already have an account? <a href="signin.html">Sign In</a></p>
+<div class="card">
+  <div class="brand">
+    <h1>QUAANTUM RIO INVESTMENT</h1>
+    <span>Secure • Reliable • Growth</span>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+  <div id="refBanner" class="ref-banner"></div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
-      authDomain: "quantum-rio-uganda.firebaseapp.com",
-      projectId: "quantum-rio-uganda",
-      storageBucket: "quantum-rio-uganda.appspot.com",
-      messagingSenderId: "840875099079",
-      appId: "1:840875099079:web:1cd06a78276842a787cfe2",
-      measurementId: "G-97G1PNQ9JB"
-    };
+  <label for="username">Username</label>
+  <input type="text" id="username" placeholder="Choose a username" required>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  <label for="phone">Phone Number</label>
+  <div class="phone-row">
+    <div class="phone-code"><span>🇺🇬</span> +256</div>
+    <input type="tel" id="phone" class="phone-number" placeholder="784514172" required>
+  </div>
 
-    document.getElementById("signupBtn").addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const password = document.getElementById("password").value.trim();
+  <label for="email">Email</label>
+  <input type="email" id="email" placeholder="Enter your email" required>
 
-      if (!email || !phone || !password) {
-        alert("Please fill in all fields.");
-        return;
-      }
+  <label for="password">Password</label>
+  <input type="password" id="password" placeholder="Minimum 6 characters" required>
 
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+  <label for="confirmPassword">Confirm Password</label>
+  <input type="password" id="confirmPassword" placeholder="Repeat password" required>
 
-        // Save user info to Firestore
-        await setDoc(doc(db, "users", user.uid), {
-          email: user.email,
-          phone: phone,
-          uid: user.uid,
-          createdAt: serverTimestamp()
-        });
+  <button id="signupBtn">Create Account</button>
 
-        alert("Account created successfully!");
-        window.location.href = "dashboard.html";
-      } catch (error) {
-        console.error("Signup error:", error);
-        alert("Sign up failed: " + error.message);
-      }
+  <div class="links">
+    Already have an account? <a href="signin.html">Sign In</a><br>
+    <a href="forgot.html">Forgot Password?</a>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import {
+  getDatabase, ref, set, get, query, orderByChild, equalTo, runTransaction
+} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+  authDomain: "quantum-rio-uganda.firebaseapp.com",
+  databaseURL: "https://quantum-rio-uganda-default-rtdb.firebaseio.com",
+  projectId: "quantum-rio-uganda",
+  storageBucket: "quantum-rio-uganda.appspot.com",
+  messagingSenderId: "840875099079",
+  appId: "1:840875099079:web:1cd06a78276842a787cfe2",
+  measurementId: "G-97G1PNQ9JB"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+function toast(msg, type="error", delay=3000) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast " + type + " show";
+  setTimeout(()=>el.className="toast " + type, delay);
+}
+
+let referrer = null;
+const params = new URLSearchParams(window.location.search);
+if (params.has("ref")) {
+  referrer = params.get("ref");
+  const banner = document.getElementById("refBanner");
+  banner.textContent = "You were referred by " + referrer;
+  banner.style.display = "block";
+}
+
+document.getElementById("signupBtn").addEventListener("click", async () => {
+  const username = document.getElementById("username").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+
+  if (!username || !phone || !email || !password || !confirmPassword) {
+    toast("Please fill all fields.","error"); return;
+  }
+  if (password.length < 6) { toast("Password must be at least 6 characters.","error"); return; }
+  if (password !== confirmPassword) { toast("Passwords do not match.","error"); return; }
+
+  try {
+    const userRef = query(ref(db,"users"), orderByChild("username"), equalTo(username));
+    if ((await get(userRef)).exists()) { toast("Username already taken.","error"); return; }
+
+    const phoneRef = query(ref(db,"users"), orderByChild("phone"), equalTo(phone));
+    if ((await get(phoneRef)).exists()) { toast("Phone already registered.","error"); return; }
+
+    const emailRef = query(ref(db,"users"), orderByChild("email"), equalTo(email));
+    if ((await get(emailRef)).exists()) { toast("Email already registered.","error"); return; }
+
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = cred.user.uid;
+
+    await set(ref(db, "users/" + uid), {
+      username, phone, email, uid,
+      referrer: referrer || null,
+      joinedAt: Date.now()
     });
-  </script>
+
+    /* NEW PART – bump referralsCount for referrer */
+    if (referrer) {
+      const q = query(ref(db, "users"), orderByChild("username"), equalTo(referrer));
+      const snap = await get(q);
+      if (snap.exists()) {
+        snap.forEach(async child => {
+          const refUid = child.key;
+          const countRef = ref(db, "users/" + refUid + "/referralsCount");
+          await runTransaction(countRef, current => (current || 0) + 1);
+        });
+      }
+    }
+    /* END NEW PART */
+
+    toast("Account created successfully!","success");
+    setTimeout(()=>window.location.href="dashboard.html",1200);
+
+  } catch (err) {
+    console.error("Signup error:", err);
+    toast("Sign up failed: " + (err.message || "Unknown"),"error");
+  }
+});
+</script>
 </body>
 </html>

@@ -139,7 +139,9 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import { getDatabase, ref, set, get, query, orderByChild, equalTo, runTransaction } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+import {
+  getDatabase, ref, set, get, query, orderByChild, equalTo, runTransaction
+} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -155,37 +157,37 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-function toast(msg, type="error", delay=3000) {
+function toast(msg, type="error", delay=3000){
   const el = document.getElementById("toast");
   el.textContent = msg;
   el.className = "toast " + type + " show";
   setTimeout(()=>el.className="toast " + type, delay);
 }
 
-// Grab referral if present
+// pull ?ref=username from URL
 let referrer = null;
 const params = new URLSearchParams(location.search);
-if (params.has("ref")) {
+if (params.has("ref")){
   referrer = params.get("ref");
   const banner = document.getElementById("refBanner");
   banner.textContent = "You were referred by " + referrer;
   banner.style.display = "block";
 }
 
-document.getElementById("signupBtn").addEventListener("click", async () => {
+document.getElementById("signupBtn").addEventListener("click", async ()=>{
   const username = document.getElementById("username").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const email = document.getElementById("email").value.trim();
+  const phone    = document.getElementById("phone").value.trim();
+  const email    = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
-  const confirmPassword = document.getElementById("confirmPassword").value;
+  const confirm  = document.getElementById("confirmPassword").value;
 
-  if (!username || !phone || !email || !password || !confirmPassword)
+  if(!username || !phone || !email || !password || !confirm)
     return toast("Please fill all fields.");
-  if (password.length < 6) return toast("Password must be at least 6 characters.");
-  if (password !== confirmPassword) return toast("Passwords do not match.");
+  if(password.length < 6) return toast("Password must be at least 6 characters.");
+  if(password !== confirm) return toast("Passwords do not match.");
 
   try {
-    // Check uniqueness
+    // uniqueness checks
     const snapU = await get(query(ref(db,"users"), orderByChild("username"), equalTo(username)));
     if (snapU.exists()) return toast("Username already taken.");
     const snapP = await get(query(ref(db,"users"), orderByChild("phone"), equalTo(phone)));
@@ -193,10 +195,11 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
     const snapE = await get(query(ref(db,"users"), orderByChild("email"), equalTo(email)));
     if (snapE.exists()) return toast("Email already registered.");
 
-    // Auth create
+    // create auth user
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-    const uid = cred.user.uid;
+    const uid  = cred.user.uid;
 
+    // write new profile
     await set(ref(db, "users/" + uid), {
       uid, username, phone, email,
       refBy: referrer || null,
@@ -207,24 +210,24 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
       vipLevels: { level1:false, level2:false, level3:false, level4:false, level5:false }
     });
 
-    // Increment referrer's count
-    if (referrer) {
-      const refSnap = await get(query(ref(db,"users"), orderByChild("username"), equalTo(referrer)));
-      if (refSnap.exists()) {
-        refSnap.forEach(c=>{
-          runTransaction(ref(db,"users/"+c.key+"/referralsCount"), cur => (cur||0)+1);
+    // bump inviter’s counter
+    if(referrer){
+      const inviterSnap = await get(query(ref(db, "users"), orderByChild("username"), equalTo(referrer)));
+      if (inviterSnap.exists()){
+        inviterSnap.forEach(c=>{
+          runTransaction(ref(db, "users/" + c.key + "/referralsCount"), cur => (cur||0)+1);
         });
       }
     }
 
     toast("Account created successfully!","success");
-    setTimeout(()=>location.href="dashboard.html", 1200);
+    setTimeout(()=>location.href="dashboard.html",1200);
 
-  } catch (err) {
+  } catch(err){
     console.error("Signup error:", err);
     toast("Sign up failed: " + (err.message || "Unknown"));
   }
 });
-</script>
+    </script>
 </body>
 </html>

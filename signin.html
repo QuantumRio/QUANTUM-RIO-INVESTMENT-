@@ -1,110 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign In - Quantum Rio Uganda</title>
-  <style>
-    body {
-      background-color: #f0f2f5;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
-    }
-    h2 {
-      text-align: center;
-      color: #0d47a1;
-      margin-bottom: 20px;
-    }
-    input[type="email"],
-    input[type="password"],
-    input[type="tel"] {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #0d47a1;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0b3c91;
-    }
-    p {
-      text-align: center;
-      margin-top: 15px;
-    }
-    a {
-      color: #0d47a1;
-      text-decoration: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sign In – QUAANTUM RIO INVESTMENT</title>
+<style>
+  body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding-top:48px;
+    background:
+      radial-gradient(circle at 25% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
+      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1) 0%, transparent 55%),
+      linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);
+    background-attachment:fixed;
+  }
+  .card{
+  background:rgba(13,27,63,0.92);
+  color:#fff;
+  padding:28px 28px 48px; /* top-right-left = 28px, bottom = 48px */
+  border-radius:14px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.4);
+  max-width:420px;
+  width:90%;
+  animation:fadeIn .6s ease;
+}
+  @keyframes fadeIn{
+    from{opacity:0;transform:translateY(10px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .brand{text-align:center;margin-bottom:20px;}
+  .brand h1{font-size:22px;margin:6px 0 4px;}
+  .brand span{font-size:13px;color:#e0e0e0;}
+
+  label{font-size:14px;display:block;margin:10px 0 4px;}
+  input[type="email"],input[type="password"]{
+    width:100%;padding:12px;border-radius:6px;
+    border:1px solid rgba(255,255,255,0.3);
+    background:rgba(255,255,255,0.1);color:#fff;
+  }
+  input::placeholder{color:#ccc;}
+  input:focus{outline:none;border-color:#90caf9;}
+
+  button{
+    width:100%;padding:12px;background:#ffcc00;
+    color:#0d1b3f;font-weight:700;border:none;border-radius:6px;
+    margin-top:15px;cursor:pointer;transition:background .3s ease;
+  }
+  button:hover{background:#fbc02d;}
+
+  .links{text-align:center;margin-top:18px;font-size:14px;color:#e0e0e0;}
+  .links a{color:#90caf9;text-decoration:none;}
+  .links a:hover{text-decoration:underline;}
+
+  /* Toast (centered screen) */
+  .toast{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:#323232;
+    color:#fff;
+    padding:14px 28px;
+    border-radius:8px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s ease;
+    z-index:9999;
+    font-size:16px;
+    text-align:center;
+    min-width:220px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  .toast.show{opacity:1;}
+  .toast.success{background:#2e7d32;}
+  .toast.error{background:#c62828;}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>Sign In</h2>
-    <input type="tel" id="phone" placeholder="Phone Number (optional)" />
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button id="signinBtn">Sign In</button>
-    <p>Don't have an account? <a href="signup.html">Create One</a></p>
+<div class="card">
+  <div class="brand">
+    <h1>QUAANTUM RIO INVESTMENT</h1>
+    <span>Welcome back</span>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+  <label for="email">Email</label>
+  <input type="email" id="email" placeholder="Enter your email" required>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
-      authDomain: "quantum-rio-uganda.firebaseapp.com",
-      projectId: "quantum-rio-uganda",
-      storageBucket: "quantum-rio-uganda.appspot.com",
-      messagingSenderId: "840875099079",
-      appId: "1:840875099079:web:1cd06a78276842a787cfe2",
-      measurementId: "G-97G1PNQ9JB"
-    };
+  <label for="password">Password</label>
+  <input type="password" id="password" placeholder="Enter password" required>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+  <button id="signinBtn">Sign In</button>
 
-    document.getElementById("signinBtn").addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
+  <div class="links">
+    <a href="forgot.html">Forgot password?</a><br>
+    Don’t have an account? <a href="signup.html">Sign Up</a>
+  </div>
+</div>
 
-      if (!email || !password) {
-        alert("Please enter both email and password.");
-        return;
-      }
+<div id="toast" class="toast"></div>
 
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("Sign in successful!");
-        window.location.href = "dashboard.html";
-      } catch (error) {
-        console.error("Sign-in error:", error);
-        alert("Sign in failed: " + error.message);
-      }
-    });
-  </script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+  authDomain:"quantum-rio-uganda.firebaseapp.com",
+  databaseURL:"https://quantum-rio-uganda-default-rtdb.firebaseio.com",
+  projectId:"quantum-rio-uganda",
+  storageBucket:"quantum-rio-uganda.appspot.com",
+  messagingSenderId:"840875099079",
+  appId:"1:840875099079:web:1cd06a78276842a787cfe2",
+  measurementId:"G-97G1PNQ9JB"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+function toast(msg,type="error",delay=2800){
+  const el=document.getElementById("toast");
+  el.textContent=msg;
+  el.className="toast "+type+" show";
+  setTimeout(()=>el.className="toast "+type,delay);
+}
+
+document.getElementById("signinBtn").addEventListener("click", async ()=>{
+  const email=document.getElementById("email").value.trim();
+  const password=document.getElementById("password").value;
+
+  if(!email||!password){toast("Please enter email & password","error");return;}
+
+  try{
+    // Check DB for this email
+    const q=query(ref(db,"users"),orderByChild("email"),equalTo(email));
+    const snap=await get(q);
+    if(!snap.exists()){toast("No account found for this email","error");return;}
+
+    const cred = await signInWithEmailAndPassword(auth,email,password);
+    // Grab username for greeting
+    let username="User";
+    snap.forEach(child=>{username = child.val().username || username;});
+    toast("Welcome back "+username+"!","success",1600);
+    setTimeout(()=>window.location.href="dashboard.html",1600);
+  }catch(err){
+    console.error(err);
+    toast("Sign in failed: "+(err.message||"Unknown"),"error");
+  }
+});
+</script>
 </body>
 </html>

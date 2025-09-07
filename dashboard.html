@@ -282,19 +282,40 @@ auth.onAuthStateChanged(user=>{
 });
 
   const claimBtn=document.getElementById('claim-btn');
-  const claimedRef=db.ref('users/'+uid+'/hasClaimedBonus');
-  claimedRef.once('value').then(s=>{
-    if(s.val()){claimBtn.textContent='Completed';claimBtn.disabled=true;}
-  });
-  claimBtn.onclick=()=>{
-    if(claimBtn.disabled)return;
-    balRef.once('value').then(b=>{
-      const bal=parseFloat(b.val()||0)+100;
-      db.ref('users/'+uid).update({balance:bal,hasClaimedBonus:true});
-      claimBtn.textContent='Completed';claimBtn.disabled=true;
+  const claimedRef = db.ref('users/'+uid+'/hasClaimedBonus');
+claimedRef.once('value').then(s=>{
+  if(s.val()){
+    claimBtn.textContent = 'Completed';
+    claimBtn.disabled = true;
+  }
+});
+
+claimBtn.onclick = () => {
+  if (claimBtn.disabled) return;
+
+  // Run an atomic transaction to prevent double claim
+  db.ref('users/'+uid).transaction(userData => {
+    if (userData && userData.hasClaimedBonus) {
+      // Already claimed, abort
+      return userData;
+    }
+    // Init if empty
+    userData = userData || {};
+    const current = parseFloat(userData.balance || 0);
+    userData.balance = current + 100;          // add once
+    userData.hasClaimedBonus = true;           // mark as claimed
+    return userData;
+  }, (error, committed) => {
+    if (error) {
+      console.error(error);
+      showPopup('Error claiming bonus', true);
+    } else if (committed) {
+      claimBtn.textContent = 'Completed';
+      claimBtn.disabled = true;
       showPopup('100 UGX Claimed');
-    });
-  };
+    }
+  });
+};
 
   startCountdown();
 });

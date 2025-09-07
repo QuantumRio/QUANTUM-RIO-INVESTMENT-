@@ -1,278 +1,298 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Quantum Rio Dashboard</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <style>
-    :root {
-      --green: #0b6623;
-      --blue: #005bea;
-      --white: #ffffff;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QUANTUM RIO INVESTMENT – Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--white);
-      color: var(--green);
-      padding-bottom: 80px;
-    }
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
+<script>
+  // Quantum Rio Uganda config
+  const firebaseConfig = {
+    apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+    authDomain: "quantum-rio-uganda.firebaseapp.com",
+    databaseURL: "https://quantum-rio-uganda-default-rtdb.firebaseio.com",
+    projectId: "quantum-rio-uganda",
+    storageBucket: "quantum-rio-uganda.appspot.com",
+    messagingSenderId: "840875099079",
+    appId: "1:840875099079:web:1cd06a78276842a787cfe2",
+    measurementId: "G-97G1PNQ9JB"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+</script>
 
-    .container {
-      max-width: 500px;
-      margin: auto;
-      padding: 1.5rem 1rem;
-    }
-
-    .card {
-      background: var(--white);
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    h2 {
-      text-align: center;
-      color: var(--green);
-    }
-
-    .welcome {
-      text-align: center;
-      font-size: 1rem;
-      margin-bottom: 0.5rem;
-      color: var(--green);
-    }
-
-    .referral-note {
-      color: #27ae60;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .label {
-      font-weight: bold;
-      margin-top: 1.2rem;
-      color: var(--green);
-    }
-
-    .balance {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: var(--green);
-    }
-
-    .chart-tabs {
-      overflow-x: auto;
-      white-space: nowrap;
-      margin-top: 1rem;
-      display: flex;
-      gap: 8px;
-    }
-
-    .chart-tabs button {
-      flex: 0 0 auto;
-      background-color: var(--blue);
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-
-    .chart-container {
-      width: 100%;
-      height: 380px;
-      margin-top: 1rem;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    .greenbox {
-      background-color: var(--green);
-      color: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      margin-top: 2rem;
-      line-height: 1.6;
-    }
-
-    .greenbox strong {
-      font-size: 1.1rem;
-    }
-
-    .support-links {
-      margin-top: 1.5rem;
-      text-align: center;
-    }
-
-    .support-links a {
-      display: block;
-      margin: 0.5rem 0;
-      color: var(--blue);
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 1rem;
-      margin-top: 1.5rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      color: white;
-      background-color: #e74c3c;
-    }
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 65px;
-      background: var(--blue);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
-    }
-
-    .nav-item {
-      color: white;
-      text-align: center;
-      font-size: 0.75rem;
-      text-decoration: none;
-    }
-
-    .nav-item i {
-      font-size: 1.2rem;
-      display: block;
-      margin-bottom: 2px;
-    }
-  </style>
+<style>
+  body{
+    margin:0;
+    font-family: Arial, Helvetica, sans-serif;
+    background:#001f3f;
+    color:#fff;
+  }
+  .page-content{
+    padding-bottom:1.5cm; /* 1.5 cm gap for nav */
+  }
+  header{
+    background:#002f6c;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 16px;
+  }
+  header img{height:32px;}
+  header h2{margin:0;font-size:1.2rem;}
+  .announcement{
+    background:#003366;
+    color:#ff0;
+    padding:8px;
+    white-space:nowrap;
+    overflow:hidden;
+  }
+  .announcement span{
+    display:inline-block;
+    padding-left:100%;
+    animation:scroll 16s linear infinite;
+  }
+  @keyframes scroll{
+    0%{transform:translateX(0);}
+    100%{transform:translateX(-100%);}
+  }
+  .balance-section{
+    text-align:center;
+    background:#002b5c;
+    padding:18px 12px;
+  }
+  .balance-section .email{font-size:0.85rem;color:#ffa500;}
+  .balance-section .balance{font-size:1.4rem;margin:8px 0;color:#ffcc00;}
+  .balance-buttons{display:flex;justify-content:space-around;margin-top:10px;}
+  .balance-buttons button{
+    background:#ffcc00;color:#000;border:none;border-radius:8px;
+    padding:8px 0;width:90px;font-weight:600;cursor:pointer;
+  }
+  .extra-info{text-align:center;padding:16px;}
+  .extra-info img{max-width:92%;border-radius:8px;margin-bottom:12px;}
+  .extra-info p{font-size:0.9rem;line-height:1.4;}
+  .claim-btn{
+    background:#ffcc00;color:#000;font-weight:700;border:none;
+    border-radius:8px;padding:8px 18px;cursor:pointer;
+  }
+  .task-countdown{background:#001a33;text-align:center;padding:8px;font-weight:600;color:#ffcc00;}
+  .earnings-card{
+    margin:12px;background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.05);
+    border-radius:10px;padding:12px;
+  }
+  .earnings-card h3{margin:0 0 6px 0;color:#ffd965;}
+  .earnings-list{max-height:160px;overflow-y:auto;padding:6px 0;}
+  .earnings-list .row{
+    display:flex;justify-content:space-between;
+    padding:4px 0;color:#cfe6ff;border-bottom:1px dotted rgba(255,255,255,0.05);
+  }
+  .earnings-total{text-align:right;margin-top:6px;font-weight:700;color:#fff;}
+  .vip-list{padding:10px;}
+  .vip-box{
+    display:flex;justify-content:space-between;align-items:center;
+    background:#003366;padding:10px;margin:6px 0;border-radius:8px;
+  }
+  .vip-box img{height:38px;}
+  .vip-box .info{flex-grow:1;margin-left:8px;}
+  .vip-box .info .amount{font-weight:600;color:#ffcc00;}
+  .vip-box .arrow{font-size:22px;cursor:pointer;}
+  nav{
+    position:fixed;bottom:0;left:0;right:0;
+    display:flex;justify-content:space-around;
+    background:#002244;padding:8px 0;
+  }
+  nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}
+  nav i{font-size:18px;}
+  .popup{
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    background:#28a745;color:#fff;padding:16px 20px;border-radius:8px;
+    font-weight:600;z-index:9999;text-align:center;
+  }
+  .popup.red{background:#cc0000;}
+</style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="card">
-      <h2>Welcome to Quantum Rio Investment</h2>
-      <p class="welcome">Fast and secure investment platform | Invest smart, Invest with Quantum</p>
-      <p class="referral-note">🎯 For every referral who makes a deposit, you earn <strong>UGX 17,760</strong> instantly!</p>
+<div class="page-content">
+  <header>
+    <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png" alt="logo">
+    <h2>QUANTUM RIO INVESTMENT</h2>
+  </header>
 
-      <div class="label">Total Balance</div>
-      <div class="balance" id="balance">UGX 0.00</div>
+  <div class="announcement"><span>🛒Welcome to QUANTUM RIO INVESTMENT 🛒 Recruiting investors and agents worldwide!</span></div>
 
-      <div class="chart-tabs" id="tab-buttons">
-        <button onclick="loadChart('BTCUSD')">BTC/USD</button>
-        <button onclick="loadChart('ETHUSD')">ETH/USD</button>
-        <button onclick="loadChart('XAUUSD')">Gold</button>
-        <button onclick="loadChart('SOLUSD')">Solana</button>
-        <button onclick="loadChart('EURJPY')">EUR/JPY</button>
-        <button onclick="loadChart('GBPJPY')">GBP/JPY</button>
-      </div>
-
-      <div class="chart-container" id="tradingview-frame">
-        <iframe src="https://s.tradingview.com/embed-widget/mini-symbol-overview/?symbol=BINANCE:BTCUSDT&locale=en" allowtransparency="true"></iframe>
-      </div>
-
-      <div class="greenbox">
-        <strong>Quantum Rio has been transforming lives since 2009.</strong><br><br>
-        With over 1,000,000 investors across Uganda and beyond, our platform has empowered thousands to achieve financial independence through our AI-powered trading strategies in Bitcoin, forex, and binary markets. We believe in transparency, security, and consistency. Our mission is to help every Ugandan grow wealth through smart, risk-managed investments. <br><br>
-        Invest more and watch your returns grow — the more you invest, the more profit you unlock. Our traders work around the clock to ensure you get up to 200% ROI within 12–24 hours.
-      </div>
-
-      <div class="support-links">
-        <a href="https://wa.me/256784513172" target="_blank">📱 WhatsApp Support</a>
-        <a href="https://t.me/QuantumRIO_support" target="_blank">📩 Telegram Support</a>
-      </div>
-
-      <button class="btn" onclick="logout()">Logout</button>
+  <div class="balance-section">
+    <div class="email" id="user-email">loading...</div>
+    <div class="balance" id="user-balance">Balance: UGX 0.00</div>
+    <div class="balance-buttons">
+      <button onclick="location.href='deposit.html'">Deposit</button>
+      <button onclick="location.href='withdraw.html'">Withdraw</button>
+      <button onclick="location.href='company.html'">Company</button>
     </div>
   </div>
 
-  <div class="bottom-nav">
-    <a class="nav-item" href="dashboard.html">
-      <i class="fas fa-home"></i>
-      Home
-    </a>
-    <a class="nav-item" href="wallet.html">
-      <i class="fas fa-wallet"></i>
-      Wallet
-    </a>
-    <a class="nav-item" href="investments.html">
-      <i class="fas fa-chart-line"></i>
-      Plans
-    </a>
-    <a class="nav-item" href="investment.html">
-      <i class="fas fa-briefcase"></i>
-      Active
-    </a>
+  <div class="extra-info">
+    <img src="https://media.istockphoto.com/id/841526170/photo/three-business-people-in-the-office-working-together.jpg?s=170667a&w=0&k=20&c=58v5HeRzpzV3qusfD33JuF0j4Am5rbBYhkc37ozCv84=">
+    <p>
+      Improve VIP task rules on the same day. Upgrading the VIP level on the same day allows you to complete multiple tasks without restriction.
+      You are now VIP1 and have completed today's task. You can upgrade to VIP2 to continue completing VIP2 tasks.
+      Highest VIP level is VIP10.
+    </p>
+    <button class="claim-btn" id="claim-btn">Claim 100.00 UGX</button>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, getDocs, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+  <div class="task-countdown">Task Reset Countdown: <span id="countdown"></span></div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
-      authDomain: "quantum-rio-uganda.firebaseapp.com",
-      projectId: "quantum-rio-uganda",
-      storageBucket: "quantum-rio-uganda.appspot.com",
-      messagingSenderId: "840875099079",
-      appId: "1:840875099079:web:1cd06a78276842a787cfe2"
-    };
+  <div class="earnings-card">
+    <h3>VIP Earnings Breakdown</h3>
+    <div class="earnings-list" id="earnings-list"></div>
+    <div class="earnings-total" id="vip-grand-total">Total VIP Earnings: UGX 0.00</div>
+  </div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  <div class="vip-list" id="vip-list"></div>
+</div>
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return window.location.href = "signin.html";
+<nav>
+  <a href="#"><i class="fas fa-home"></i><br>Home</a>
+  <a href="#"><i class="fas fa-tasks"></i><br>Task</a>
+  <a href="#"><i class="fas fa-users"></i><br>Team</a>
+  <a href="#"><i class="fas fa-crown"></i><br>VIP</a>
+  <a href="#"><i class="fas fa-user"></i><br>Me</a>
+</nav>
 
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-        document.getElementById("balance").textContent = `UGX ${userData.balance?.toLocaleString() || "0.00"}`;
+<script>
+auth.onAuthStateChanged(user=>{
+  if(!user){window.location='signin.html';return;}
+  const uid=user.uid;
+  document.getElementById('user-email').textContent=user.email;
 
-        const invSnap = await getDocs(collection(db, "investments"));
-        const now = Date.now();
+  const balRef=db.ref('users/'+uid+'/balance');
+  balRef.on('value',snap=>{
+    const bal=parseFloat(snap.val()||0);
+    document.getElementById('user-balance').textContent=`Balance: UGX ${bal.toLocaleString(undefined,{minimumFractionDigits:2})}`;
+  });
 
-        invSnap.forEach(async (docu) => {
-          const inv = docu.data();
-          const invId = docu.id;
+  // listen for VIP claims summary
+  const vipSimple={1:750,2:1250,3:2750,4:5250,5:9375,6:18750,7:28250,8:37750,9:50000,10:62500};
+  const vipClaims=db.ref('users/'+uid+'/vipClaims');
+  vipClaims.on('value',snap=>{
+    const claims=snap.val()||{};
+    const list=document.getElementById('earnings-list');
+    list.innerHTML='';
+    let total=0;
+    for(let i=1;i<=10;i++){
+      const days=(claims[i]&&claims[i].daysClaimed)?parseInt(claims[i].daysClaimed):0;
+      const earned=days*(vipSimple[i]||0);
+      total+=earned;
+      const row=document.createElement('div');
+      row.className='row';
+      row.innerHTML=`<div>VIP ${i}</div><div>UGX ${earned.toLocaleString()}</div>`;
+      list.appendChild(row);
+    }
+    document.getElementById('vip-grand-total').textContent=`Total VIP Earnings: UGX ${total.toLocaleString()}`;
+  });
 
-          if (inv.userId === user.uid && inv.status === "active" && inv.investedAt?.toMillis && (now - inv.investedAt.toMillis()) >= 86400000) {
-            await updateDoc(doc(db, "investments", invId), { status: "matured" });
-            await updateDoc(userRef, { balance: increment(inv.returnAmount || 0) });
-          }
-        });
-      }
+  // VIP unlock amounts
+  const vipList=document.getElementById('vip-list');
+  const vipAmounts=[3000,5000,11000,21000,36000,75000,113000,151000,200000,250000];
+  const vipRef=db.ref('users/'+uid+'/vipLevels');
+
+  vipRef.on('value',snap=>{
+    const unlocked=snap.val()||[];
+    vipList.innerHTML='';
+    vipAmounts.forEach((amt,idx)=>{
+      const lvl=idx+1;
+      const box=document.createElement('div');
+      box.className='vip-box';
+      box.innerHTML=`
+        <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png">
+        <div class="info">
+          <p>Unlock amount: <span class="amount">UGX ${amt.toLocaleString(undefined,{minimumFractionDigits:2})}</span></p>
+          <p>${unlocked.includes(lvl)?"✅":"🔐"} VIP${lvl}</p>
+        </div>
+        <div class="arrow">»</div>
+      `;
+      box.querySelector('.arrow').onclick=()=>{
+        if(unlocked.includes(lvl)){
+          showPopup(`VIP${lvl} already unlocked`);
+        }else{
+          unlockVip(uid,lvl,amt);
+        }
+      };
+      vipList.appendChild(box);
     });
+  });
 
-    window.logout = function () {
-      signOut(auth).then(() => window.location.href = "signin.html");
-    };
+  // Claim bonus
+  const claimBtn=document.getElementById('claim-btn');
+  const claimedRef=db.ref('users/'+uid+'/hasClaimedBonus');
+  claimedRef.once('value').then(s=>{
+    if(s.val()){claimBtn.textContent='Completed';claimBtn.disabled=true;}
+  });
+  claimBtn.onclick=()=>{
+    if(claimBtn.disabled)return;
+    balRef.transaction(bal=>{
+      return (parseFloat(bal||0)+100);
+    }).then(()=>{
+      db.ref('users/'+uid).update({hasClaimedBonus:true});
+      claimBtn.textContent='Completed';claimBtn.disabled=true;
+      showPopup('100 UGX Claimed');
+    });
+  };
 
-    window.loadChart = function(symbol) {
-      const iframe = document.querySelector("#tradingview-frame iframe");
-      iframe.src = `https://s.tradingview.com/embed-widget/mini-symbol-overview/?symbol=FOREXCOM:${symbol}&locale=en`;
-    };
-  </script>
+  startCountdown();
+});
+
+function unlockVip(uid, level, amount){
+  const balPath = db.ref('users/'+uid+'/balance');
+  balPath.transaction(bal=>{
+    bal=parseFloat(bal||0);
+    if(bal>=amount){
+      return bal-amount; // deduct
+    }
+    // cancel transaction
+    return;
+  },(err,committed,snap)=>{
+    if(!committed){
+      // insufficient
+      showPopup(`Insufficient balance <a href="deposit.html" style="color:#fff;text-decoration:underline;">Deposit</a>`,true,true);
+      return;
+    }
+    // add vip to vipLevels
+    const vipLevels=db.ref('users/'+uid+'/vipLevels');
+    vipLevels.transaction(list=>{
+      list=list||[];
+      if(!list.includes(level)) list.push(level);
+      return list;
+    });
+    showPopup(`VIP${level} unlocked!`);
+  });
+}
+
+function startCountdown(){
+  const c=document.getElementById('countdown');
+  let start=localStorage.getItem('cStart')||Date.now();
+  localStorage.setItem('cStart',start);
+  setInterval(()=>{
+    let diff=86400000-(Date.now()-start);
+    if(diff<=0){start=Date.now();localStorage.setItem('cStart',start);diff=86400000;}
+    const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
+    c.textContent=`${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  },1000);
+}
+
+function showPopup(msg,red=false,allowHTML=false){
+  const p=document.createElement('div');
+  p.className='popup'+(red?' red':'');
+  if(allowHTML) p.innerHTML=msg; else p.textContent=msg;
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(),3500);
+}
+</script>
 </body>
 </html>

@@ -13,8 +13,6 @@
     justify-content: center;
     align-items: flex-start;
     padding-top: 48px;
-
-    /* vivid gradient background */
     background:
       radial-gradient(circle at 25% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
       radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1) 0%, transparent 55%),
@@ -22,9 +20,8 @@
     background-attachment: fixed;
   }
 
-  /* Floating card */
   .card {
-    background: rgba(13, 27, 63, 0.92);  /* deep navy */
+    background: rgba(13, 27, 63, 0.92);
     color: #fff;
     padding: 28px;
     border-radius: 14px;
@@ -56,10 +53,7 @@
 
   label { font-size: 14px; display: block; margin: 10px 0 4px; color: #f5f5f5; }
 
-  /* Phone row */
-  .phone-row {
-    display: flex; align-items: center; gap: 8px;
-  }
+  .phone-row { display: flex; align-items: center; gap: 8px; }
   .phone-code {
     background: rgba(255,255,255,0.2);
     border: 1px solid rgba(255,255,255,0.3);
@@ -93,12 +87,11 @@
   input::placeholder { color: #ccc; }
   input:focus { outline: none; border-color: #90caf9; }
 
-  /* gold CTA button */
   button {
     width: 100%;
     padding: 12px;
-    background-color: #ffcc00;   /* bright gold */
-    color: #0d1b3f;              /* dark navy text */
+    background-color: #ffcc00;
+    color: #0d1b3f;
     font-weight: 700;
     border: none;
     border-radius: 6px;
@@ -106,9 +99,7 @@
     cursor: pointer;
     transition: background 0.3s ease;
   }
-  button:hover {
-    background-color: #fbc02d;  /* slightly deeper gold */
-  }
+  button:hover { background-color: #fbc02d; }
 
   .links {
     text-align: center;
@@ -119,7 +110,6 @@
   .links a { color: #90caf9; text-decoration: none; }
   .links a:hover { text-decoration: underline; }
 
-  /* Toast */
   .toast {
     position: fixed;
     top: 20px;
@@ -181,9 +171,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import {
-  getDatabase, ref, set, get, query, orderByChild, equalTo, runTransaction
-} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+import { getDatabase, ref, set, get, query, orderByChild, equalTo, runTransaction } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -229,55 +217,50 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
   if (password !== confirmPassword) return toast("Passwords do not match.","error");
 
   try {
-    // Check username
     const snapUsername = await get(query(ref(db,"users"), orderByChild("username"), equalTo(username)));
     if (snapUsername.exists()) return toast("Username already taken.","error");
 
-    // Check phone
     const snapPhone = await get(query(ref(db,"users"), orderByChild("phone"), equalTo(phone)));
     if (snapPhone.exists()) return toast("Phone already registered.","error");
 
-    // Check email
     const snapEmail = await get(query(ref(db,"users"), orderByChild("email"), equalTo(email)));
     if (snapEmail.exists()) return toast("Email already registered.","error");
 
-    // After creating the auth user
-const cred = await createUserWithEmailAndPassword(auth, email, password);
-const uid = cred.user.uid;
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = cred.user.uid;
 
-// Initialize user in Realtime Database
-await set(ref(db, "users/" + uid), {
-  username,
-  phone,
-  email,
-  uid,
-  referrer: referrer || null,
-  joinedAt: Date.now(),
-  balance: 0,              // starting balance
-  earnings: 0,             // starting earnings
-  referralsCount: 0,       // starting referrals
-  vipLevels: {             // all VIP levels locked initially
-    level1: false,
-    level2: false,
-    level3: false,
-    level4: false,
-    level5: false
-  }
-});
-
-// Increment referrer count safely
-if (referrer) {
-  const snapRef = await get(query(ref(db, "users"), orderByChild("username"), equalTo(referrer)));
-  if (snapRef.exists()) {
-    snapRef.forEach(child => {
-      const refUid = child.key;
-      runTransaction(ref(db, "users/" + refUid + "/referralsCount"), current => (current || 0) + 1);
+    await set(ref(db, "users/" + uid), {
+      username,
+      phone,
+      email,
+      uid,
+      referrer: referrer || null,
+      joinedAt: Date.now(),
+      balance: 0,
+      earnings: 0,
+      referralsCount: 0,
+      vipLevels: {
+        level1: false,
+        level2: false,
+        level3: false,
+        level4: false,
+        level5: false
+      }
     });
-  }
-}
 
-toast("Account created successfully!","success");
-setTimeout(()=>window.location.href="dashboard.html",1200);
+    if (referrer) {
+      const snapRef = await get(query(ref(db, "users"), orderByChild("username"), equalTo(referrer)));
+      if (snapRef.exists()) {
+        snapRef.forEach(child => {
+          const refUid = child.key;
+          runTransaction(ref(db, "users/" + refUid + "/referralsCount"), current => (current || 0) + 1);
+        });
+      }
+    }
+
+    toast("Account created successfully!","success");
+    setTimeout(()=>window.location.href="dashboard.html",1200);
+
   } catch (err) {
     console.error("Signup error:", err);
     toast("Sign up failed: " + (err.message || "Unknown"),"error");

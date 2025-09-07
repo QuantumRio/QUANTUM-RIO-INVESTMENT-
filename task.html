@@ -42,10 +42,28 @@ header h2{margin:0;font-size:1.2rem}
 .stat-box p{margin:0;font-size:1.2rem;font-weight:700}
 
 /* history */
-.history{margin:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px;max-height:260px;overflow-y:auto}
-.history h3{margin:0 0 8px 0;color:#ffcc00}
-.history .row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted rgba(255,255,255,0.1);color:#cfe6ff;font-size:0.85rem}
-
+.history{
+  margin:12px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:8px;
+  padding:10px;
+  padding-bottom:1cm;     /* <-- extra space above the fixed nav */
+  max-height:260px;
+  overflow-y:auto;
+}
+.history h3{
+  margin:0 0 8px 0;
+  color:#ffcc00;
+}
+.history .row{
+  display:flex;
+  justify-content:space-between;
+  padding:4px 0;
+  border-bottom:1px dotted rgba(255,255,255,0.1);
+  color:#cfe6ff;
+  font-size:0.85rem;
+}
 /* bottom nav */
 nav {
   position:fixed;

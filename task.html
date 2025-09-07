@@ -47,12 +47,21 @@ header h2{margin:0;font-size:1.2rem}
 .history .row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted rgba(255,255,255,0.1);color:#cfe6ff;font-size:0.85rem}
 
 /* bottom nav */
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:#002244;padding:8px 0}
+nav {
+  position:fixed;
+  bottom:0; left:0; right:0;
+  display:flex; justify-content:space-around;
+  background:#002244; padding:8px 0;
+}
 nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem}
 nav i{font-size:18px}
 
-/* 1 cm space so nav doesn’t overlap scroll */
-body::after{content:"";display:block;height:1cm}
+/* keep a clear 1 cm space at page bottom so scrollable content stops above nav */
+body::after{
+  content:"";
+  display:block;
+  height:1cm;       /* ~37.8 px on normal DPI */
+}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>

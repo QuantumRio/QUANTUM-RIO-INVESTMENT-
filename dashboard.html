@@ -281,10 +281,13 @@ auth.onAuthStateChanged(user=>{
   });
 });
 
-  const claimBtn=document.getElementById('claim-btn');
-  const claimedRef = db.ref('users/'+uid+'/hasClaimedBonus');
-claimedRef.once('value').then(s=>{
-  if(s.val()){
+  // --- Claim Bonus ---
+const claimBtn = document.getElementById('claim-btn');
+const userRef  = db.ref('users/' + uid);
+
+// First, check on load whether they've already claimed
+userRef.child('hasClaimedBonus').once('value').then(snap => {
+  if (snap.val()) {
     claimBtn.textContent = 'Completed';
     claimBtn.disabled = true;
   }
@@ -293,26 +296,28 @@ claimedRef.once('value').then(s=>{
 claimBtn.onclick = () => {
   if (claimBtn.disabled) return;
 
-  // Run an atomic transaction to prevent double claim
-  db.ref('users/'+uid).transaction(userData => {
-    if (userData && userData.hasClaimedBonus) {
-      // Already claimed, abort
-      return userData;
-    }
-    // Init if empty
+  // Run an atomic transaction so it only ever applies once
+  userRef.transaction(userData => {
     userData = userData || {};
+    // If bonus already marked, abort (no popup, no add)
+    if (userData.hasClaimedBonus) return userData;
+
     const current = parseFloat(userData.balance || 0);
-    userData.balance = current + 100;          // add once
-    userData.hasClaimedBonus = true;           // mark as claimed
+    userData.balance = current + 100;      // add 100 UGX one time
+    userData.hasClaimedBonus = true;       // mark as claimed
     return userData;
-  }, (error, committed) => {
+  }, (error, committed, snapshot) => {
     if (error) {
       console.error(error);
       showPopup('Error claiming bonus', true);
     } else if (committed) {
       claimBtn.textContent = 'Completed';
       claimBtn.disabled = true;
-      showPopup('100 UGX Claimed');
+      showPopup('100 UGX Claimed');   // only shows for first successful claim
+    } else {
+      // Not committed means already claimed → do nothing & no popup
+      claimBtn.textContent = 'Completed';
+      claimBtn.disabled = true;
     }
   });
 };

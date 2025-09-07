@@ -223,21 +223,25 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
   const confirmPassword = document.getElementById("confirmPassword").value;
 
   if (!username || !phone || !email || !password || !confirmPassword) {
-    toast("Please fill all fields.","error"); return;
+    return toast("Please fill all fields.","error");
   }
-  if (password.length < 6) { toast("Password must be at least 6 characters.","error"); return; }
-  if (password !== confirmPassword) { toast("Passwords do not match.","error"); return; }
+  if (password.length < 6) return toast("Password must be at least 6 characters.","error");
+  if (password !== confirmPassword) return toast("Passwords do not match.","error");
 
   try {
-    const userRef = query(ref(db,"users"), orderByChild("username"), equalTo(username));
-    if ((await get(userRef)).exists()) { toast("Username already taken.","error"); return; }
+    // Check username
+    const snapUsername = await get(query(ref(db,"users"), orderByChild("username"), equalTo(username)));
+    if (snapUsername.exists()) return toast("Username already taken.","error");
 
-    const phoneRef = query(ref(db,"users"), orderByChild("phone"), equalTo(phone));
-    if ((await get(phoneRef)).exists()) { toast("Phone already registered.","error"); return; }
+    // Check phone
+    const snapPhone = await get(query(ref(db,"users"), orderByChild("phone"), equalTo(phone)));
+    if (snapPhone.exists()) return toast("Phone already registered.","error");
 
-    const emailRef = query(ref(db,"users"), orderByChild("email"), equalTo(email));
-    if ((await get(emailRef)).exists()) { toast("Email already registered.","error"); return; }
+    // Check email
+    const snapEmail = await get(query(ref(db,"users"), orderByChild("email"), equalTo(email)));
+    if (snapEmail.exists()) return toast("Email already registered.","error");
 
+    // Create auth user
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const uid = cred.user.uid;
 
@@ -247,19 +251,16 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
       joinedAt: Date.now()
     });
 
-    /* NEW PART – bump referralsCount for referrer */
+    // Increment referrer count
     if (referrer) {
-      const q = query(ref(db, "users"), orderByChild("username"), equalTo(referrer));
-      const snap = await get(q);
-      if (snap.exists()) {
-        snap.forEach(async child => {
+      const snapRef = await get(query(ref(db, "users"), orderByChild("username"), equalTo(referrer)));
+      if (snapRef.exists()) {
+        snapRef.forEach(child => {
           const refUid = child.key;
-          const countRef = ref(db, "users/" + refUid + "/referralsCount");
-          await runTransaction(countRef, current => (current || 0) + 1);
+          runTransaction(ref(db, "users/" + refUid + "/referralsCount"), current => (current || 0) + 1);
         });
       }
     }
-    /* END NEW PART */
 
     toast("Account created successfully!","success");
     setTimeout(()=>window.location.href="dashboard.html",1200);

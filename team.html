@@ -137,6 +137,7 @@ nav i{font-size:18px;}
 
 <div id="toast" class="toast"></div>
 
+<<!-- everything above is unchanged -->
 <script>
 function showToast(msg, type='success'){
   const t = document.getElementById('toast');
@@ -149,17 +150,25 @@ auth.onAuthStateChanged(user=>{
   if(!user){window.location='signin.html';return;}
   const uid = user.uid;
 
-  // build referral link using username if exists
+  // Build referral link (force https + host so GitHub Pages works)
   db.ref('users/'+uid+'/username').once('value').then(snap=>{
     const username = snap.val() || uid;
-    const link = window.location.origin + '/signup.html?ref=' + encodeURIComponent(username);
+
+    // window.location.origin sometimes = "file://..." when testing locally,
+    // so fall back to your real production host
+    const base = (window.location.protocol.startsWith('http') && window.location.origin !== 'null')
+                 ? window.location.origin
+                 : 'https://quantumrio.github.io';
+
+    const link = base + '/signup.html?ref=' + encodeURIComponent(username);
     document.getElementById('ref-link').value = link;
 
+    // Copy & log
     document.getElementById('copyRefBtn').addEventListener('click', ()=>{
       navigator.clipboard.writeText(link).then(()=>{
-        // log copy in realtime DB
         db.ref('users/'+uid+'/referralLogs').push({
-          copiedAt: firebase.database.ServerValue.TIMESTAMP
+          copiedAt: firebase.database.ServerValue.TIMESTAMP,
+          link: link
         });
         showToast('Referral link copied!','success');
       }).catch(()=>{
@@ -171,22 +180,23 @@ auth.onAuthStateChanged(user=>{
   // realtime team stats
   db.ref('users/'+uid+'/teamStats').on('value', snap=>{
     const s = snap.val() || {};
-    document.getElementById('team-size').textContent    = s.size || 0;
-    document.getElementById('team-recharge').textContent= (s.recharge||0).toLocaleString();
-    document.getElementById('team-withdraw').textContent= (s.withdraw||0).toLocaleString();
-    document.getElementById('new-team').textContent     = s.newTeam || 0;
-    document.getElementById('first-recharge').textContent= (s.firstRecharge||0).toLocaleString();
-    document.getElementById('first-withdraw').textContent= (s.firstWithdraw||0).toLocaleString();
+    document.getElementById('team-size').textContent     = s.size || 0;
+    document.getElementById('team-recharge').textContent = (s.recharge || 0).toLocaleString();
+    document.getElementById('team-withdraw').textContent = (s.withdraw || 0).toLocaleString();
+    document.getElementById('new-team').textContent      = s.newTeam || 0;
+    document.getElementById('first-recharge').textContent= (s.firstRecharge || 0).toLocaleString();
+    document.getElementById('first-withdraw').textContent= (s.firstWithdraw || 0).toLocaleString();
   });
 
-  // realtime commission
+  // realtime commissions
   db.ref('users/'+uid+'/commissions').on('value', snap=>{
     const c = snap.val() || {};
-    document.getElementById('lvl1-total').textContent = (c.level1||0).toLocaleString();
-    document.getElementById('lvl2-total').textContent = (c.level2||0).toLocaleString();
-    document.getElementById('lvl3-total').textContent = (c.level3||0).toLocaleString();
+    document.getElementById('lvl1-total').textContent = (c.level1 || 0).toLocaleString();
+    document.getElementById('lvl2-total').textContent = (c.level2 || 0).toLocaleString();
+    document.getElementById('lvl3-total').textContent = (c.level3 || 0).toLocaleString();
   });
 });
 </script>
+<!-- everything below is unchanged -->
 </body>
 </html>

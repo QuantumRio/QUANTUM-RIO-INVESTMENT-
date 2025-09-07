@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QUANTUM RIO – Tasks</title>
 
-<!-- Firebase SDK compat (same as dashboard) -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
 <script>
 const firebaseConfig = {
@@ -24,7 +23,6 @@ const db   = firebase.database();
 </script>
 
 <style>
-/* --- Block accidental selection / tap-to-search --- */
 html, body { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 
 body{
@@ -33,7 +31,6 @@ body{
   background:#001f3f;
   color:#fff;
 }
-
 header{
   background:#002f6c;
   display:flex;
@@ -43,7 +40,6 @@ header{
 }
 header img{height:32px;}
 header h2{margin:0;font-size:1.2rem;}
-
 .stats{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -58,14 +54,13 @@ header h2{margin:0;font-size:1.2rem;}
 }
 .stat-box h3{margin:0 0 4px 0;color:#ffcc00;font-size:0.9rem;}
 .stat-box p{margin:0;font-size:1.2rem;font-weight:700;}
-
 .history{
   margin:12px;
   background:rgba(255,255,255,0.03);
   border:1px solid rgba(255,255,255,0.05);
   border-radius:8px;
   padding:10px;
-  max-height:320px;
+  max-height:260px;
   overflow-y:auto;
 }
 .history h3{margin:0 0 8px 0;color:#ffcc00;}
@@ -77,7 +72,24 @@ header h2{margin:0;font-size:1.2rem;}
   color:#cfe6ff;
   font-size:0.85rem;
 }
-
+#bonus-section{
+  margin:12px;
+  text-align:center;
+}
+#claimBonus{
+  background:#ffcc00;
+  border:none;
+  padding:10px 18px;
+  border-radius:6px;
+  font-size:1rem;
+  font-weight:600;
+  color:#002244;
+  cursor:pointer;
+}
+#claimBonus[disabled]{
+  opacity:0.5;
+  cursor:not-allowed;
+}
 nav{
   position:fixed;
   bottom:0;left:0;right:0;
@@ -86,12 +98,7 @@ nav{
   background:#002244;
   padding:8px 0;
 }
-nav a{
-  color:#fff;
-  text-decoration:none;
-  text-align:center;
-  font-size:0.8rem;
-}
+nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}
 nav i{font-size:18px;}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -122,6 +129,11 @@ nav i{font-size:18px;}
   </div>
 </div>
 
+<div id="bonus-section">
+  <button id="claimBonus">Claim Daily Bonus</button>
+  <div id="bonusStatus" style="margin-top:6px;font-size:0.85rem;"></div>
+</div>
+
 <div class="history">
   <h3>Task / Bonus History</h3>
   <div id="task-history"></div>
@@ -136,18 +148,23 @@ nav i{font-size:18px;}
 </nav>
 
 <script>
+function logTask(uid, action){
+  db.ref('users/'+uid+'/taskHistory').push({
+    action: action,
+    timestamp: Date.now()
+  });
+}
+
 auth.onAuthStateChanged(user=>{
-  // Only redirect if we truly have no session
   if(!user){
-    console.warn("No auth session, redirecting");
+    console.warn("No auth session");
     window.location='signin.html';
     return;
   }
   const uid = user.uid;
 
-  // ---- Live Task Stats ----
-  const statsRef = db.ref('users/'+uid+'/tasks');
-  statsRef.on('value', snap => {
+  // Live Task Stats
+  db.ref('users/'+uid+'/tasks').on('value', snap => {
     const val = snap.val() || {};
     document.getElementById('total-tasks').textContent    = val.total     || 10;
     document.getElementById('remaining-tasks').textContent= val.remaining || 0;
@@ -155,9 +172,8 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('completed-tasks').textContent= val.completed || 0;
   });
 
-  // ---- Task History ----
-  const histRef = db.ref('users/'+uid+'/taskHistory').limitToLast(50);
-  histRef.on('value', snap => {
+  // Task History
+  db.ref('users/'+uid+'/taskHistory').limitToLast(50).on('value', snap => {
     const hist = snap.val() || {};
     const container = document.getElementById('task-history');
     container.innerHTML = '';
@@ -170,13 +186,34 @@ auth.onAuthStateChanged(user=>{
       container.appendChild(row);
     });
   });
-});
 
-// helper to log an action into taskHistory (call this when bonus claimed etc.)
-function logTask(uid, action){
-  const ref = db.ref('users/'+uid+'/taskHistory').push();
-  ref.set({ action: action, timestamp: Date.now() });
-}
+  // --- Bonus Claim Logic ---
+  const bonusBtn = document.getElementById('claimBonus');
+  const bonusStatus = document.getElementById('bonusStatus');
+  const todayKey = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
+
+  db.ref('users/'+uid+'/bonusClaims/'+todayKey).on('value', snap=>{
+    const already = snap.exists();
+    bonusBtn.disabled = already;
+    bonusStatus.textContent = already ? "Bonus already claimed today" : "";
+  });
+
+  bonusBtn.addEventListener('click', ()=>{
+    const bonusAmount = 100; // UGX or whichever
+    // Use a transaction to avoid double claim
+    db.ref('users/'+uid+'/balance').transaction(current=>{
+      return (current||0) + bonusAmount;
+    }, (err, committed, snap)=>{
+      if(err){ console.error(err); return; }
+      if(committed){
+        db.ref('users/'+uid+'/bonusClaims/'+todayKey).set(true);
+        logTask(uid, "Daily Bonus +" + bonusAmount);
+        bonusBtn.disabled = true;
+        bonusStatus.textContent = "Bonus claimed: +" + bonusAmount;
+      }
+    });
+  });
+});
 </script>
 </body>
 </html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tasks – Quantum Rio</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Firebase (compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+    authDomain: "quantum-rio-uganda.firebaseapp.com",
+    databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "quantum-rio-uganda",
+    storageBucket: "quantum-rio-uganda.appspot.com",
+    messagingSenderId: "840875099079",
+    appId: "1:840875099079:web:1cd06a78276842a787cfe2",
+    measurementId: "G-97G1PNQ9JB"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.database();
+</script>
+
+<style>
+  /* --- Prevent accidental text highlight / tap-to-search --- */
+  html, body {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+  input, textarea, select, button {
+    -webkit-user-select: auto;
+    user-select: auto;
+  }
+
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #001f3f;
+    color: #fff;
+  }
+  header {
+    background: #002f6c;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+  header img { height: 32px; }
+  header h2 { margin: 0; font-size: 1.2rem; }
+
+  .stats {
+    display: flex;
+    justify-content: space-around;
+    background: #002b5c;
+    padding: 10px 0;
+    font-weight: 600;
+  }
+  .stats div { text-align: center; }
+
+  .task-history {
+    padding: 12px;
+  }
+  .task-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 6px;
+    border-radius: 6px;
+  }
+  .task-row .type { font-weight: 600; }
+  .task-row .amount { color: #ffcc00; }
+
+  nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: space-around;
+    background: #002244;
+    padding: 8px 0;
+  }
+  nav a { color: #fff; text-decoration: none; text-align: center; font-size: 0.8rem; }
+  nav i { font-size: 18px; }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png" alt="logo">
+  <h2>Task Dashboard</h2>
+</header>
+
+<div class="stats">
+  <div>Total: <span id="stat-total">0</span></div>
+  <div>Completed: <span id="stat-completed">0</span></div>
+  <div>In-Progress: <span id="stat-inprogress">0</span></div>
+  <div>Remaining: <span id="stat-remaining">0</span></div>
+</div>
+
+<div class="task-history" id="task-history">
+  <!-- Tasks will stream in here -->
+</div>
+
+<nav>
+  <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
+  <a href="task.html"><i class="fas fa-tasks"></i><br>Tasks</a>
+  <a href="team.html"><i class="fas fa-users"></i><br>Team</a>
+  <a href="vip.html"><i class="fas fa-crown"></i><br>VIP</a>
+  <a href="profile.html"><i class="fas fa-user"></i><br>Me</a>
+</nav>
+
+<script>
+auth.onAuthStateChanged(user => {
+  if (!user) { window.location = 'signin.html'; return; }
+
+  const uid = user.uid;
+  const tasksRef = db.ref('users/' + uid + '/tasks');
+
+  tasksRef.on('value', snap => {
+    const tasks = snap.val() || {};
+    const keys = Object.keys(tasks);
+    const total = keys.length;
+
+    let completed = 0, inprogress = 0;
+    const historyEl = document.getElementById('task-history');
+    historyEl.innerHTML = '';
+
+    keys.sort((a,b) => tasks[b].date - tasks[a].date); // newest first
+
+    keys.forEach(key => {
+      const t = tasks[key];
+      if (t.status === 'completed') completed++;
+      else if (t.status === 'inprogress') inprogress++;
+
+      const row = document.createElement('div');
+      row.className = 'task-row';
+      const date = new Date(t.date || 0).toLocaleString();
+      row.innerHTML = `
+        <div>
+          <div class="type">${t.type || 'Task'}</div>
+          <div class="date" style="font-size:0.75rem;color:#ccc;">${date}</div>
+        </div>
+        <div class="amount">UGX ${parseFloat(t.amount||0).toLocaleString()}</div>
+      `;
+      historyEl.appendChild(row);
+    });
+
+    const remaining = Math.max(0, 10 - completed); // target of 10 per day?
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-completed').textContent = completed;
+    document.getElementById('stat-inprogress').textContent = inprogress;
+    document.getElementById('stat-remaining').textContent = remaining;
+  });
+});
+</script>
+
+</body>
+</html>

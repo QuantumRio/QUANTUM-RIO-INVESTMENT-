@@ -24,7 +24,7 @@ const db   = firebase.database();
 </script>
 
 <style>
-/* Prevent accidental selection / tap-to-search */
+/* --- Block accidental selection / tap-to-search --- */
 html, body { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 
 body{
@@ -137,41 +137,46 @@ nav i{font-size:18px;}
 
 <script>
 auth.onAuthStateChanged(user=>{
-  if(!user){ window.location='signin.html'; return; }
+  // Only redirect if we truly have no session
+  if(!user){
+    console.warn("No auth session, redirecting");
+    window.location='signin.html';
+    return;
+  }
   const uid = user.uid;
 
-  // Listen for task stats & history
+  // ---- Live Task Stats ----
   const statsRef = db.ref('users/'+uid+'/tasks');
   statsRef.on('value', snap => {
     const val = snap.val() || {};
-    // default numbers
-    let total    = val.total    || 10; // fallback to 10 tasks if unset
-    let remaining= val.remaining|| 0;
-    let progress = val.inprogress|| 0;
-    let done     = val.completed || 0;
-
-    document.getElementById('total-tasks').textContent    = total;
-    document.getElementById('remaining-tasks').textContent= remaining;
-    document.getElementById('inprogress-tasks').textContent= progress;
-    document.getElementById('completed-tasks').textContent= done;
+    document.getElementById('total-tasks').textContent    = val.total     || 10;
+    document.getElementById('remaining-tasks').textContent= val.remaining || 0;
+    document.getElementById('inprogress-tasks').textContent=val.inprogress|| 0;
+    document.getElementById('completed-tasks').textContent= val.completed || 0;
   });
 
+  // ---- Task History ----
   const histRef = db.ref('users/'+uid+'/taskHistory').limitToLast(50);
   histRef.on('value', snap => {
     const hist = snap.val() || {};
     const container = document.getElementById('task-history');
     container.innerHTML = '';
-    // show latest on top
     const items = Object.values(hist).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
     items.forEach(item=>{
       const row = document.createElement('div');
       row.className='row';
-      const ts = new Date(item.timestamp || Date.now()).toLocaleString();
+      const ts = new Date(item.timestamp||Date.now()).toLocaleString();
       row.innerHTML = `<div>${item.action||'Task'}</div><div>${ts}</div>`;
       container.appendChild(row);
     });
   });
 });
+
+// helper to log an action into taskHistory (call this when bonus claimed etc.)
+function logTask(uid, action){
+  const ref = db.ref('users/'+uid+'/taskHistory').push();
+  ref.set({ action: action, timestamp: Date.now() });
+}
 </script>
 </body>
 </html>

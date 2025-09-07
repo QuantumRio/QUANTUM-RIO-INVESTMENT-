@@ -241,30 +241,43 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
     const snapEmail = await get(query(ref(db,"users"), orderByChild("email"), equalTo(email)));
     if (snapEmail.exists()) return toast("Email already registered.","error");
 
-    // Create auth user
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    const uid = cred.user.uid;
+    // After creating the auth user
+const cred = await createUserWithEmailAndPassword(auth, email, password);
+const uid = cred.user.uid;
 
-    await set(ref(db, "users/" + uid), {
-      username, phone, email, uid,
-      referrer: referrer || null,
-      joinedAt: Date.now()
+// Initialize user in Realtime Database
+await set(ref(db, "users/" + uid), {
+  username,
+  phone,
+  email,
+  uid,
+  referrer: referrer || null,
+  joinedAt: Date.now(),
+  balance: 0,              // starting balance
+  earnings: 0,             // starting earnings
+  referralsCount: 0,       // starting referrals
+  vipLevels: {             // all VIP levels locked initially
+    level1: false,
+    level2: false,
+    level3: false,
+    level4: false,
+    level5: false
+  }
+});
+
+// Increment referrer count safely
+if (referrer) {
+  const snapRef = await get(query(ref(db, "users"), orderByChild("username"), equalTo(referrer)));
+  if (snapRef.exists()) {
+    snapRef.forEach(child => {
+      const refUid = child.key;
+      runTransaction(ref(db, "users/" + refUid + "/referralsCount"), current => (current || 0) + 1);
     });
+  }
+}
 
-    // Increment referrer count
-    if (referrer) {
-      const snapRef = await get(query(ref(db, "users"), orderByChild("username"), equalTo(referrer)));
-      if (snapRef.exists()) {
-        snapRef.forEach(child => {
-          const refUid = child.key;
-          runTransaction(ref(db, "users/" + refUid + "/referralsCount"), current => (current || 0) + 1);
-        });
-      }
-    }
-
-    toast("Account created successfully!","success");
-    setTimeout(()=>window.location.href="dashboard.html",1200);
-
+toast("Account created successfully!","success");
+setTimeout(()=>window.location.href="dashboard.html",1200);
   } catch (err) {
     console.error("Signup error:", err);
     toast("Sign up failed: " + (err.message || "Unknown"),"error");

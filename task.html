@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>QUANTUM RIO – Tasks</title>
 
+<!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
 <script>
 const firebaseConfig = {
@@ -23,83 +24,35 @@ const db   = firebase.database();
 </script>
 
 <style>
-html, body { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+/* prevent accidental highlight / tap-to-search */
+html,body{margin:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;font-family:Arial,Helvetica,sans-serif;background:#001f3f;color:#fff}
 
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#001f3f;
-  color:#fff;
-}
-header{
-  background:#002f6c;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:12px 16px;
-}
-header img{height:32px;}
-header h2{margin:0;font-size:1.2rem;}
-.stats{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
-  margin:12px;
-}
-.stat-box{
-  background:#003366;
-  padding:12px;
-  border-radius:8px;
-  text-align:center;
-}
-.stat-box h3{margin:0 0 4px 0;color:#ffcc00;font-size:0.9rem;}
-.stat-box p{margin:0;font-size:1.2rem;font-weight:700;}
-.history{
-  margin:12px;
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.05);
-  border-radius:8px;
-  padding:10px;
-  max-height:260px;
-  overflow-y:auto;
-}
-.history h3{margin:0 0 8px 0;color:#ffcc00;}
-.history .row{
-  display:flex;
-  justify-content:space-between;
-  padding:4px 0;
-  border-bottom:1px dotted rgba(255,255,255,0.1);
-  color:#cfe6ff;
-  font-size:0.85rem;
-}
-#bonus-section{
-  margin:12px;
-  text-align:center;
-}
-#claimBonus{
-  background:#ffcc00;
-  border:none;
-  padding:10px 18px;
-  border-radius:6px;
-  font-size:1rem;
-  font-weight:600;
-  color:#002244;
-  cursor:pointer;
-}
-#claimBonus[disabled]{
-  opacity:0.5;
-  cursor:not-allowed;
-}
-nav{
-  position:fixed;
-  bottom:0;left:0;right:0;
-  display:flex;
-  justify-content:space-around;
-  background:#002244;
-  padding:8px 0;
-}
-nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}
-nav i{font-size:18px;}
+/* allow normal selection inside inputs (if any) */
+input,textarea,select,button{-webkit-user-select:auto;user-select:auto}
+
+/* header */
+header{background:#002f6c;display:flex;align-items:center;gap:10px;padding:12px 16px}
+header img{height:32px}
+header h2{margin:0;font-size:1.2rem}
+
+/* stats grid */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px}
+.stat-box{background:#003366;padding:12px;border-radius:8px;text-align:center}
+.stat-box h3{margin:0 0 4px 0;color:#ffcc00;font-size:0.9rem}
+.stat-box p{margin:0;font-size:1.2rem;font-weight:700}
+
+/* history */
+.history{margin:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px;max-height:260px;overflow-y:auto}
+.history h3{margin:0 0 8px 0;color:#ffcc00}
+.history .row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted rgba(255,255,255,0.1);color:#cfe6ff;font-size:0.85rem}
+
+/* bottom nav */
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:#002244;padding:8px 0}
+nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem}
+nav i{font-size:18px}
+
+/* 1 cm space so nav doesn’t overlap scroll */
+body::after{content:"";display:block;height:1cm}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -111,31 +64,14 @@ nav i{font-size:18px;}
 </header>
 
 <div class="stats">
-  <div class="stat-box">
-    <h3>Total Tasks</h3>
-    <p id="total-tasks">0</p>
-  </div>
-  <div class="stat-box">
-    <h3>Remaining</h3>
-    <p id="remaining-tasks">0</p>
-  </div>
-  <div class="stat-box">
-    <h3>In Progress</h3>
-    <p id="inprogress-tasks">0</p>
-  </div>
-  <div class="stat-box">
-    <h3>Completed</h3>
-    <p id="completed-tasks">0</p>
-  </div>
-</div>
-
-<div id="bonus-section">
-  <button id="claimBonus">Claim Daily Bonus</button>
-  <div id="bonusStatus" style="margin-top:6px;font-size:0.85rem;"></div>
+  <div class="stat-box"><h3>Total Tasks</h3><p id="total-tasks">0</p></div>
+  <div class="stat-box"><h3>Remaining</h3><p id="remaining-tasks">0</p></div>
+  <div class="stat-box"><h3>In Progress</h3><p id="inprogress-tasks">0</p></div>
+  <div class="stat-box"><h3>Completed</h3><p id="completed-tasks">0</p></div>
 </div>
 
 <div class="history">
-  <h3>Task / Bonus History</h3>
+  <h3>Task / Action History</h3>
   <div id="task-history"></div>
 </div>
 
@@ -148,32 +84,25 @@ nav i{font-size:18px;}
 </nav>
 
 <script>
-function logTask(uid, action){
-  db.ref('users/'+uid+'/taskHistory').push({
-    action: action,
-    timestamp: Date.now()
-  });
-}
-
 auth.onAuthStateChanged(user=>{
   if(!user){
-    console.warn("No auth session");
+    // keep here if not signed in
     window.location='signin.html';
     return;
   }
   const uid = user.uid;
 
-  // Live Task Stats
-  db.ref('users/'+uid+'/tasks').on('value', snap => {
+  // Live task stats
+  db.ref('users/'+uid+'/tasks').on('value', snap=>{
     const val = snap.val() || {};
-    document.getElementById('total-tasks').textContent    = val.total     || 10;
-    document.getElementById('remaining-tasks').textContent= val.remaining || 0;
-    document.getElementById('inprogress-tasks').textContent=val.inprogress|| 0;
-    document.getElementById('completed-tasks').textContent= val.completed || 0;
+    document.getElementById('total-tasks').textContent     = val.total      ?? 10;
+    document.getElementById('remaining-tasks').textContent = val.remaining  ?? 0;
+    document.getElementById('inprogress-tasks').textContent= val.inprogress ?? 0;
+    document.getElementById('completed-tasks').textContent = val.completed  ?? 0;
   });
 
-  // Task History
-  db.ref('users/'+uid+'/taskHistory').limitToLast(50).on('value', snap => {
+  // Live history (VIP unlocks, interests, etc.)
+  db.ref('users/'+uid+'/taskHistory').limitToLast(50).on('value', snap=>{
     const hist = snap.val() || {};
     const container = document.getElementById('task-history');
     container.innerHTML = '';
@@ -182,35 +111,8 @@ auth.onAuthStateChanged(user=>{
       const row = document.createElement('div');
       row.className='row';
       const ts = new Date(item.timestamp||Date.now()).toLocaleString();
-      row.innerHTML = `<div>${item.action||'Task'}</div><div>${ts}</div>`;
+      row.innerHTML = `<div>${item.action||'Action'}</div><div>${ts}</div>`;
       container.appendChild(row);
-    });
-  });
-
-  // --- Bonus Claim Logic ---
-  const bonusBtn = document.getElementById('claimBonus');
-  const bonusStatus = document.getElementById('bonusStatus');
-  const todayKey = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
-
-  db.ref('users/'+uid+'/bonusClaims/'+todayKey).on('value', snap=>{
-    const already = snap.exists();
-    bonusBtn.disabled = already;
-    bonusStatus.textContent = already ? "Bonus already claimed today" : "";
-  });
-
-  bonusBtn.addEventListener('click', ()=>{
-    const bonusAmount = 100; // UGX or whichever
-    // Use a transaction to avoid double claim
-    db.ref('users/'+uid+'/balance').transaction(current=>{
-      return (current||0) + bonusAmount;
-    }, (err, committed, snap)=>{
-      if(err){ console.error(err); return; }
-      if(committed){
-        db.ref('users/'+uid+'/bonusClaims/'+todayKey).set(true);
-        logTask(uid, "Daily Bonus +" + bonusAmount);
-        bonusBtn.disabled = true;
-        bonusStatus.textContent = "Bonus claimed: +" + bonusAmount;
-      }
     });
   });
 });

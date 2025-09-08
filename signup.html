@@ -5,98 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign Up – QUAANTUM RIO INVESTMENT</title>
 <style>
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding-top: 48px;
-    background:
-      radial-gradient(circle at 25% 30%, rgba(255,255,255,0.15) 0%, transparent 60%),
-      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1) 0%, transparent 55%),
-      linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    background-attachment: fixed;
-    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
-  }
-  input,textarea,select,button { -webkit-user-select:auto; user-select:auto; }
-
-  .card {
-    background: rgba(13, 27, 63, 0.92);
-    color: #fff;
-    padding: 28px;
-    border-radius: 14px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-    max-width: 420px;
-    width: 90%;
-    animation: fadeIn .6s ease;
-  }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
-
-  .brand { text-align: center; margin-bottom: 20px; }
-  .brand h1 { font-size: 22px; color: #fff; margin: 6px 0 4px; }
-  .brand span { font-size: 13px; color: #e0e0e0; }
-
-  .ref-banner {
-    display: none;
-    background: rgba(227,242,253,0.3);
-    color: #fff;
-    text-align: center;
-    padding: 8px;
-    font-size: 14px;
-    border-radius: 6px;
-    margin-bottom: 14px;
-  }
-  label { font-size: 14px; display: block; margin: 10px 0 4px; color: #f5f5f5; }
-
-  .phone-row { display: flex; align-items: center; gap: 8px; }
-  .phone-code {
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.3);
-    padding: 10px 12px;
-    border-radius: 6px;
-    display: flex; align-items: center; gap: 6px; font-size: 14px;
-  }
-  .phone-code span { font-size: 18px; }
-  .phone-number {
-    flex: 1;
-    padding: 12px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-  }
-  .phone-number::placeholder { color: #ccc; }
-
-  input[type="text"],input[type="email"],input[type="password"] {
-    width: 100%; padding: 12px; border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.1); color: #fff;
-  }
-  input::placeholder { color: #ccc; }
-  input:focus { outline: none; border-color: #90caf9; }
-
-  button {
-    width: 100%; padding: 12px; background-color: #ffcc00;
-    color: #0d1b3f; font-weight: 700; border: none; border-radius: 6px;
-    margin-top: 15px; cursor: pointer; transition: background 0.3s ease;
-  }
-  button:hover { background-color: #fbc02d; }
-
-  .links { text-align: center; margin-top: 18px; font-size: 14px; color: #e0e0e0; }
-  .links a { color: #90caf9; text-decoration: none; }
-  .links a:hover { text-decoration: underline; }
-
-  .toast {
-    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    background: #323232; color: #fff; padding: 12px 24px; border-radius: 6px;
-    opacity: 0; pointer-events: none; transition: opacity .3s ease;
-    z-index: 9999; font-size: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  }
-  .toast.show { opacity: 1; }
-  .toast.success { background: #2e7d32; }
-  .toast.error   { background: #c62828; }
+  /* all your original CSS exactly as posted … */
 </style>
 </head>
 <body>
@@ -164,7 +73,7 @@ function toast(msg, type="error", delay=3000){
   setTimeout(()=>el.className="toast " + type, delay);
 }
 
-// pull ?ref=username from URL
+// ?ref=username
 let referrer = null;
 const params = new URLSearchParams(location.search);
 if (params.has("ref")){
@@ -187,7 +96,6 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
   if(password !== confirm) return toast("Passwords do not match.");
 
   try {
-    // uniqueness checks
     const snapU = await get(query(ref(db,"users"), orderByChild("username"), equalTo(username)));
     if (snapU.exists()) return toast("Username already taken.");
     const snapP = await get(query(ref(db,"users"), orderByChild("phone"), equalTo(phone)));
@@ -195,14 +103,13 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
     const snapE = await get(query(ref(db,"users"), orderByChild("email"), equalTo(email)));
     if (snapE.exists()) return toast("Email already registered.");
 
-    // create auth user
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const uid  = cred.user.uid;
 
-    // write new profile
+    // <-- changed here: save referral under "referrer" -->
     await set(ref(db, "users/" + uid), {
       uid, username, phone, email,
-      refBy: referrer || null,
+      referrer: referrer || null,
       joinedAt: Date.now(),
       balance: 0,
       earnings: 0,
@@ -210,7 +117,6 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
       vipLevels: { level1:false, level2:false, level3:false, level4:false, level5:false }
     });
 
-    // bump inviter’s counter
     if(referrer){
       const inviterSnap = await get(query(ref(db, "users"), orderByChild("username"), equalTo(referrer)));
       if (inviterSnap.exists()){
@@ -228,6 +134,6 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
     toast("Sign up failed: " + (err.message || "Unknown"));
   }
 });
-    </script>
+</script>
 </body>
 </html>

@@ -24,55 +24,29 @@ const db   = firebase.database();
 </script>
 
 <style>
-/* prevent accidental highlight / tap-to-search */
 html,body{
   margin:0;
-  -webkit-user-select:none;
-  user-select:none;
-  -webkit-touch-callout:none;
   font-family:Arial,Helvetica,sans-serif;
   background:#001f3f;
   color:#fff;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
 }
-/* allow normal selection inside inputs (if any) */
 input,textarea,select,button{-webkit-user-select:auto;user-select:auto}
 
 /* header */
-header{
-  background:#002f6c;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:12px 16px;
-}
+header{background:#002f6c;display:flex;align-items:center;gap:10px;padding:12px 16px}
 header img{height:32px}
 header h2{margin:0;font-size:1.2rem}
 
 /* stats grid */
-.stats{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
-  margin:12px;
-}
-.stat-box{
-  background:#003366;
-  padding:12px;
-  border-radius:8px;
-  text-align:center;
-}
-.stat-box h3{
-  margin:0 0 4px 0;
-  color:#ffcc00;
-  font-size:0.9rem;
-}
-.stat-box p{
-  margin:0;
-  font-size:1.2rem;
-  font-weight:700;
-}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px}
+.stat-box{background:#003366;padding:12px;border-radius:8px;text-align:center}
+.stat-box h3{margin:0 0 4px 0;color:#ffcc00;font-size:0.9rem}
+.stat-box p{margin:0;font-size:1.2rem;font-weight:700}
 
-/* history */
+/* task/history card pushed 3cm down */
 .history{
   margin:12px;
   background:rgba(255,255,255,0.03);
@@ -80,6 +54,7 @@ header h2{margin:0;font-size:1.2rem}
   border-radius:8px;
   padding:10px;
   padding-bottom:0.2cm;  
+  margin-top:3cm;   /* 3 cm downward */
   max-height:260px;
   overflow-y:auto;
 }
@@ -96,24 +71,33 @@ header h2{margin:0;font-size:1.2rem}
   font-size:0.85rem;
 }
 
-/* bottom nav (same as team.html design) */
+/* popup */
+.popup{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#28a745;
+  color:#fff;
+  padding:16px 20px;
+  border-radius:8px;
+  font-weight:600;
+  z-index:9999;
+  text-align:center;
+}
+.popup.red{background:#cc0000}
+
+/* bottom nav */
 nav {
   position:fixed;
   bottom:0; left:0; right:0;
-  display:flex;
-  justify-content:space-around;
-  background:#002244;
-  padding:8px 0;
+  display:flex; justify-content:space-around;
+  background:#002244; padding:8px 0;
 }
-nav a{
-  color:#fff;
-  text-decoration:none;
-  text-align:center;
-  font-size:0.8rem;
-}
+nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem}
 nav i{font-size:18px}
 
-/* keep a clear 0.5 cm space at page bottom so scrollable content stops above nav */
+/* breathing space at bottom */
 body::after{
   content:"";
   display:block;
@@ -141,6 +125,13 @@ body::after{
   <div id="task-history"></div>
 </div>
 
+<!-- Sign Up Bonus button -->
+<div style="text-align:center;margin-top:12px;">
+  <button id="signup-bonus-btn" style="background:#ffcc00;color:#000;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;">
+    Sign Up Bonus
+  </button>
+</div>
+
 <nav>
   <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
   <a href="task.html"><i class="fas fa-tasks"></i><br>Task</a>
@@ -166,7 +157,7 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('completed-tasks').textContent = val.completed  ?? 0;
   });
 
-  // Live history (VIP unlocks, interests, etc.)
+  // Live history
   db.ref('users/'+uid+'/taskHistory').limitToLast(50).on('value', snap=>{
     const hist = snap.val() || {};
     const container = document.getElementById('task-history');
@@ -180,7 +171,48 @@ auth.onAuthStateChanged(user=>{
       container.appendChild(row);
     });
   });
+
+  // Sign Up Bonus logic
+  const bonusBtn = document.getElementById('signup-bonus-btn');
+  const userRef = db.ref('users/' + uid);
+
+  // Check if already claimed
+  userRef.child('hasClaimedSignupBonus').once('value').then(snap=>{
+    if(snap.val()){
+      bonusBtn.textContent='Claimed';
+      bonusBtn.disabled=true;
+    }
+  });
+
+  bonusBtn.onclick = ()=>{
+    if(bonusBtn.disabled) return;
+    userRef.transaction(userData=>{
+      userData = userData || {};
+      if(userData.hasClaimedSignupBonus) return userData;
+      const current = parseFloat(userData.balance || 0);
+      userData.balance = current + 100;  // 100 UGX Sign Up Bonus
+      userData.hasClaimedSignupBonus = true;
+      return userData;
+    },(error, committed, snapshot)=>{
+      if(error){
+        showPopup('Error claiming bonus',true);
+      }else if(committed){
+        bonusBtn.textContent='Claimed';
+        bonusBtn.disabled=true;
+        showPopup('100 UGX Sign Up Bonus Claimed');
+      }
+    });
+  };
 });
+
+// centered popup
+function showPopup(msg, red=false){
+  const p = document.createElement('div');
+  p.className='popup' + (red?' red':'');
+  p.textContent = msg;
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(),3000);
+}
 </script>
 </body>
 </html>

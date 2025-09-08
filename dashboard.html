@@ -251,32 +251,33 @@ auth.onAuthStateChanged(user=>{
 
   // VIP list synced with Realtime Database
   const vipAmounts=[50000,100000,150000,200000,250000,300000,350000,400000,450000,500000];
-  const vipRef=db.ref('users/'+uid+'/vipLevels');
-  vipRef.on('value', snap => {
-    const vipList = document.getElementById('vip-list');
-    const raw = snap.val() || [];
-    const unlocked = Array.isArray(raw) ? raw : Object.keys(raw).map(Number);
+const vipNames=["Starter","Basic","Silver","Gold","Platinum","Diamond","Elite","VIP Pro","Executive","Ultimate"];
+const vipRef=db.ref('users/'+uid+'/vipLevels');
+vipRef.on('value', snap => {
+  const vipList = document.getElementById('vip-list');
+  const raw = snap.val() || [];
+  const unlocked = Array.isArray(raw) ? raw : Object.keys(raw).map(Number);
 
-    vipList.innerHTML = '';
-    vipAmounts.forEach((amt, idx) => {
-      const lvl = idx + 1;
-      const box = document.createElement('div');
-      box.className = 'vip-box';
-      box.innerHTML = `
-        <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png">
-        <div class="info">
-          <p>Starter Plan – Unlock amount: <span class="amount">UGX ${amt.toLocaleString()}</span></p>
-          <p>${unlocked.includes(lvl) ? "✅" : "🔐"} VIP${lvl}</p>
-          <p>Income will be available in 24 hrs</p>
-        </div>
-        <div class="arrow">»</div>`;
-      box.querySelector('.arrow').onclick = () => showPopup(
-        unlocked.includes(lvl) ? "VIP already unlocked" : "Please unlock your VIP first",
-        !unlocked.includes(lvl)
-      );
-      vipList.appendChild(box);
-    });
+  vipList.innerHTML = '';
+  vipAmounts.forEach((amt, idx) => {
+    const lvl = idx + 1;
+    const box = document.createElement('div');
+    box.className = 'vip-box';
+    box.innerHTML = `
+      <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png">
+      <div class="info">
+        <p>${vipNames[idx]} Plan – Unlock amount: <span class="amount">UGX ${amt.toLocaleString()}</span></p>
+        <p>${unlocked.includes(lvl) ? "✅" : "🔐"} VIP${lvl}</p>
+        <p>Income will be available in 24 hrs</p>
+      </div>
+      <div class="arrow">»</div>`;
+    box.querySelector('.arrow').onclick = () => showPopup(
+      unlocked.includes(lvl) ? "VIP already unlocked" : "Please unlock your VIP first",
+      !unlocked.includes(lvl)
+    );
+    vipList.appendChild(box);
   });
+});
 
   // Claim Bonus
   const claimBtn = document.getElementById('claim-btn');

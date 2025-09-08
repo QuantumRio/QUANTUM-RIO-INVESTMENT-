@@ -31,7 +31,7 @@ body{
   font-family: Arial, Helvetica, sans-serif;
   background:#001f3f;
   color:#fff;
-  padding-bottom:0.5cm; /* reduce bottom space */
+  padding-bottom:0.5cm;
 }
 
 /* Header */
@@ -45,38 +45,45 @@ header{
 header img{height:40px;}
 header h2{margin:0;font-size:1.2rem;color:#fff;}
 
-/* Floating cards */
-.card{
+/* Floating VIP card */
+.vip-card{
+  position:relative;
+  background: linear-gradient(135deg, #1f3a8a, #3b82f6);
+  box-shadow: 0 0 12px #3b82f6, 0 0 24px #1f40ff inset;
+  border-radius:12px;
+  padding:16px;
+  margin:16px;
+  width:calc(100% - 32px);
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  height:2cm;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+@keyframes glow{
+  0%{box-shadow:0 0 12px #3b82f6, 0 0 24px #1f40ff inset;}
+  100%{box-shadow:0 0 18px #60a5fa, 0 0 30px #2563eb inset;}
+}
+.vip-card .user-email{font-size:0.95rem;color:#ccc;margin-bottom:6px;}
+.vip-card .vip-level{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-weight:700;
+  font-size:1.2rem;
+  color:#ffd700;
+}
+.vip-card .vip-stars{
+  color:#ffd700;
+}
+
+/* Balance card */
+.balance-card{
   background:rgba(255,255,255,0.05);
   border-radius:12px;
   padding:16px;
   margin:16px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  box-shadow:0 4px 12px rgba(0,0,0,0.5);
-}
-
-.user-card{
-  height:2cm;
-}
-.user-card .user-email{
-  font-size:0.95rem;
-  color:#ccc;
-  margin-bottom:4px;
-}
-.user-card .vip-level{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  font-weight:600;
-  color:#ffd700;
-}
-.user-card .vip-stars{
-  color:#ffd700;
-}
-
-.balance-card{
   height:2.5cm;
   font-weight:700;
   font-size:1.3rem;
@@ -84,6 +91,7 @@ header h2{margin:0;font-size:1.2rem;color:#fff;}
   display:flex;
   align-items:center;
   justify-content:center;
+  box-shadow:0 4px 12px rgba(0,0,0,0.5);
 }
 
 /* Vertical Buttons */
@@ -151,17 +159,17 @@ nav i{font-size:18px}
   <h2>QUANTUM RIO – Profile</h2>
 </header>
 
-<!-- First card: Email + VIP -->
-<div class="card user-card">
+<!-- VIP + Email Card -->
+<div class="vip-card">
   <div class="user-email" id="user-email">loading...</div>
   <div class="vip-level">
-    <span id="vip-level">VIP 1</span>
-    <span class="vip-stars" id="vip-stars">★</span>
+    <span id="vip-level">VIP 0</span>
+    <span class="vip-stars" id="vip-stars"></span>
   </div>
 </div>
 
-<!-- Second card: Balance -->
-<div class="card balance-card" id="user-balance">Balance: UGX 0</div>
+<!-- Balance Card -->
+<div class="balance-card" id="user-balance">Balance: UGX 0</div>
 
 <!-- Buttons -->
 <div class="buttons">
@@ -186,14 +194,20 @@ auth.onAuthStateChanged(user=>{
   const uid = user.uid;
   const userRef = db.ref('users/' + uid);
 
-  // User Email
+  // Email
   document.getElementById('user-email').textContent = user.email;
 
-  // VIP Level + Stars
-  userRef.child('vipLevel').on('value', snap=>{
-    const lvl = snap.val() || 1;
-    document.getElementById('vip-level').textContent = `VIP ${lvl}`;
-    document.getElementById('vip-stars').textContent = '★'.repeat(lvl);
+  // VIP Level (realtime sync)
+  userRef.child('vipLevels').on('value', snap=>{
+    const vipUnlocked = snap.val() || [];
+    let level = 0;
+    if(Array.isArray(vipUnlocked) && vipUnlocked.length>0){
+      level = Math.max(...vipUnlocked);
+    }else if(typeof vipUnlocked === 'object'){
+      level = Math.max(...Object.keys(vipUnlocked).map(Number));
+    }
+    document.getElementById('vip-level').textContent = `VIP ${level}`;
+    document.getElementById('vip-stars').textContent = '★'.repeat(level);
   });
 
   // Balance

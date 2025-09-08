@@ -150,13 +150,25 @@ auth.onAuthStateChanged(user=>{
   if(!user){window.location='signin.html';return;}
   const uid=user.uid;
 
-  // Referral link
-  db.ref('users/'+uid+'/username').once('value').then(snap=>{
-    const username=snap.val()||uid;
-    const base=(window.location.origin&&window.location.origin!=='null')?window.location.origin:'https://quantumrio.github.io';
-    const link=base+'/signup.html?ref='+encodeURIComponent(username);
-    document.getElementById('ref-link').value=link;
+// Referral link
+db.ref('users/'+uid+'/username').once('value').then(snap=>{
+  const username = snap.val() || uid;
 
+  // Hard-set folder path exactly the way you want:
+  const link = `${location.origin}/QUANTUM-RIO-INVESTMENT-/signup.html?ref=${encodeURIComponent(username)}`;
+
+  document.getElementById('ref-link').value = link;
+
+  document.getElementById('copyRefBtn').onclick = () => {
+    navigator.clipboard.writeText(link).then(() => {
+      db.ref('users/' + uid + '/referralLogs').push({
+        copiedAt: firebase.database.ServerValue.TIMESTAMP,
+        link: link
+      });
+      showToast('Referral link copied!', 'success');
+    }).catch(() => showToast('Copy failed', 'error'));
+  };
+});
     document.getElementById('copyRefBtn').onclick=()=>{
       navigator.clipboard.writeText(link).then(()=>{
         db.ref('users/'+uid+'/referralLogs').push({

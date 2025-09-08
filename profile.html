@@ -181,16 +181,20 @@ auth.onAuthStateChanged(user=>{
 
   // VIP Level (real-time sync)
   userRef.child('vipLevels').on('value', snap=>{
-    const vipUnlocked = snap.val() || [];
-    let level = 0;
-    if(Array.isArray(vipUnlocked) && vipUnlocked.length>0){
-      level = Math.max(...vipUnlocked);
-    }else if(typeof vipUnlocked === 'object' && Object.keys(vipUnlocked).length>0){
-      level = Math.max(...Object.keys(vipUnlocked).map(Number));
-    }
-    document.getElementById('vip-level').textContent = `VIP ${level}`;
-    document.getElementById('vip-stars').textContent = '★'.repeat(level);
-  });
+  const vipUnlocked = snap.val() || [];
+  let level = 0;
+
+  if(Array.isArray(vipUnlocked)){
+    const nums = vipUnlocked.filter(n => typeof n === 'number');
+    if(nums.length>0) level = Math.max(...nums);
+  } else if(typeof vipUnlocked === 'object' && Object.keys(vipUnlocked).length>0){
+    const nums = Object.keys(vipUnlocked).map(n=>parseInt(n)).filter(n=>!isNaN(n));
+    if(nums.length>0) level = Math.max(...nums);
+  }
+
+  document.getElementById('vip-level').textContent = `VIP ${level}`;
+  document.getElementById('vip-stars').textContent = '★'.repeat(level);
+});
 
   // Balance
   userRef.child('balance').on('value', snap=>{

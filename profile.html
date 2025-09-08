@@ -45,34 +45,45 @@ header img{height:40px;}
 header h2{margin:0;font-size:1.2rem;color:#fff;}
 
 /* VIP + Email Card */
-.vip-card{
-  background:rgba(0,0,0,0.25);
-  border-radius:12px;
-  padding:16px;
-  margin:16px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  height:2cm;
+.vip-card {
+  position: relative;
+  background: #1e40af;  /* brighter solid blue */
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px;
+  width: calc(100% - 32px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  height: 2cm;
+  /* removed glow animation */
 }
-.vip-card .user-email{font-size:0.95rem;color:#ccc;margin-bottom:6px;}
-.vip-card .vip-level{display:flex;align-items:center;gap:6px;font-weight:700;font-size:1.2rem;color:#ffd700;}
-.vip-card .vip-stars{color:#ffd700;}
-
+.vip-card .user-email { font-size: 0.95rem; color: #fff; margin-bottom: 6px; }
+.vip-card .vip-level {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #ffd700;
+}
+.vip-card .vip-stars { color: #ffd700; }
 /* Balance Card */
-.balance-card{
-  background:rgba(255,255,255,0.05);
-  border-radius:12px;
-  padding:16px;
-  margin:16px;
-  height:2.5cm;
-  font-weight:700;
-  font-size:1.3rem;
-  text-align:center;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:0 4px 12px rgba(0,0,0,0.5);
+.balance-card {
+  background: #1e3a8a;  /* solid brighter blue */
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px;
+  height: 2.5cm;
+  font-weight: 700;
+  font-size: 1.3rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;   /* ensure text is visible */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 /* Vertical Buttons */

@@ -24,16 +24,14 @@ const db = firebase.database();
 </script>
 
 <style>
-body {
+body{
   margin:0;
   font-family: Arial, Helvetica, sans-serif;
   background:#0b1b33;
   color:#fff;
   padding-bottom:1cm;
 }
-.container{
-  padding:16px;
-}
+.container{padding:16px;}
 .card{
   background:#12345a;
   border-radius:12px;
@@ -49,12 +47,9 @@ body {
 }
 .card p{
   margin:6px 0;
-  user-select:text;
   font-size:0.95rem;
 }
-.card strong{
-  color:#ffee58;
-}
+.card strong{color:#ffee58;}
 input[type=text], input[type=file]{
   width:100%;
   padding:12px;
@@ -64,9 +59,6 @@ input[type=text], input[type=file]{
   background:#0b2b55;
   color:#fff;
   font-size:1rem;
-}
-input[type=file]{
-  padding:6px;
 }
 button{
   width:100%;
@@ -81,35 +73,22 @@ button{
   margin-top:12px;
 }
 button:hover{background:#00ff88;}
-
-/* bottom nav */
 nav{
-  position:fixed;
-  bottom:0;
-  left:0; right:0;
+  position:fixed; bottom:0; left:0; right:0;
   display:flex; justify-content:space-around;
-  background:#001a3d;
-  padding:10px 0;
+  background:#001a3d; padding:10px 0;
 }
-nav a{
-  color:#fff; text-decoration:none; text-align:center; font-size:0.8rem;
-}
+nav a{color:#fff; text-decoration:none; text-align:center; font-size:0.8rem;}
 nav i{font-size:20px;}
-
-/* Notification */
 #notification{
   position:fixed;
-  top:50%;
-  left:50%;
+  top:50%; left:50%;
   transform:translate(-50%, -50%);
-  background:#00cc66;
-  color:#001f3f;
+  background:#00cc66; color:#001f3f;
   padding:16px 24px;
   border-radius:10px;
   font-weight:700;
-  display:none;
-  z-index:9999;
-  text-align:center;
+  display:none; z-index:9999; text-align:center;
 }
 </style>
 </head>
@@ -118,20 +97,22 @@ nav i{font-size:20px;}
 <div class="container">
   <div class="card">
     <h3><i class="fas fa-mobile-alt" style="margin-right:8px;"></i>MTN Uganda</h3>
-    <p><strong>Minimum deposit:</strong> 3,000 UGX</p>
-    <p><strong>MTN Number:</strong> <span id="mtnNumber">0784513172</span></p>
+    <p><strong>Minimum deposit:</strong> 50,000 UGX</p>
+    <p><strong>MTN Number:</strong>
+      <span id="mtnNumber" style="cursor:pointer; background:#0b2b55; padding:4px 8px; border-radius:6px;">
+        0784513172
+      </span>
+    </p>
     <p><strong>Name:</strong> David Makwa</p>
-    <p>Send money directly to <span id="mtnNumberCopy">0784513172</span>. After sending, submit details below.</p>
+    <p>Send money directly to the MTN number above. After sending, submit details below.</p>
   </div>
 
   <div class="card">
     <h3><i class="fas fa-coins" style="margin-right:8px;"></i>Submit MTN Deposit</h3>
     <label>Amount (UGX)</label>
-    <input type="text" id="amount" placeholder="e.g. 3000">
+    <input type="text" id="amount" placeholder="e.g. 50000">
     <label>Your Phone number</label>
     <input type="text" id="phone" placeholder="07XXXXXXXX">
-    <label>Transaction Code</label>
-    <input type="text" id="trxcode" placeholder="e.g. ABC123XYZ">
     <label>Receipt / Screenshot (optional)</label>
     <input type="file" id="receipt">
     <button id="submitDeposit">Submit Deposit</button>
@@ -156,9 +137,9 @@ function showNotification(msg){
   setTimeout(()=>{notif.style.display='none';}, 3000);
 }
 
-// Make MTN number copiable
-document.getElementById('mtnNumberCopy').addEventListener('click', ()=>{
-  navigator.clipboard.writeText(document.getElementById('mtnNumberCopy').innerText)
+// click-to-copy only for MTN number
+document.getElementById('mtnNumber').addEventListener('click', ()=>{
+  navigator.clipboard.writeText('0784513172')
     .then(()=>showNotification("MTN number copied!"));
 });
 
@@ -166,15 +147,13 @@ auth.onAuthStateChanged(user=>{
   if(!user){window.location='signin.html'; return;}
   const uid = user.uid;
 
-  const submitBtn = document.getElementById('submitDeposit');
-  submitBtn.onclick = () => {
+  document.getElementById('submitDeposit').onclick = () => {
     const amount = parseFloat(document.getElementById('amount').value);
     const phone  = document.getElementById('phone').value;
-    const trxcode = document.getElementById('trxcode').value;
     const receiptFile = document.getElementById('receipt').files[0];
 
-    if(!amount || amount < 3000){
-      showNotification("Enter a valid amount >= 3,000");
+    if(!amount || amount < 50000){
+      showNotification("Enter a valid amount ≥ 50,000 UGX");
       return;
     }
     if(!phone){
@@ -182,14 +161,7 @@ auth.onAuthStateChanged(user=>{
       return;
     }
 
-    const newDeposit = {
-      uid,
-      amount,
-      phone,
-      trxcode,
-      status:"pending",
-      timestamp: Date.now()
-    };
+    const newDeposit = { uid, amount, phone, status:"pending", timestamp: Date.now() };
 
     if(receiptFile){
       const storageRef = firebase.storage().ref('deposits/'+uid+'/'+receiptFile.name);
@@ -200,7 +172,6 @@ auth.onAuthStateChanged(user=>{
           showNotification("Deposit submitted successfully!");
           document.getElementById('amount').value='';
           document.getElementById('phone').value='';
-          document.getElementById('trxcode').value='';
           document.getElementById('receipt').value='';
         });
       });
@@ -209,7 +180,6 @@ auth.onAuthStateChanged(user=>{
       showNotification("Deposit submitted successfully!");
       document.getElementById('amount').value='';
       document.getElementById('phone').value='';
-      document.getElementById('trxcode').value='';
     }
   };
 

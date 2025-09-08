@@ -27,7 +27,7 @@ const db = firebase.database();
 body {
   margin:0;
   font-family: Arial, Helvetica, sans-serif;
-  background:#001f3f;
+  background:#0b1b33;
   color:#fff;
   padding-bottom:1cm;
 }
@@ -35,38 +35,50 @@ body {
   padding:16px;
 }
 .card{
-  background:#002b5c;
-  border-radius:8px;
-  padding:16px;
+  background:#12345a;
+  border-radius:12px;
+  padding:20px;
   margin-bottom:16px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.3);
 }
 .card h3{
   margin-top:0;
   color:#00ffcc;
+  display:flex;
+  align-items:center;
 }
 .card p{
-  margin:4px 0;
-  user-select:text; /* make text copiable */
+  margin:6px 0;
+  user-select:text;
+  font-size:0.95rem;
+}
+.card strong{
+  color:#ffee58;
 }
 input[type=text], input[type=file]{
   width:100%;
-  padding:10px;
-  margin:8px 0;
-  border-radius:6px;
-  border:none;
-  background:#003366;
+  padding:12px;
+  margin:10px 0;
+  border-radius:8px;
+  border:1px solid #00ffcc;
+  background:#0b2b55;
   color:#fff;
+  font-size:1rem;
+}
+input[type=file]{
+  padding:6px;
 }
 button{
   width:100%;
-  padding:12px;
+  padding:14px;
   background:#00cc66;
   border:none;
   border-radius:8px;
   color:#fff;
   font-weight:700;
+  font-size:1rem;
   cursor:pointer;
-  margin-top:8px;
+  margin-top:12px;
 }
 button:hover{background:#00ff88;}
 
@@ -76,13 +88,13 @@ nav{
   bottom:0;
   left:0; right:0;
   display:flex; justify-content:space-around;
-  background:#002244;
-  padding:8px 0;
+  background:#001a3d;
+  padding:10px 0;
 }
 nav a{
   color:#fff; text-decoration:none; text-align:center; font-size:0.8rem;
 }
-nav i{font-size:18px;}
+nav i{font-size:20px;}
 
 /* Notification */
 #notification{
@@ -93,7 +105,7 @@ nav i{font-size:18px;}
   background:#00cc66;
   color:#001f3f;
   padding:16px 24px;
-  border-radius:8px;
+  border-radius:10px;
   font-weight:700;
   display:none;
   z-index:9999;
@@ -105,19 +117,21 @@ nav i{font-size:18px;}
 
 <div class="container">
   <div class="card">
-    <h3>Recharge via MTN Uganda</h3>
+    <h3><i class="fas fa-mobile-alt" style="margin-right:8px;"></i>MTN Uganda</h3>
     <p><strong>Minimum deposit:</strong> 3,000 UGX</p>
     <p><strong>MTN Number:</strong> <span id="mtnNumber">0784513172</span></p>
     <p><strong>Name:</strong> David Makwa</p>
-    <p>Send money directly to the MTN number above. After sending, submit details below.</p>
+    <p>Send money directly to <span id="mtnNumberCopy">0784513172</span>. After sending, submit details below.</p>
   </div>
 
   <div class="card">
-    <h3>Submit MTN Deposit</h3>
+    <h3><i class="fas fa-coins" style="margin-right:8px;"></i>Submit MTN Deposit</h3>
     <label>Amount (UGX)</label>
     <input type="text" id="amount" placeholder="e.g. 3000">
     <label>Your Phone number</label>
     <input type="text" id="phone" placeholder="07XXXXXXXX">
+    <label>Transaction Code</label>
+    <input type="text" id="trxcode" placeholder="e.g. ABC123XYZ">
     <label>Receipt / Screenshot (optional)</label>
     <input type="file" id="receipt">
     <button id="submitDeposit">Submit Deposit</button>
@@ -142,6 +156,12 @@ function showNotification(msg){
   setTimeout(()=>{notif.style.display='none';}, 3000);
 }
 
+// Make MTN number copiable
+document.getElementById('mtnNumberCopy').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(document.getElementById('mtnNumberCopy').innerText)
+    .then(()=>showNotification("MTN number copied!"));
+});
+
 auth.onAuthStateChanged(user=>{
   if(!user){window.location='signin.html'; return;}
   const uid = user.uid;
@@ -150,6 +170,7 @@ auth.onAuthStateChanged(user=>{
   submitBtn.onclick = () => {
     const amount = parseFloat(document.getElementById('amount').value);
     const phone  = document.getElementById('phone').value;
+    const trxcode = document.getElementById('trxcode').value;
     const receiptFile = document.getElementById('receipt').files[0];
 
     if(!amount || amount < 3000){
@@ -165,6 +186,7 @@ auth.onAuthStateChanged(user=>{
       uid,
       amount,
       phone,
+      trxcode,
       status:"pending",
       timestamp: Date.now()
     };
@@ -178,6 +200,7 @@ auth.onAuthStateChanged(user=>{
           showNotification("Deposit submitted successfully!");
           document.getElementById('amount').value='';
           document.getElementById('phone').value='';
+          document.getElementById('trxcode').value='';
           document.getElementById('receipt').value='';
         });
       });
@@ -186,6 +209,7 @@ auth.onAuthStateChanged(user=>{
       showNotification("Deposit submitted successfully!");
       document.getElementById('amount').value='';
       document.getElementById('phone').value='';
+      document.getElementById('trxcode').value='';
     }
   };
 

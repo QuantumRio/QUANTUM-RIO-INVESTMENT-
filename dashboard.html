@@ -184,7 +184,7 @@ nav i{font-size:18px;}
     <div class="email" id="user-email">loading...</div>
     <div class="balance" id="user-balance">Balance: UGX 0</div>
     <div class="balance-buttons">
-      <button onclick="location.href='deposit.html'">Deposit</button>
+      <button onclick="location.href='depositbonus.html'">Deposit</button>
       <button onclick="location.href='withdraw.html'">Withdraw</button>
       <button onclick="location.href='company.html'">Company</button>
     </div>
@@ -196,7 +196,7 @@ nav i{font-size:18px;}
       Improve VIP task rules on the same day. Upgrading the VIP level on the same day allows you to complete multiple tasks without restriction.
       You are now VIP1 and have completed today's task. You can upgrade to VIP2 to continue completing VIP2 tasks. Highest VIP level is VIP10.
     </p>
-    <button class="claim-btn" id="claim-btn">Claim 100 UGX</button>
+    <button class="claim-btn" id="claim-btn">Claim 500 UGX</button>
   </div>
 
   <div class="task-countdown">Task Reset Countdown: <span id="countdown"></span></div>
@@ -306,7 +306,7 @@ vipRef.on('value', snap => {
       else if (committed){
         claimBtn.textContent='Completed';
         claimBtn.disabled=true;
-        showPopup('100 UGX Claimed');
+        showPopup('500 UGX Claimed');
       }
       else{
         claimBtn.textContent='Completed';

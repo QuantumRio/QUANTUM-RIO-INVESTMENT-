@@ -6,10 +6,9 @@
 <title>QUANTUM RIO INVESTMENT – Dashboard</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- Firebase SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
 <script>
-  const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
   authDomain: "quantum-rio-uganda.firebaseapp.com",
   databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
@@ -19,162 +18,160 @@
   appId: "1:840875099079:web:1cd06a78276842a787cfe2",
   measurementId: "G-97G1PNQ9JB"
 };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db   = firebase.database();
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
 </script>
 
 <style>
-  body{
-    margin:0;
-    font-family: Arial, Helvetica, sans-serif;
-    background:#001f3f;
-    color:#fff;
-  }
-  /* was 4cm, now 1cm */
-  .page-content{ padding-bottom:1cm; }
+body{
+  margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+  background:#001f3f;
+  color:#fff;
+}
+.page-content{ padding-bottom:0.5cm; }
 
-  header{
-    background:#002f6c;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:12px 16px;
-  }
-  header img{height:32px;}
-  header h2{margin:0;font-size:1.2rem;}
+header{
+  background:#002f6c;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 16px;
+}
+header img{height:32px;}
+header h2{margin:0;font-size:1.2rem;}
 
-  .announcement{
-    background:#003366;
-    color:#ff0;
-    padding:8px;
-    white-space:nowrap;
-    overflow:hidden;
-  }
-  .announcement span{
-    display:inline-block;
-    padding-left:100%;
-    animation:scroll 16s linear infinite;
-  }
-  @keyframes scroll{
-    0%{transform:translateX(0);}
-    100%{transform:translateX(-100%);}
-  }
+.announcement{
+  background:#003366;
+  color:#ff0;
+  padding:8px;
+  white-space:nowrap;
+  overflow:hidden;
+}
+.announcement span{
+  display:inline-block;
+  padding-left:100%;
+  animation:scroll 16s linear infinite;
+}
+@keyframes scroll{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-100%);}
+}
 
-  .balance-section{
-    text-align:center;
-    background:#002b5c;
-    padding:18px 12px;
-  }
-  .balance-section .email{font-size:0.85rem;color:#ffa500;}
-  .balance-section .balance{font-size:1.4rem;margin:8px 0;color:#ffcc00;}
+.balance-section{
+  text-align:center;
+  background:#002b5c;
+  padding:18px 12px;
+}
+.balance-section .email{font-size:0.85rem;color:#ffa500;}
+.balance-section .balance{font-size:1.4rem;margin:8px 0;color:#ffcc00;}
 
-  .balance-buttons{
-    display:flex;
-    justify-content:space-around;
-    margin-top:10px;
-  }
-  .balance-buttons button{
-    background:#ffcc00;
-    color:#000;
-    border:none;
-    border-radius:8px;
-    padding:8px 0;
-    width:90px;
-    font-weight:600;
-    cursor:pointer;
-  }
+.balance-buttons{
+  display:flex;
+  justify-content:space-around;
+  margin-top:10px;
+}
+.balance-buttons button{
+  background:#ffcc00;
+  color:#000;
+  border:none;
+  border-radius:8px;
+  padding:8px 0;
+  width:90px;
+  font-weight:600;
+  cursor:pointer;
+}
 
-  .extra-info{text-align:center;padding:16px;}
-  .extra-info img{max-width:92%;border-radius:8px;margin-bottom:12px;}
-  .extra-info p{font-size:0.9rem;line-height:1.4;}
-  .claim-btn{
-    background:#ffcc00;
-    color:#000;
-    font-weight:700;
-    border:none;
-    border-radius:8px;
-    padding:8px 18px;
-    cursor:pointer;
-  }
+.extra-info{text-align:center;padding:16px;}
+.extra-info img{max-width:92%;border-radius:8px;margin-bottom:12px;}
+.extra-info p{font-size:0.9rem;line-height:1.4;}
+.claim-btn{
+  background:#ffcc00;
+  color:#000;
+  font-weight:700;
+  border:none;
+  border-radius:8px;
+  padding:8px 18px;
+  cursor:pointer;
+}
 
-  .task-countdown{
-    background:#001a33;
-    text-align:center;
-    padding:8px;
-    font-weight:600;
-    color:#ffcc00;
-  }
+.task-countdown{
+  background:#001a33;
+  text-align:center;
+  padding:8px;
+  font-weight:600;
+  color:#ffcc00;
+}
 
-  .earnings-card{
-    margin:12px;
-    background:rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.05);
-    border-radius:10px;
-    padding:12px;
-  }
-  .earnings-card h3{margin:0 0 6px 0;color:#ffd965;}
-  .earnings-list{max-height:160px;overflow-y:auto;padding:6px 0;}
-  .earnings-list .row{
-    display:flex;
-    justify-content:space-between;
-    padding:4px 0;
-    color:#cfe6ff;
-    border-bottom:1px dotted rgba(255,255,255,0.05);
-  }
-  .earnings-total{text-align:right;margin-top:6px;font-weight:700;color:#fff;}
+.earnings-card{
+  margin:12px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:10px;
+  padding:12px;
+}
+.earnings-card h3{margin:0 0 6px 0;color:#ffd965;}
+.earnings-list{max-height:160px;overflow-y:auto;padding:6px 0;}
+.earnings-list .row{
+  display:flex;
+  justify-content:space-between;
+  padding:4px 0;
+  color:#cfe6ff;
+  border-bottom:1px dotted rgba(255,255,255,0.05);
+}
+.earnings-total{text-align:right;margin-top:6px;font-weight:700;color:#fff;}
 
-  .vip-list{padding:10px;}
-  .vip-box{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    background:#003366;
-    padding:10px;
-    margin:6px 0;
-    border-radius:8px;
-  }
-  .vip-box img{height:38px;}
-  .vip-box .info{flex-grow:1;margin-left:8px;}
-  .vip-box .info .amount{font-weight:600;color:#ffcc00;}
-  .vip-box .arrow{font-size:22px;cursor:pointer;}
+.vip-list{padding:10px;}
+.vip-box{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#003366;
+  padding:10px;
+  margin:6px 0;
+  border-radius:8px;
+}
+.vip-box img{height:38px;}
+.vip-box .info{flex-grow:1;margin-left:8px;}
+.vip-box .info .amount{font-weight:600;color:#ffcc00;}
+.vip-box .arrow{font-size:22px;cursor:pointer;}
 
-  nav{
-    position:fixed;
-    bottom:0;
-    left:0;
-    right:0;
-    display:flex;
-    justify-content:space-around;
-    background:#002244;
-    padding:8px 0;
-  }
-  nav a{
-    color:#fff;
-    text-decoration:none;
-    text-align:center;
-    font-size:0.8rem;
-  }
-  nav i{font-size:18px;}
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  display:flex;
+  justify-content:space-around;
+  background:#002244;
+  padding:8px 0;
+}
+nav a{
+  color:#fff;
+  text-decoration:none;
+  text-align:center;
+  font-size:0.8rem;
+}
+nav i{font-size:18px;}
 
-  .popup{
-    position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    background:#28a745;
-    color:#fff;
-    padding:16px 20px;
-    border-radius:8px;
-    font-weight:600;
-    z-index:9999;
-    text-align:center;
-  }
-  .popup.red{background:#cc0000;}
+.popup{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#28a745;
+  color:#fff;
+  padding:16px 20px;
+  border-radius:8px;
+  font-weight:600;
+  z-index:9999;
+  text-align:center;
+}
+.popup.red{background:#cc0000;}
 </style>
 </head>
 <body>
-
 <div class="page-content">
   <header>
     <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png" alt="logo">
@@ -230,7 +227,6 @@ auth.onAuthStateChanged(user=>{
   const balRef=db.ref('users/'+uid+'/balance');
   balRef.on('value',snap=>{
     const bal=parseFloat(snap.val()||0);
-    // thousand separators
     document.getElementById('user-balance').textContent=`Balance: UGX ${bal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
   });
 
@@ -253,74 +249,70 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('vip-grand-total').textContent=`Total VIP Earnings: UGX ${total.toLocaleString()}`;
   });
 
-  const vipList=document.getElementById('vip-list');
-  const vipAmounts=[3000,5000,11000,21000,36000,75000,113000,151000,200000,250000];
+  // VIP list synced with Realtime Database
+  const vipAmounts=[50000,100000,150000,200000,250000,300000,350000,400000,450000,500000];
   const vipRef=db.ref('users/'+uid+'/vipLevels');
   vipRef.on('value', snap => {
-  const vipList = document.getElementById('vip-list');
-  const raw = snap.val() || [];
-  const unlocked = Array.isArray(raw) ? raw : Object.keys(raw).map(Number);
+    const vipList = document.getElementById('vip-list');
+    const raw = snap.val() || [];
+    const unlocked = Array.isArray(raw) ? raw : Object.keys(raw).map(Number);
 
-  vipList.innerHTML = '';
-  vipAmounts.forEach((amt, idx) => {
-    const lvl = idx + 1;
-    const box = document.createElement('div');
-    box.className = 'vip-box';
-    box.innerHTML = `
-      <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png">
-      <div class="info">
-        <p>Unlock amount: <span class="amount">UGX ${amt.toLocaleString()}</span></p>
-        <p>${unlocked.includes(lvl) ? "✅" : "🔐"} VIP${lvl}</p>
-      </div>
-      <div class="arrow">»</div>`;
-    box.querySelector('.arrow').onclick = () => showPopup(
-      unlocked.includes(lvl) ? "VIP already unlocked" : "Please unlock your VIP first",
-      !unlocked.includes(lvl)
-    );
-    vipList.appendChild(box);
+    vipList.innerHTML = '';
+    vipAmounts.forEach((amt, idx) => {
+      const lvl = idx + 1;
+      const box = document.createElement('div');
+      box.className = 'vip-box';
+      box.innerHTML = `
+        <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png">
+        <div class="info">
+          <p>Starter Plan – Unlock amount: <span class="amount">UGX ${amt.toLocaleString()}</span></p>
+          <p>${unlocked.includes(lvl) ? "✅" : "🔐"} VIP${lvl}</p>
+          <p>Income will be available in 24 hrs</p>
+        </div>
+        <div class="arrow">»</div>`;
+      box.querySelector('.arrow').onclick = () => showPopup(
+        unlocked.includes(lvl) ? "VIP already unlocked" : "Please unlock your VIP first",
+        !unlocked.includes(lvl)
+      );
+      vipList.appendChild(box);
+    });
   });
-});
 
-  // --- Claim Bonus ---
-const claimBtn = document.getElementById('claim-btn');
-const userRef  = db.ref('users/' + uid);
+  // Claim Bonus
+  const claimBtn = document.getElementById('claim-btn');
+  const userRef  = db.ref('users/' + uid);
 
-// First, check on load whether they've already claimed
-userRef.child('hasClaimedBonus').once('value').then(snap => {
-  if (snap.val()) {
-    claimBtn.textContent = 'Completed';
-    claimBtn.disabled = true;
-  }
-});
-
-claimBtn.onclick = () => {
-  if (claimBtn.disabled) return;
-
-  // Run an atomic transaction so it only ever applies once
-  userRef.transaction(userData => {
-    userData = userData || {};
-    // If bonus already marked, abort (no popup, no add)
-    if (userData.hasClaimedBonus) return userData;
-
-    const current = parseFloat(userData.balance || 0);
-    userData.balance = current + 100;      // add 100 UGX one time
-    userData.hasClaimedBonus = true;       // mark as claimed
-    return userData;
-  }, (error, committed, snapshot) => {
-    if (error) {
-      console.error(error);
-      showPopup('Error claiming bonus', true);
-    } else if (committed) {
-      claimBtn.textContent = 'Completed';
-      claimBtn.disabled = true;
-      showPopup('100 UGX Claimed');   // only shows for first successful claim
-    } else {
-      // Not committed means already claimed → do nothing & no popup
+  userRef.child('hasClaimedBonus').once('value').then(snap => {
+    if (snap.val()) {
       claimBtn.textContent = 'Completed';
       claimBtn.disabled = true;
     }
   });
-};
+
+  claimBtn.onclick = () => {
+    if (claimBtn.disabled) return;
+
+    userRef.transaction(userData => {
+      userData = userData || {};
+      if (userData.hasClaimedBonus) return userData;
+
+      const current = parseFloat(userData.balance || 0);
+      userData.balance = current + 100;
+      userData.hasClaimedBonus = true;
+      return userData;
+    }, (error, committed) => {
+      if (error) showPopup('Error claiming bonus', true);
+      else if (committed){
+        claimBtn.textContent='Completed';
+        claimBtn.disabled=true;
+        showPopup('100 UGX Claimed');
+      }
+      else{
+        claimBtn.textContent='Completed';
+        claimBtn.disabled=true;
+      }
+    });
+  };
 
   startCountdown();
 });
@@ -336,6 +328,7 @@ function startCountdown(){
     c.textContent=`${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
   },1000);
 }
+
 function showPopup(msg,red=false){
   const p=document.createElement('div');
   p.className='popup'+(red?' red':'');
@@ -345,4 +338,4 @@ function showPopup(msg,red=false){
 }
 </script>
 </body>
-    </html>
+</html>

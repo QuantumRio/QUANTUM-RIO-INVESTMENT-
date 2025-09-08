@@ -23,7 +23,6 @@
     padding:15px;
   }
   .bonus-card{
-    width:100%;
     background:rgba(255,255,255,0.04);
     border:1px solid rgba(255,255,255,0.08);
     border-radius:10px;
@@ -32,11 +31,7 @@
     display:flex;
     justify-content:space-between;
     align-items:center;
-    cursor:pointer;
-    transition:background 0.2s;
-  }
-  .bonus-card:hover{
-    background:rgba(255,255,255,0.08);
+    cursor:pointer;  /* clickable */
   }
   .deposit-amt{
     font-size:1rem;
@@ -46,7 +41,6 @@
     font-size:0.95rem;
     color:#63e6be;
   }
-  /* bottom nav pulled from dashboard.html */
   .bottom-nav{
     position:fixed;
     bottom:0;left:0;right:0;
@@ -118,7 +112,7 @@
   <!-- Firebase v9 SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
     import { getDatabase } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
     const firebaseConfig = {
@@ -136,18 +130,13 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // protect page
-    onAuthStateChanged(auth, user => {
-      if (!user) window.location.href = "signin.html";
-    });
-
-    // redirect to deposit.html with ?amount
-    document.querySelectorAll('.bonus-card').forEach(card => {
-      card.addEventListener('click', () => {
+    /* Redirect to deposit.html carrying the amount */
+    document.querySelectorAll('.bonus-card').forEach(card=>{
+      card.addEventListener('click', ()=>{
         const amt = card.dataset.amount;
-        window.location.href = `deposit.html?amount=${amt}`;
+        if (amt) window.location.href = `deposit.html?amount=${amt}`;
       });
     });
   </script>
 </body>
-  </html>
+</html>

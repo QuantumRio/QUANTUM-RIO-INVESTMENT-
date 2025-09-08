@@ -152,7 +152,17 @@ auth.onAuthStateChanged(user=>{
   }
   const uid = user.uid;
 
-  // make sure button is wired up AFTER auth
+  /* ---- AUTO-FILL PHONE ---- */
+  db.ref('users/'+uid+'/phone').once('value').then(snap=>{
+    const val = snap.val();
+    if(val){
+      document.getElementById('phone').value = val;
+    } else if (user.phoneNumber){
+      document.getElementById('phone').value = user.phoneNumber;
+    }
+  });
+  /* ------------------------- */
+
   const btn = document.getElementById('submitDeposit');
   btn.addEventListener('click', async () => {
     try {
@@ -168,6 +178,9 @@ auth.onAuthStateChanged(user=>{
         showNotification("Enter your phone number");
         return;
       }
+
+      // persist phone to user profile
+      await db.ref('users/'+uid+'/phone').set(phone);
 
       // create DB key first
       const ref = db.ref('deposits/'+uid).push();
@@ -189,7 +202,7 @@ auth.onAuthStateChanged(user=>{
       showNotification("Deposit submitted successfully!");
 
       document.getElementById('amount').value='';
-      document.getElementById('phone').value='';
+      // keep phone filled for convenience
       document.getElementById('receipt').value='';
     } catch(err){
       console.error(err);

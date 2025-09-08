@@ -184,7 +184,7 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
     // write new profile
     await set(ref(db, "users/" + uid), {
   uid, username, phone, email,
-  refBy: referrer || null,    // use same key team page expects
+  refBy: referrer || null,        // <- keep key consistent
   joinedAt: Date.now(),
   balance: 0,
   earnings: 0,

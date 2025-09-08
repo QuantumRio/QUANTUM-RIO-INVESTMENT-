@@ -31,8 +31,17 @@ body{
   background:#001f3f;
   color:#fff;
   line-height:1.5;
-  padding-bottom:0.5cm;
+  padding-bottom:0.5cm; /* breathing space */
+  -webkit-user-select:none;
+  -webkit-touch-callout:none;
+  user-select:none;
 }
+input,textarea,select,button{
+  -webkit-user-select:auto;
+  user-select:auto;
+  autocomplete: off;
+}
+
 header{
   display:flex;
   align-items:center;
@@ -71,6 +80,7 @@ ul{padding-left:18px;}
   color:#fff;
 }
 
+/* Buttons */
 .buttons{
   display:flex;
   flex-direction:column;
@@ -138,7 +148,6 @@ nav i{font-size:18px}
   <p>To become a platform member, you must prepay a membership fee equivalent to (platform specified amount) UGX. Payment must be made through a virtual currency wallet or cryptocurrency exchange, supporting TRC20-USDT, BEP20-USDT, TRX, BNB, etc. Users need basic knowledge of virtual currency operations, including wallet address generation, transaction confirmation, on-chain query, etc. Your income and profit will be determined by the amount of top-up.</p>
 
   <h3>VIP Levels</h3>
-  <h3>VIP Levels</h3>
 <table class="vip-table">
   <tr>
     <th>VIP Level</th>
@@ -173,8 +182,6 @@ nav i{font-size:18px}
   <h3>❽ User Guide and Disclaimer</h3>
   <p>Users must ensure security and legality. CYPX is not liable for user errors. The platform can modify rules at any time and users must comply with local regulations.</p>
 
-
-  
 </div>
 
 <nav>
@@ -186,6 +193,4 @@ nav i{font-size:18px}
 </nav>
 
 </body>
-  </html>
-
-
+</html>

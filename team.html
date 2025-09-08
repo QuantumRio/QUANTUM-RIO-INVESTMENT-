@@ -169,16 +169,6 @@ db.ref('users/'+uid+'/username').once('value').then(snap=>{
     }).catch(() => showToast('Copy failed', 'error'));
   };
 });
-    document.getElementById('copyRefBtn').onclick=()=>{
-      navigator.clipboard.writeText(link).then(()=>{
-        db.ref('users/'+uid+'/referralLogs').push({
-          copiedAt:firebase.database.ServerValue.TIMESTAMP,
-          link:link
-        });
-        showToast('Referral link copied!','success');
-      }).catch(()=>showToast('Copy failed','error'));
-    };
-  });
 
   // Live team stats
   const teamStatsRef=db.ref('users/'+uid+'/teamStats');

@@ -46,6 +46,7 @@ body {
 }
 .card p{
   margin:4px 0;
+  user-select:text; /* make text copiable */
 }
 input[type=text], input[type=file]{
   width:100%;
@@ -82,22 +83,38 @@ nav a{
   color:#fff; text-decoration:none; text-align:center; font-size:0.8rem;
 }
 nav i{font-size:18px;}
+
+/* Notification */
+#notification{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  background:#00cc66;
+  color:#001f3f;
+  padding:16px 24px;
+  border-radius:8px;
+  font-weight:700;
+  display:none;
+  z-index:9999;
+  text-align:center;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
   <div class="card">
-    <h3>Recharge via M-Pesa</h3>
-    <p><strong>Minimum deposit:</strong> 3,000 KES</p>
-    <p><strong>Mpesa Number:</strong> 0784513172</p>
+    <h3>Recharge via MTN Uganda</h3>
+    <p><strong>Minimum deposit:</strong> 3,000 UGX</p>
+    <p><strong>MTN Number:</strong> <span id="mtnNumber">0784513172</span></p>
     <p><strong>Name:</strong> David Makwa</p>
-    <p>Send money directly to 0784513172. After sending, submit details below.</p>
+    <p>Send money directly to the MTN number above. After sending, submit details below.</p>
   </div>
 
   <div class="card">
-    <h3>Submit M-Pesa Deposit</h3>
-    <label>Amount (KES)</label>
+    <h3>Submit MTN Deposit</h3>
+    <label>Amount (UGX)</label>
     <input type="text" id="amount" placeholder="e.g. 3000">
     <label>Your Phone number</label>
     <input type="text" id="phone" placeholder="07XXXXXXXX">
@@ -115,7 +132,16 @@ nav i{font-size:18px;}
   <a href="profile.html"><i class="fas fa-user"></i><br>Me</a>
 </nav>
 
+<div id="notification"></div>
+
 <script>
+function showNotification(msg){
+  const notif = document.getElementById('notification');
+  notif.innerText = msg;
+  notif.style.display = 'block';
+  setTimeout(()=>{notif.style.display='none';}, 3000);
+}
+
 auth.onAuthStateChanged(user=>{
   if(!user){window.location='signin.html'; return;}
   const uid = user.uid;
@@ -127,11 +153,11 @@ auth.onAuthStateChanged(user=>{
     const receiptFile = document.getElementById('receipt').files[0];
 
     if(!amount || amount < 3000){
-      alert("Enter a valid amount >= 3,000");
+      showNotification("Enter a valid amount >= 3,000");
       return;
     }
     if(!phone){
-      alert("Enter your phone number");
+      showNotification("Enter your phone number");
       return;
     }
 
@@ -143,14 +169,13 @@ auth.onAuthStateChanged(user=>{
       timestamp: Date.now()
     };
 
-    // Optional: handle receipt upload
     if(receiptFile){
       const storageRef = firebase.storage().ref('deposits/'+uid+'/'+receiptFile.name);
       storageRef.put(receiptFile).then(snapshot=>{
         snapshot.ref.getDownloadURL().then(url=>{
           newDeposit.receiptURL = url;
           db.ref('deposits').push(newDeposit);
-          alert("Deposit submitted successfully!");
+          showNotification("Deposit submitted successfully!");
           document.getElementById('amount').value='';
           document.getElementById('phone').value='';
           document.getElementById('receipt').value='';
@@ -158,13 +183,12 @@ auth.onAuthStateChanged(user=>{
       });
     } else {
       db.ref('deposits').push(newDeposit);
-      alert("Deposit submitted successfully!");
+      showNotification("Deposit submitted successfully!");
       document.getElementById('amount').value='';
       document.getElementById('phone').value='';
     }
   };
 
-  // Listen for approved deposits and update balance
   const depositsRef = db.ref('deposits').orderByChild('uid').equalTo(uid);
   depositsRef.on('child_changed', snap=>{
     const deposit = snap.val();
@@ -181,4 +205,4 @@ auth.onAuthStateChanged(user=>{
 </script>
 
 </body>
-  </html>
+</html>

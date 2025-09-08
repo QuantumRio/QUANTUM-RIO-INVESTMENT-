@@ -130,14 +130,15 @@
 
 <script>
   const firebaseConfig = {
-    apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
-    authDomain: "quantum-rio-uganda.firebaseapp.com",
-    projectId: "quantum-rio-uganda",
-    storageBucket: "quantum-rio-uganda.firebasestorage.app",
-    messagingSenderId: "840875099079",
-    appId: "1:840875099079:web:1cd06a78276842a787cfe2",
-    measurementId: "G-97G1PNQ9JB"
-  };
+  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+  authDomain: "quantum-rio-uganda.firebaseapp.com",
+  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "quantum-rio-uganda",
+  storageBucket: "quantum-rio-uganda.appspot.com",
+  messagingSenderId: "840875099079",
+  appId: "1:840875099079:web:1cd06a78276842a787cfe2",
+  measurementId: "G-97G1PNQ9JB"
+};
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();

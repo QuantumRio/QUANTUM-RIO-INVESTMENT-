@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QUANTUM RIO INVESTMENT – Deposit</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+  authDomain: "quantum-rio-uganda.firebaseapp.com",
+  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "quantum-rio-uganda",
+  storageBucket: "quantum-rio-uganda.appspot.com",
+  messagingSenderId: "840875099079",
+  appId: "1:840875099079:web:1cd06a78276842a787cfe2",
+  measurementId: "G-97G1PNQ9JB"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+</script>
+
+<style>
+body {
+  margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+  background:#001f3f;
+  color:#fff;
+  padding-bottom:1cm;
+}
+.container{
+  padding:16px;
+}
+.card{
+  background:#002b5c;
+  border-radius:8px;
+  padding:16px;
+  margin-bottom:16px;
+}
+.card h3{
+  margin-top:0;
+  color:#00ffcc;
+}
+.card p{
+  margin:4px 0;
+}
+input[type=text], input[type=file]{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:6px;
+  border:none;
+  background:#003366;
+  color:#fff;
+}
+button{
+  width:100%;
+  padding:12px;
+  background:#00cc66;
+  border:none;
+  border-radius:8px;
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:8px;
+}
+button:hover{background:#00ff88;}
+
+/* bottom nav */
+nav{
+  position:fixed;
+  bottom:0;
+  left:0; right:0;
+  display:flex; justify-content:space-around;
+  background:#002244;
+  padding:8px 0;
+}
+nav a{
+  color:#fff; text-decoration:none; text-align:center; font-size:0.8rem;
+}
+nav i{font-size:18px;}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="card">
+    <h3>Recharge via M-Pesa</h3>
+    <p><strong>Minimum deposit:</strong> 3,000 KES</p>
+    <p><strong>Mpesa Number:</strong> 0784513172</p>
+    <p><strong>Name:</strong> David Makwa</p>
+    <p>Send money directly to 0784513172. After sending, submit details below.</p>
+  </div>
+
+  <div class="card">
+    <h3>Submit M-Pesa Deposit</h3>
+    <label>Amount (KES)</label>
+    <input type="text" id="amount" placeholder="e.g. 3000">
+    <label>Your Phone number</label>
+    <input type="text" id="phone" placeholder="07XXXXXXXX">
+    <label>Receipt / Screenshot (optional)</label>
+    <input type="file" id="receipt">
+    <button id="submitDeposit">Submit Deposit</button>
+  </div>
+</div>
+
+<nav>
+  <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
+  <a href="task.html"><i class="fas fa-tasks"></i><br>Task</a>
+  <a href="team.html"><i class="fas fa-users"></i><br>Team</a>
+  <a href="vip.html"><i class="fas fa-crown"></i><br>VIP</a>
+  <a href="profile.html"><i class="fas fa-user"></i><br>Me</a>
+</nav>
+
+<script>
+auth.onAuthStateChanged(user=>{
+  if(!user){window.location='signin.html'; return;}
+  const uid = user.uid;
+
+  const submitBtn = document.getElementById('submitDeposit');
+  submitBtn.onclick = () => {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const phone  = document.getElementById('phone').value;
+    const receiptFile = document.getElementById('receipt').files[0];
+
+    if(!amount || amount < 3000){
+      alert("Enter a valid amount >= 3,000");
+      return;
+    }
+    if(!phone){
+      alert("Enter your phone number");
+      return;
+    }
+
+    const newDeposit = {
+      uid,
+      amount,
+      phone,
+      status:"pending",
+      timestamp: Date.now()
+    };
+
+    // Optional: handle receipt upload
+    if(receiptFile){
+      const storageRef = firebase.storage().ref('deposits/'+uid+'/'+receiptFile.name);
+      storageRef.put(receiptFile).then(snapshot=>{
+        snapshot.ref.getDownloadURL().then(url=>{
+          newDeposit.receiptURL = url;
+          db.ref('deposits').push(newDeposit);
+          alert("Deposit submitted successfully!");
+          document.getElementById('amount').value='';
+          document.getElementById('phone').value='';
+          document.getElementById('receipt').value='';
+        });
+      });
+    } else {
+      db.ref('deposits').push(newDeposit);
+      alert("Deposit submitted successfully!");
+      document.getElementById('amount').value='';
+      document.getElementById('phone').value='';
+    }
+  };
+
+  // Listen for approved deposits and update balance
+  const depositsRef = db.ref('deposits').orderByChild('uid').equalTo(uid);
+  depositsRef.on('child_changed', snap=>{
+    const deposit = snap.val();
+    if(deposit.status === "approved"){
+      const userRef = db.ref('users/'+uid);
+      userRef.transaction(userData=>{
+        userData = userData || {};
+        userData.balance = (parseFloat(userData.balance) || 0) + parseFloat(deposit.amount);
+        return userData;
+      });
+    }
+  });
+});
+</script>
+
+</body>
+  </html>

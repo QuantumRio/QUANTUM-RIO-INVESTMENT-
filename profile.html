@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>QUANTUM RIO – Profile</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -30,7 +30,7 @@ body{
   font-family: Arial, Helvetica, sans-serif;
   background:#001f3f;
   color:#fff;
-  padding-bottom:1.5cm; /* Reduced breathing space */
+  padding-bottom:1.5cm; /* keep same breathing space */
 }
 
 /* Header */
@@ -56,8 +56,7 @@ header h2{margin:0;font-size:1.2rem;color:#fff;}
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  height: 2cm;
-  /* removed glow animation */
+  height: 96px; /* was 2cm – px removes zoom */
 }
 .vip-card .user-email { font-size: 0.95rem; color: #fff; margin-bottom: 6px; }
 .vip-card .vip-level {
@@ -69,13 +68,14 @@ header h2{margin:0;font-size:1.2rem;color:#fff;}
   color: #ffd700;
 }
 .vip-card .vip-stars { color: #ffd700; }
+
 /* Balance Card */
 .balance-card {
   background: #1e3a8a;  /* solid brighter blue */
   border-radius: 12px;
   padding: 16px;
   margin: 16px;
-  height: 2.5cm;
+  height: 110px; /* was 2.5cm – px removes zoom */
   font-weight: 700;
   font-size: 1.3rem;
   text-align: center;
@@ -192,25 +192,26 @@ auth.onAuthStateChanged(user=>{
 
   // VIP Level (real-time sync)
   userRef.child('vipLevels').on('value', snap=>{
-  const vipUnlocked = snap.val() || [];
-  let level = 0;
+    const vipUnlocked = snap.val() || [];
+    let level = 0;
 
-  if(Array.isArray(vipUnlocked)){
-    const nums = vipUnlocked.filter(n => typeof n === 'number');
-    if(nums.length>0) level = Math.max(...nums);
-  } else if(typeof vipUnlocked === 'object' && Object.keys(vipUnlocked).length>0){
-    const nums = Object.keys(vipUnlocked).map(n=>parseInt(n)).filter(n=>!isNaN(n));
-    if(nums.length>0) level = Math.max(...nums);
-  }
+    if(Array.isArray(vipUnlocked)){
+      const nums = vipUnlocked.filter(n => typeof n === 'number');
+      if(nums.length>0) level = Math.max(...nums);
+    } else if(typeof vipUnlocked === 'object' && Object.keys(vipUnlocked).length>0){
+      const nums = Object.keys(vipUnlocked).map(n=>parseInt(n)).filter(n=>!isNaN(n));
+      if(nums.length>0) level = Math.max(...nums);
+    }
 
-  document.getElementById('vip-level').textContent = `VIP ${level}`;
-  document.getElementById('vip-stars').textContent = '★'.repeat(level);
-});
+    document.getElementById('vip-level').textContent = `VIP ${level}`;
+    document.getElementById('vip-stars').textContent = '★'.repeat(level);
+  });
 
   // Balance
   userRef.child('balance').on('value', snap=>{
     const bal = parseFloat(snap.val() || 0);
-    document.getElementById('user-balance').textContent = `Balance: UGX ${bal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    document.getElementById('user-balance').textContent =
+      `Balance: UGX ${bal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
   });
 
   // Change Password

@@ -25,21 +25,52 @@ const db   = firebase.database();
 
 <style>
 /* prevent accidental highlight / tap-to-search */
-html,body{margin:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;font-family:Arial,Helvetica,sans-serif;background:#001f3f;color:#fff}
-
+html,body{
+  margin:0;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#001f3f;
+  color:#fff;
+}
 /* allow normal selection inside inputs (if any) */
 input,textarea,select,button{-webkit-user-select:auto;user-select:auto}
 
 /* header */
-header{background:#002f6c;display:flex;align-items:center;gap:10px;padding:12px 16px}
+header{
+  background:#002f6c;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 16px;
+}
 header img{height:32px}
 header h2{margin:0;font-size:1.2rem}
 
 /* stats grid */
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px}
-.stat-box{background:#003366;padding:12px;border-radius:8px;text-align:center}
-.stat-box h3{margin:0 0 4px 0;color:#ffcc00;font-size:0.9rem}
-.stat-box p{margin:0;font-size:1.2rem;font-weight:700}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin:12px;
+}
+.stat-box{
+  background:#003366;
+  padding:12px;
+  border-radius:8px;
+  text-align:center;
+}
+.stat-box h3{
+  margin:0 0 4px 0;
+  color:#ffcc00;
+  font-size:0.9rem;
+}
+.stat-box p{
+  margin:0;
+  font-size:1.2rem;
+  font-weight:700;
+}
 
 /* history */
 .history{
@@ -64,21 +95,29 @@ header h2{margin:0;font-size:1.2rem}
   color:#cfe6ff;
   font-size:0.85rem;
 }
-/* bottom nav */
+
+/* bottom nav (same as team.html design) */
 nav {
   position:fixed;
   bottom:0; left:0; right:0;
-  display:flex; justify-content:space-around;
-  background:#002244; padding:8px 0;
+  display:flex;
+  justify-content:space-around;
+  background:#002244;
+  padding:8px 0;
 }
-nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem}
+nav a{
+  color:#fff;
+  text-decoration:none;
+  text-align:center;
+  font-size:0.8rem;
+}
 nav i{font-size:18px}
 
-/* keep a clear 1 cm space at page bottom so scrollable content stops above nav */
+/* keep a clear 0.5 cm space at page bottom so scrollable content stops above nav */
 body::after{
   content:"";
   display:block;
-  height:1cm;       /* ~37.8 px on normal DPI */
+  height:0.5cm;
 }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -113,7 +152,6 @@ body::after{
 <script>
 auth.onAuthStateChanged(user=>{
   if(!user){
-    // keep here if not signed in
     window.location='signin.html';
     return;
   }

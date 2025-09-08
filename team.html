@@ -29,7 +29,7 @@ body{
   font-family:Arial,Helvetica,sans-serif;
   background:#001f3f;
   color:#fff;
-  padding-bottom:1cm; /* requested space */
+  padding-bottom:1cm;
 }
 header{
   background:#002f6c;
@@ -137,8 +137,8 @@ nav i{font-size:18px;}
 
 <div id="toast" class="toast"></div>
 
-<<!-- everything above is unchanged -->
 <script>
+// Toast function
 function showToast(msg, type='success'){
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -150,20 +150,15 @@ auth.onAuthStateChanged(user=>{
   if(!user){window.location='signin.html';return;}
   const uid = user.uid;
 
-  // Build referral link (force https + host so GitHub Pages works)
+  // Build referral link
   db.ref('users/'+uid+'/username').once('value').then(snap=>{
     const username = snap.val() || uid;
-
-    // window.location.origin sometimes = "file://..." when testing locally,
-    // so fall back to your real production host
     const base = (window.location.protocol.startsWith('http') && window.location.origin !== 'null')
                  ? window.location.origin
                  : 'https://quantumrio.github.io';
-
     const link = base + '/signup.html?ref=' + encodeURIComponent(username);
     document.getElementById('ref-link').value = link;
 
-    // Copy & log
     document.getElementById('copyRefBtn').addEventListener('click', ()=>{
       navigator.clipboard.writeText(link).then(()=>{
         db.ref('users/'+uid+'/referralLogs').push({
@@ -171,14 +166,13 @@ auth.onAuthStateChanged(user=>{
           link: link
         });
         showToast('Referral link copied!','success');
-      }).catch(()=>{
-        showToast('Copy failed','error');
-      });
+      }).catch(()=>{showToast('Copy failed','error');});
     });
   });
 
-  // realtime team stats
-  db.ref('users/'+uid+'/teamStats').on('value', snap=>{
+  // Real-time Team Stats
+  const teamStatsRef = db.ref('users/'+uid+'/teamStats');
+  teamStatsRef.on('value', snap=>{
     const s = snap.val() || {};
     document.getElementById('team-size').textContent     = s.size || 0;
     document.getElementById('team-recharge').textContent = (s.recharge || 0).toLocaleString();
@@ -188,13 +182,50 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('first-withdraw').textContent= (s.firstWithdraw || 0).toLocaleString();
   });
 
-  // realtime commissions
-  db.ref('users/'+uid+'/commissions').on('value', snap=>{
+  // Real-time Commissions
+  const commissionsRef = db.ref('users/'+uid+'/commissions');
+  commissionsRef.on('value', snap=>{
     const c = snap.val() || {};
     document.getElementById('lvl1-total').textContent = (c.level1 || 0).toLocaleString();
     document.getElementById('lvl2-total').textContent = (c.level2 || 0).toLocaleString();
     document.getElementById('lvl3-total').textContent = (c.level3 || 0).toLocaleString();
   });
+
+  // Auto-update team stats & commissions when new users sign up
+  db.ref('users').on('child_added', snap=>{
+    const newUser = snap.val();
+    db.ref('users/'+uid+'/username').once('value').then(nameSnap=>{
+      const username = nameSnap.val() || uid;
+      if(newUser.referrer === uid || newUser.referrer === username){
+        // Update team stats
+        teamStatsRef.once('value').then(tsnap=>{
+          const prev = tsnap.val() || {};
+          teamStatsRef.update({
+            size: (prev.size || 0) + 1,
+            newTeam: (prev.newTeam || 0) + 1,
+            recharge: prev.recharge || 0,
+            withdraw: prev.withdraw || 0,
+            firstRecharge: prev.firstRecharge || 0,
+            firstWithdraw: prev.firstWithdraw || 0
+          });
+        });
+
+        // Update commissions based on user's recharge/withdraw
+        commissionsRef.once('value').then(csnap=>{
+          const prev = csnap.val() || {};
+          const level1Bonus = (newUser.recharge || 0) * 0.17 + (newUser.withdraw || 0) * 0.17;
+          const level2Bonus = (newUser.recharge || 0) * 0.02 + (newUser.withdraw || 0) * 0.02;
+          const level3Bonus = (newUser.recharge || 0) * 0.01 + (newUser.withdraw || 0) * 0.01;
+          commissionsRef.update({
+            level1: (prev.level1 || 0) + level1Bonus,
+            level2: (prev.level2 || 0) + level2Bonus,
+            level3: (prev.level3 || 0) + level3Bonus
+          });
+        });
+      }
+    });
+  });
+
 });
 </script>
 </body>

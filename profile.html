@@ -30,7 +30,7 @@ body{
   font-family: Arial, Helvetica, sans-serif;
   background:#001f3f;
   color:#fff;
-  padding-bottom:1.5cm; /* keep same breathing space */
+  padding-bottom:1.5cm;
 }
 
 /* Header */
@@ -47,16 +47,20 @@ header h2{margin:0;font-size:1.2rem;color:#fff;}
 /* VIP + Email Card */
 .vip-card {
   position: relative;
-  background: #1e40af;  /* brighter solid blue */
+  background: #1e40af;
   border-radius: 12px;
   padding: 16px;
   margin: 16px;
   width: calc(100% - 32px);
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  height: 96px; /* was 2cm – px removes zoom */
+  align-items: center;
+  justify-content: space-between; /* pushes icon to right */
+  height: 96px;
+}
+.vip-card .info{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
 }
 .vip-card .user-email { font-size: 0.95rem; color: #fff; margin-bottom: 6px; }
 .vip-card .vip-level {
@@ -68,22 +72,26 @@ header h2{margin:0;font-size:1.2rem;color:#fff;}
   color: #ffd700;
 }
 .vip-card .vip-stars { color: #ffd700; }
+.vip-card img.icon{height:40px;}
 
 /* Balance Card */
 .balance-card {
-  background: #1e3a8a;  /* solid brighter blue */
+  background: #1e3a8a;
   border-radius: 12px;
   padding: 16px;
   margin: 16px;
-  height: 110px; /* was 2.5cm – px removes zoom */
+  height: 110px;
   font-weight: 700;
-  font-size: 1.3rem;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;   /* ensure text is visible */
+  font-size: 1.1rem;
+  color:#fff;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+
+  display:flex;            /* horizontal row */
+  align-items:center;
+  justify-content:space-around;
+}
+.balance-card div{
+  text-align:center;
 }
 
 /* Vertical Buttons */
@@ -153,15 +161,21 @@ nav i{font-size:18px;}
 
 <!-- VIP + Email Card -->
 <div class="vip-card">
-  <div class="user-email" id="user-email">loading...</div>
-  <div class="vip-level">
-    <span id="vip-level">VIP 0</span>
-    <span class="vip-stars" id="vip-stars"></span>
+  <div class="info">
+    <div class="user-email" id="user-email">loading...</div>
+    <div class="vip-level">
+      <span id="vip-level">VIP 0</span>
+      <span class="vip-stars" id="vip-stars"></span>
+    </div>
   </div>
+  <img class="icon" src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png" alt="VIP">
 </div>
 
 <!-- Balance Card -->
-<div class="balance-card" id="user-balance">Balance: UGX 0</div>
+<div class="balance-card" id="balance-card">
+  <div id="total-balance">Total Balance: UGX 0</div>
+  <div id="recharged-amount">Recharged: UGX 0</div>
+</div>
 
 <!-- Vertical Buttons -->
 <div class="buttons">
@@ -190,11 +204,10 @@ auth.onAuthStateChanged(user=>{
   // Email
   document.getElementById('user-email').textContent = user.email;
 
-  // VIP Level (real-time sync)
+  // VIP Level
   userRef.child('vipLevels').on('value', snap=>{
     const vipUnlocked = snap.val() || [];
     let level = 0;
-
     if(Array.isArray(vipUnlocked)){
       const nums = vipUnlocked.filter(n => typeof n === 'number');
       if(nums.length>0) level = Math.max(...nums);
@@ -202,16 +215,21 @@ auth.onAuthStateChanged(user=>{
       const nums = Object.keys(vipUnlocked).map(n=>parseInt(n)).filter(n=>!isNaN(n));
       if(nums.length>0) level = Math.max(...nums);
     }
-
     document.getElementById('vip-level').textContent = `VIP ${level}`;
     document.getElementById('vip-stars').textContent = '★'.repeat(level);
   });
 
-  // Balance
+  // Balances
   userRef.child('balance').on('value', snap=>{
     const bal = parseFloat(snap.val() || 0);
-    document.getElementById('user-balance').textContent =
-      `Balance: UGX ${bal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    document.getElementById('total-balance').textContent =
+      `Total Balance: UGX ${bal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  });
+
+  userRef.child('recharged').on('value', snap=>{
+    const rech = parseFloat(snap.val() || 0);
+    document.getElementById('recharged-amount').textContent =
+      `Recharged: UGX ${rech.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
   });
 
   // Change Password
@@ -240,4 +258,4 @@ function showPopup(msg, red=false){
 </script>
 
 </body>
-</html>
+  </html>

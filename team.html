@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>QUANTUM RIO – Team</title>
 
+<!-- use compat bundle so auth/database work exactly like v8 -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
 <script>
 const firebaseConfig = {
@@ -138,94 +139,80 @@ nav i{font-size:18px;}
 <div id="toast" class="toast"></div>
 
 <script>
-// Toast function
-function showToast(msg, type='success'){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + type;
-  setTimeout(()=>{t.classList.remove('show');}, 2500);
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show '+type;
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 
 auth.onAuthStateChanged(user=>{
   if(!user){window.location='signin.html';return;}
-  const uid = user.uid;
+  const uid=user.uid;
 
-  // Build referral link
+  // Referral link
   db.ref('users/'+uid+'/username').once('value').then(snap=>{
-    const username = snap.val() || uid;
-    const base = (window.location.protocol.startsWith('http') && window.location.origin !== 'null')
-                 ? window.location.origin
-                 : 'https://quantumrio.github.io';
-    const link = base + '/signup.html?ref=' + encodeURIComponent(username);
-    document.getElementById('ref-link').value = link;
+    const username=snap.val()||uid;
+    const base=(window.location.origin&&window.location.origin!=='null')?window.location.origin:'https://quantumrio.github.io';
+    const link=base+'/signup.html?ref='+encodeURIComponent(username);
+    document.getElementById('ref-link').value=link;
 
-    document.getElementById('copyRefBtn').addEventListener('click', ()=>{
+    document.getElementById('copyRefBtn').onclick=()=>{
       navigator.clipboard.writeText(link).then(()=>{
         db.ref('users/'+uid+'/referralLogs').push({
-          copiedAt: firebase.database.ServerValue.TIMESTAMP,
-          link: link
+          copiedAt:firebase.database.ServerValue.TIMESTAMP,
+          link:link
         });
         showToast('Referral link copied!','success');
-      }).catch(()=>{showToast('Copy failed','error');});
-    });
+      }).catch(()=>showToast('Copy failed','error'));
+    };
   });
 
-  // Real-time Team Stats
-  const teamStatsRef = db.ref('users/'+uid+'/teamStats');
-  teamStatsRef.on('value', snap=>{
-    const s = snap.val() || {};
-    document.getElementById('team-size').textContent     = s.size || 0;
-    document.getElementById('team-recharge').textContent = (s.recharge || 0).toLocaleString();
-    document.getElementById('team-withdraw').textContent = (s.withdraw || 0).toLocaleString();
-    document.getElementById('new-team').textContent      = s.newTeam || 0;
-    document.getElementById('first-recharge').textContent= (s.firstRecharge || 0).toLocaleString();
-    document.getElementById('first-withdraw').textContent= (s.firstWithdraw || 0).toLocaleString();
+  // Live team stats
+  const teamStatsRef=db.ref('users/'+uid+'/teamStats');
+  teamStatsRef.on('value',snap=>{
+    const s=snap.val()||{};
+    document.getElementById('team-size').textContent=s.size||0;
+    document.getElementById('team-recharge').textContent=(s.recharge||0).toLocaleString();
+    document.getElementById('team-withdraw').textContent=(s.withdraw||0).toLocaleString();
+    document.getElementById('new-team').textContent=s.newTeam||0;
+    document.getElementById('first-recharge').textContent=(s.firstRecharge||0).toLocaleString();
+    document.getElementById('first-withdraw').textContent=(s.firstWithdraw||0).toLocaleString();
   });
 
-  // Real-time Commissions
-  const commissionsRef = db.ref('users/'+uid+'/commissions');
-  commissionsRef.on('value', snap=>{
-    const c = snap.val() || {};
-    document.getElementById('lvl1-total').textContent = (c.level1 || 0).toLocaleString();
-    document.getElementById('lvl2-total').textContent = (c.level2 || 0).toLocaleString();
-    document.getElementById('lvl3-total').textContent = (c.level3 || 0).toLocaleString();
+  // Live commissions
+  const commissionsRef=db.ref('users/'+uid+'/commissions');
+  commissionsRef.on('value',snap=>{
+    const c=snap.val()||{};
+    document.getElementById('lvl1-total').textContent=(c.level1||0).toLocaleString();
+    document.getElementById('lvl2-total').textContent=(c.level2||0).toLocaleString();
+    document.getElementById('lvl3-total').textContent=(c.level3||0).toLocaleString();
   });
 
-  // Auto-update team stats & commissions when new users sign up
-  db.ref('users').on('child_added', snap=>{
-    const newUser = snap.val();
+  // Auto-count new team members
+  db.ref('users').on('child_added',snap=>{
+    const newUser=snap.val()||{};
     db.ref('users/'+uid+'/username').once('value').then(nameSnap=>{
-      const username = nameSnap.val() || uid;
-      if(newUser.referrer === uid || newUser.referrer === username){
-        // Update team stats
-        teamStatsRef.once('value').then(tsnap=>{
-          const prev = tsnap.val() || {};
-          teamStatsRef.update({
-            size: (prev.size || 0) + 1,
-            newTeam: (prev.newTeam || 0) + 1,
-            recharge: prev.recharge || 0,
-            withdraw: prev.withdraw || 0,
-            firstRecharge: prev.firstRecharge || 0,
-            firstWithdraw: prev.firstWithdraw || 0
-          });
+      const username=nameSnap.val()||uid;
+      if(newUser.referrer===uid||newUser.referrer===username){
+        teamStatsRef.transaction(prev=>{
+          const p=prev||{};
+          p.size=(p.size||0)+1;
+          p.newTeam=(p.newTeam||0)+1;
+          return p;
         });
-
-        // Update commissions based on user's recharge/withdraw
-        commissionsRef.once('value').then(csnap=>{
-          const prev = csnap.val() || {};
-          const level1Bonus = (newUser.recharge || 0) * 0.17 + (newUser.withdraw || 0) * 0.17;
-          const level2Bonus = (newUser.recharge || 0) * 0.02 + (newUser.withdraw || 0) * 0.02;
-          const level3Bonus = (newUser.recharge || 0) * 0.01 + (newUser.withdraw || 0) * 0.01;
-          commissionsRef.update({
-            level1: (prev.level1 || 0) + level1Bonus,
-            level2: (prev.level2 || 0) + level2Bonus,
-            level3: (prev.level3 || 0) + level3Bonus
-          });
+        commissionsRef.transaction(prev=>{
+          const p=prev||{};
+          const r=newUser.recharge||0;
+          const w=newUser.withdraw||0;
+          p.level1=(p.level1||0)+(r*0.17)+(w*0.17);
+          p.level2=(p.level2||0)+(r*0.02)+(w*0.02);
+          p.level3=(p.level3||0)+(r*0.01)+(w*0.01);
+          return p;
         });
       }
     });
   });
-
 });
 </script>
 </body>

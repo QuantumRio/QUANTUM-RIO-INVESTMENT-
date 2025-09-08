@@ -203,66 +203,64 @@ nav i{font-size:18px;}
 </nav>
 
 <script>
-auth.onAuthStateChanged(user=>{
-  if(!user){ window.location='signin.html'; return; }
+auth.onAuthStateChanged(user => {
+  if (!user) { window.location = 'signin.html'; return; }
   const uid = user.uid;
   const userRef = db.ref('users/' + uid);
 
-  // Email
+  // show email
   document.getElementById('user-email').textContent = user.email;
 
   // VIP Level
-  userRef.child('vipLevels').on('value', snap=>{
+  userRef.child('vipLevels').on('value', snap => {
     const vipUnlocked = snap.val() || [];
     let level = 0;
-    if(Array.isArray(vipUnlocked)){
+    if (Array.isArray(vipUnlocked)) {
       const nums = vipUnlocked.filter(n => typeof n === 'number');
-      if(nums.length>0) level = Math.max(...nums);
-    } else if(typeof vipUnlocked === 'object' && Object.keys(vipUnlocked).length>0){
-      const nums = Object.keys(vipUnlocked).map(n=>parseInt(n)).filter(n=>!isNaN(n));
-      if(nums.length>0) level = Math.max(...nums);
+      if (nums.length > 0) level = Math.max(...nums);
+    } else if (typeof vipUnlocked === 'object' && Object.keys(vipUnlocked).length > 0) {
+      const nums = Object.keys(vipUnlocked).map(n => parseInt(n)).filter(n => !isNaN(n));
+      if (nums.length > 0) level = Math.max(...nums);
     }
     document.getElementById('vip-level').textContent = `VIP ${level}`;
     document.getElementById('vip-stars').textContent = '★'.repeat(level);
   });
 
-  // Balances
-userRef.child('balance').on('value', snap => {
-  const bal = parseFloat(snap.val() || 0);
-  document.querySelector('#total-balance span').textContent =
-    `UGX ${bal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-});
+  // Balances — update the whole <div> textContent
+  userRef.child('balance').on('value', snap => {
+    const bal = parseFloat(snap.val() || 0);
+    document.getElementById('total-balance').textContent =
+      `Total Balance: UGX ${bal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  });
 
-userRef.child('recharged').on('value', snap => {
-  const rech = parseFloat(snap.val() || 0);
-  document.querySelector('#recharged-amount span').textContent =
-    `UGX ${rech.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-});
+  userRef.child('recharged').on('value', snap => {
+    const rech = parseFloat(snap.val() || 0);
+    document.getElementById('recharged-amount').textContent =
+      `Recharged: UGX ${rech.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  });
 
   // Change Password
-  document.getElementById('change-password-btn').onclick = ()=>{
-    auth.sendPasswordResetEmail(user.email).then(()=>{
+  document.getElementById('change-password-btn').onclick = () => {
+    auth.sendPasswordResetEmail(user.email).then(() => {
       showPopup('Password reset email sent');
-    }).catch(err=>{
-      showPopup('Error sending reset email',true);
-    });
+    }).catch(() => showPopup('Error sending reset email', true));
   };
 
   // Logout
-  document.getElementById('logout-btn').onclick = ()=>{
-    auth.signOut().then(()=>window.location='signin.html');
+  document.getElementById('logout-btn').onclick = () => {
+    auth.signOut().then(() => window.location = 'signin.html');
   };
 });
 
 // Popup
-function showPopup(msg, red=false){
+function showPopup(msg, red = false) {
   const p = document.createElement('div');
-  p.className = 'popup' + (red?' red':'');
+  p.className = 'popup' + (red ? ' red' : '');
   p.textContent = msg;
   document.body.appendChild(p);
-  setTimeout(()=>p.remove(),3000);
+  setTimeout(() => p.remove(), 3000);
 }
-</script>
+      </script>
 
 </body>
   </html>

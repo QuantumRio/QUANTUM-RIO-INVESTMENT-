@@ -21,6 +21,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
+const storage = firebase.storage();
 </script>
 
 <style>
@@ -147,9 +148,9 @@ auth.onAuthStateChanged(user=>{
   if(!user){window.location='signin.html'; return;}
   const uid = user.uid;
 
-  document.getElementById('submitDeposit').onclick = () => {
+  document.getElementById('submitDeposit').onclick = async () => {
     const amount = parseFloat(document.getElementById('amount').value);
-    const phone  = document.getElementById('phone').value;
+    const phone  = document.getElementById('phone').value.trim();
     const receiptFile = document.getElementById('receipt').files[0];
 
     if(!amount || amount < 50000){
@@ -161,38 +162,30 @@ auth.onAuthStateChanged(user=>{
       return;
     }
 
-    const newDeposit = { uid, amount, phone, status:"pending", timestamp: Date.now() };
+    const ref = db.ref('deposits/'+uid).push();
+    const newDeposit = { amount, phone, status:"pending", timestamp: Date.now() };
 
     if(receiptFile){
-      const storageRef = firebase.storage().ref('deposits/'+uid+'/'+receiptFile.name);
-      storageRef.put(receiptFile).then(snapshot=>{
-        snapshot.ref.getDownloadURL().then(url=>{
-          newDeposit.receiptURL = url;
-          db.ref('deposits').push(newDeposit);
-          showNotification("Deposit submitted successfully!");
-          document.getElementById('amount').value='';
-          document.getElementById('phone').value='';
-          document.getElementById('receipt').value='';
-        });
-      });
-    } else {
-      db.ref('deposits').push(newDeposit);
-      showNotification("Deposit submitted successfully!");
-      document.getElementById('amount').value='';
-      document.getElementById('phone').value='';
+      const storageRef = storage.ref('deposits/'+uid+'/'+ref.key+'_'+receiptFile.name);
+      await storageRef.put(receiptFile);
+      newDeposit.receiptURL = await storageRef.getDownloadURL();
     }
+
+    await ref.set(newDeposit);
+    showNotification("Deposit submitted successfully!");
+    document.getElementById('amount').value='';
+    document.getElementById('phone').value='';
+    document.getElementById('receipt').value='';
   };
 
-  const depositsRef = db.ref('deposits').orderByChild('uid').equalTo(uid);
-  depositsRef.on('child_changed', snap=>{
+  // listen for admin approval and credit balance
+  db.ref('deposits/'+uid).on('child_changed', snap=>{
     const deposit = snap.val();
     if(deposit.status === "approved"){
-      const userRef = db.ref('users/'+uid);
-      userRef.transaction(userData=>{
-        userData = userData || {};
-        userData.balance = (parseFloat(userData.balance) || 0) + parseFloat(deposit.amount);
-        return userData;
+      db.ref('users/'+uid+'/balance').transaction(b=>{
+        return (parseFloat(b)||0) + parseFloat(deposit.amount);
       });
+      showNotification("Deposit approved & balance credited");
     }
   });
 });

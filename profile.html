@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QUANTUM RIO – Profile</title>
 
-<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <!-- Firebase compat -->
@@ -32,7 +31,7 @@ body{
   font-family: Arial, Helvetica, sans-serif;
   background:#001f3f;
   color:#fff;
-  padding-left:200px; /* space for fixed vertical buttons */
+  padding-bottom:0.5cm; /* reduce bottom space */
 }
 
 /* Header */
@@ -42,9 +41,6 @@ header{
   gap:12px;
   background:#002f6c;
   padding:12px 16px;
-  position:sticky;
-  top:0;
-  z-index:10;
 }
 header img{height:40px;}
 header h2{margin:0;font-size:1.2rem;color:#fff;}
@@ -53,7 +49,7 @@ header h2{margin:0;font-size:1.2rem;color:#fff;}
 .card{
   background:rgba(255,255,255,0.05);
   border-radius:12px;
-  padding:12px 16px;
+  padding:16px;
   margin:16px;
   display:flex;
   flex-direction:column;
@@ -90,26 +86,22 @@ header h2{margin:0;font-size:1.2rem;color:#fff;}
   justify-content:center;
 }
 
-/* Fixed left-side vertical buttons */
+/* Vertical Buttons */
 .buttons{
-  position:fixed;
-  top:100px; /* below header */
-  left:10px;
   display:flex;
   flex-direction:column;
   gap:12px;
+  margin:16px;
 }
 .buttons .btn{
-  display:block;
-  width:180px;
-  padding:10px 12px;
+  width:100%;
+  padding:12px;
   background:#1e3a8a;
   color:#fff;
   font-weight:600;
   border:none;
   border-radius:8px;
   cursor:pointer;
-  text-align:left;
   font-size:1rem;
   transition:0.2s;
 }
@@ -141,7 +133,7 @@ nav {
   display:flex;
   justify-content:space-around;
   background:#002244;
-  padding:8px 0;
+  padding:6px 0;
 }
 nav a{
   color:#fff;
@@ -159,7 +151,7 @@ nav i{font-size:18px}
   <h2>QUANTUM RIO – Profile</h2>
 </header>
 
-<!-- User + VIP Card -->
+<!-- First card: Email + VIP -->
 <div class="card user-card">
   <div class="user-email" id="user-email">loading...</div>
   <div class="vip-level">
@@ -168,10 +160,10 @@ nav i{font-size:18px}
   </div>
 </div>
 
-<!-- Balance Card -->
+<!-- Second card: Balance -->
 <div class="card balance-card" id="user-balance">Balance: UGX 0</div>
 
-<!-- Fixed Vertical Action Buttons -->
+<!-- Buttons -->
 <div class="buttons">
   <button class="btn" onclick="location.href='deposit.html'">Deposit</button>
   <button class="btn" onclick="location.href='withdraw.html'">Withdraw</button>

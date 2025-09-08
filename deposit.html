@@ -138,53 +138,70 @@ function showNotification(msg){
   setTimeout(()=>{notif.style.display='none';}, 3000);
 }
 
-// click-to-copy only for MTN number
+// click-to-copy MTN number
 document.getElementById('mtnNumber').addEventListener('click', ()=>{
   navigator.clipboard.writeText('0784513172')
-    .then(()=>showNotification("MTN number copied!"));
+    .then(()=>showNotification("MTN number copied!"))
+    .catch(()=>showNotification("Cannot copy"));
 });
 
 auth.onAuthStateChanged(user=>{
-  if(!user){window.location='signin.html'; return;}
+  if(!user){
+    window.location='signin.html';
+    return;
+  }
   const uid = user.uid;
 
-  document.getElementById('submitDeposit').onclick = async () => {
-    const amount = parseFloat(document.getElementById('amount').value);
-    const phone  = document.getElementById('phone').value.trim();
-    const receiptFile = document.getElementById('receipt').files[0];
+  // make sure button is wired up AFTER auth
+  const btn = document.getElementById('submitDeposit');
+  btn.addEventListener('click', async () => {
+    try {
+      const amount = parseFloat(document.getElementById('amount').value);
+      const phone  = document.getElementById('phone').value.trim();
+      const receiptFile = document.getElementById('receipt').files[0];
 
-    if(!amount || amount < 50000){
-      showNotification("Enter a valid amount ≥ 50,000 UGX");
-      return;
+      if(!amount || amount < 50000){
+        showNotification("Enter a valid amount ≥ 50,000 UGX");
+        return;
+      }
+      if(!phone){
+        showNotification("Enter your phone number");
+        return;
+      }
+
+      // create DB key first
+      const ref = db.ref('deposits/'+uid).push();
+      const newDeposit = {
+        amount,
+        phone,
+        status:"pending",
+        timestamp: Date.now()
+      };
+
+      // upload optional receipt
+      if(receiptFile){
+        const storageRef = firebase.storage().ref('deposits/'+uid+'/'+ref.key+'_'+receiptFile.name);
+        await storageRef.put(receiptFile);
+        newDeposit.receiptURL = await storageRef.getDownloadURL();
+      }
+
+      await ref.set(newDeposit);
+      showNotification("Deposit submitted successfully!");
+
+      document.getElementById('amount').value='';
+      document.getElementById('phone').value='';
+      document.getElementById('receipt').value='';
+    } catch(err){
+      console.error(err);
+      showNotification("Error: "+err.message);
     }
-    if(!phone){
-      showNotification("Enter your phone number");
-      return;
-    }
+  });
 
-    const ref = db.ref('deposits/'+uid).push();
-    const newDeposit = { amount, phone, status:"pending", timestamp: Date.now() };
-
-    if(receiptFile){
-      const storageRef = storage.ref('deposits/'+uid+'/'+ref.key+'_'+receiptFile.name);
-      await storageRef.put(receiptFile);
-      newDeposit.receiptURL = await storageRef.getDownloadURL();
-    }
-
-    await ref.set(newDeposit);
-    showNotification("Deposit submitted successfully!");
-    document.getElementById('amount').value='';
-    document.getElementById('phone').value='';
-    document.getElementById('receipt').value='';
-  };
-
-  // listen for admin approval and credit balance
+  // credit balance when admin approves
   db.ref('deposits/'+uid).on('child_changed', snap=>{
     const deposit = snap.val();
     if(deposit.status === "approved"){
-      db.ref('users/'+uid+'/balance').transaction(b=>{
-        return (parseFloat(b)||0) + parseFloat(deposit.amount);
-      });
+      db.ref('users/'+uid+'/balance').transaction(b => (parseFloat(b)||0) + parseFloat(deposit.amount));
       showNotification("Deposit approved & balance credited");
     }
   });

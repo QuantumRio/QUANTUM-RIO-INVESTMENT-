@@ -76,25 +76,29 @@ header h2{margin:0;font-size:1.2rem;color:#fff;}
 
 /* Balance Card */
 .balance-card {
-  background: #8B4513;               /* brown */
+  background: #8B4513;                /* brown */
   border: 1px solid rgba(255,255,255,0.2);
   border-radius: 12px;
   padding: 16px;
   margin: 16px;
-  height: 1.5cm;                     /* fixed height */
+  height: 1.5cm;                      /* fixed height */
   font-weight: 700;
   font-size: 1.1rem;
   color: #fff;
   box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 
   display: flex;
-  flex-direction: column;            /* vertical text */
+  flex-direction: row;                /* two columns side by side */
+  justify-content: space-around;
   align-items: center;
-  justify-content: center;
   text-align: center;
 }
+
 .balance-card div {
-  margin: 2px 0;                     /* a bit of spacing */
+  display: flex;
+  flex-direction: column;             /* label on top, value below */
+  align-items: center;
+  line-height: 1.2;
 }
 
 /* Vertical Buttons */
@@ -223,17 +227,17 @@ auth.onAuthStateChanged(user=>{
   });
 
   // Balances
-  userRef.child('balance').on('value', snap=>{
-    const bal = parseFloat(snap.val() || 0);
-    document.getElementById('total-balance').textContent =
-      `Total Balance: UGX ${bal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-  });
+userRef.child('balance').on('value', snap => {
+  const bal = parseFloat(snap.val() || 0);
+  document.querySelector('#total-balance span').textContent =
+    `UGX ${bal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+});
 
-  userRef.child('recharged').on('value', snap=>{
-    const rech = parseFloat(snap.val() || 0);
-    document.getElementById('recharged-amount').textContent =
-      `Recharged: UGX ${rech.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-  });
+userRef.child('recharged').on('value', snap => {
+  const rech = parseFloat(snap.val() || 0);
+  document.querySelector('#recharged-amount span').textContent =
+    `UGX ${rech.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+});
 
   // Change Password
   document.getElementById('change-password-btn').onclick = ()=>{

@@ -10,7 +10,7 @@
     font-family: 'Segoe UI', sans-serif;
     background-color: #001f3f;
     margin: 0;
-    padding: 0;
+    padding: 0 0 0.5cm 0; /* breathing space at bottom */
     color: #fff;
   }
   header {
@@ -45,12 +45,13 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
   .plan-card h3 {
-    margin: 0 0 10px 0;
+    margin: 0 0 6px 0;
     color: #ffd966;
   }
   .plan-card p {
     font-size: 14px;
     color: #cfe6ff;
+    margin: 4px 0;
   }
   .plan-card button {
     margin-top: 10px;
@@ -129,9 +130,18 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
+// Plan data: [amount, roi, name]
 const plans = [
-  [50000,100000],[100000,200000],[150000,300000],[200000,400000],[250000,500000],
-  [300000,600000],[350000,700000],[400000,800000],[450000,900000],[500000,1000000]
+  [50000,100000,"Starter Plan"],
+  [100000,200000,"Bronze Plan"],
+  [150000,300000,"Silver Plan"],
+  [200000,400000,"Gold Plan"],
+  [250000,500000,"Platinum Plan"],
+  [300000,600000,"Diamond Plan"],
+  [350000,700000,"Ruby Plan"],
+  [400000,800000,"Emerald Plan"],
+  [450000,900000,"Sapphire Plan"],
+  [500000,1000000,"Elite Plan"]
 ];
 
 let currentBalance = 0;
@@ -152,12 +162,13 @@ auth.onAuthStateChanged(user=>{
 function loadPlans(uid){
   const container = document.getElementById('plansContainer');
   container.innerHTML='';
-  plans.forEach(([amount,roi])=>{
+  plans.forEach(([amount, roi, name])=>{
     const div = document.createElement('div');
     div.className='plan-card';
     div.innerHTML=`
-      <h3>${amount.toLocaleString()} UGX VIP Plan</h3>
-      <p>Earn <strong>${roi.toLocaleString()} UGX</strong></p>
+      <h3>${name}</h3>
+      <p>Invest: ${amount.toLocaleString()} UGX</p>
+      <p>Income: ${roi.toLocaleString()} UGX (will be credited in 24 hrs)</p>
       <button onclick="invest(${amount},${roi},'${uid}')">Invest Now</button>
     `;
     container.appendChild(div);

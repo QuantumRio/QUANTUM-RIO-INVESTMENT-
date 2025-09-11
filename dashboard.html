@@ -24,6 +24,13 @@ const db = firebase.database();
 </script>
 
 <style>
+/* Prevent accidental text highlight & Chrome tap-to-search */
+* {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 body{
   margin:0;
   font-family: Arial, Helvetica, sans-serif;

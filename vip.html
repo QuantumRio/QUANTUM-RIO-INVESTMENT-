@@ -143,6 +143,8 @@ const plans = [
 ];
 
 let currentBalance = 0;
+let activeInvestments = {};
+let countdownIntervals = {};
 
 auth.onAuthStateChanged(user=>{
   if(!user){ window.location='signin.html'; return; }
@@ -155,22 +157,50 @@ auth.onAuthStateChanged(user=>{
       currentBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   });
 
-  loadPlans(uid);
+  // Load active investments
+  db.ref('investments/'+uid).on('value', snap=>{
+    activeInvestments = {};
+    snap.forEach(child=>{
+      const inv = child.val();
+      if(inv.status==="active"){
+        activeInvestments[inv.investedAmount] = { ...inv, key: child.key };
+        checkAndCredit(uid, child.key, inv);
+      }
+    });
+    loadPlans(uid);
+  });
 });
 
+// Create plan cards
 function loadPlans(uid){
   const container = document.getElementById('plansContainer');
   container.innerHTML='';
+  Object.values(countdownIntervals).forEach(id=>clearInterval(id));
+  countdownIntervals = {};
+
   plans.forEach(([amount, roi, name])=>{
     const div = document.createElement('div');
     div.className='plan-card';
+    const active = activeInvestments[amount];
+    const btn = document.createElement('button');
+
+    if(active){
+      btn.disabled = true;
+      updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount);
+      countdownIntervals[amount] = setInterval(()=>{
+        updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount);
+      },1000);
+    } else {
+      btn.textContent="Invest Now";
+      btn.onclick = ()=>invest(amount, roi, uid);
+    }
+
     div.innerHTML=`
       <h3>${name}</h3>
       <p>Invest: ${amount.toLocaleString()} UGX</p>
       <p>Income: ${roi.toLocaleString()} UGX (credited in 24 hrs)</p>
-      <button>Invest Now</button>
     `;
-    div.querySelector('button').onclick = ()=>invest(amount, roi, uid);
+    div.appendChild(btn);
     container.appendChild(div);
   });
 }
@@ -202,6 +232,35 @@ function invest(amount, roi, uid){
   });
 }
 
+// Auto-credit after 24hrs
+function checkAndCredit(uid, key, inv){
+  const now = Date.now();
+  if(now - inv.investedAt >= 24*60*60*1000){
+    // Add ROI to balance
+    const userRef = db.ref('users/'+uid+'/balance');
+    userRef.transaction(bal=>(bal||0)+inv.returnAmount);
+
+    // Mark investment completed
+    db.ref('investments/'+uid+'/'+key+'/status').set("completed");
+  }
+}
+
+// Countdown updater
+function updateCountdown(button, investedAt, uid, key, roi){
+  const now = Date.now();
+  const diff = 24*60*60*1000 - (now - investedAt);
+  if(diff <= 0){
+    button.textContent = "Completed";
+    button.disabled = true;
+    checkAndCredit(uid, key, {investedAt, returnAmount: roi, status:"active"});
+    return;
+  }
+  const hours = Math.floor(diff/(1000*60*60));
+  const mins = Math.floor((diff%(1000*60*60))/(1000*60));
+  const secs = Math.floor((diff%(1000*60))/1000);
+  button.textContent = `${hours}h ${mins}m ${secs}s left`;
+}
+
 function showPopup(msg, red=false){
   const popup=document.getElementById('popupMsg');
   popup.innerText=msg;
@@ -209,6 +268,6 @@ function showPopup(msg, red=false){
   popup.style.display='block';
   setTimeout(()=>popup.style.display='none',4000);
 }
-</script>
+    </script>
 </body>
   </html>

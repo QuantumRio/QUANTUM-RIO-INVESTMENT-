@@ -305,7 +305,7 @@ vipRef.on('value', snap => {
       if (userData.hasClaimedBonus) return userData;
 
       const current = parseFloat(userData.balance || 0);
-      userData.balance = current + 100;
+      userData.balance = current + 500;
       userData.hasClaimedBonus = true;
       return userData;
     }, (error, committed) => {

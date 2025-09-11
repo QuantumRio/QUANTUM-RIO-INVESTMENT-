@@ -114,7 +114,6 @@
   <button id="signupBtn">Create Account</button>
   <div class="links">
     Already have an account? <a href="signin.html">Sign In</a><br>
-  
   </div>
 </div>
 <div id="toast" class="toast"></div>
@@ -181,16 +180,16 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const uid  = cred.user.uid;
 
-    // write new profile
+    // write new profile (store referrer)
     await set(ref(db, "users/" + uid), {
-  uid, username, phone, email,
-  refBy: referrer || null,
-  joinedAt: Date.now(),
-  balance: 0,
-  earnings: 0,
-  referralsCount: 0,
-  vipLevels: { level1:false, level2:false, level3:false, level4:false, level5:false }
-});
+      uid, username, phone, email,
+      refBy: referrer || null,   // ✅ referral saved
+      joinedAt: Date.now(),
+      balance: 0,
+      earnings: 0,
+      referralsCount: 0,
+      vipLevels: { level1:false, level2:false, level3:false, level4:false, level5:false }
+    });
 
     // bump inviter’s counter
     if(referrer){
@@ -212,4 +211,4 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
 });
 </script>
 </body>
-</html>
+  </html>

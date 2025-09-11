@@ -140,28 +140,31 @@ function loadPlans(uid){
   });
       }
 
-function invest(amount,roi,uid,vipLevel){
-  if(currentBalance<amount){showPopup("❌ Insufficient balance",true);return;}
-  const userRef=db.ref('users/'+uid);
+function invest(amount, roi, uid, planName){
+  if(currentBalance < amount){
+    showPopup("❌ Insufficient balance", true);
+    return;
+  }
+
+  const userRef = db.ref('users/'+uid);
   userRef.transaction(userData=>{
-    if(!userData)userData={};
-    const current=parseFloat(userData.balance||0);
-    if(current<amount)return userData;
-    userData.balance=current-amount;
+    if(!userData) userData={};
+    const current = parseFloat(userData.balance||0);
+    if(current < amount) return userData;
+    userData.balance = current - amount;
+    if(!userData.vipLevels) userData.vipLevels = {};
+    userData.vipLevels[planName] = true; // ✅ unlock level
     return userData;
-  },(err,committed)=>{
-    if(err||!committed){showPopup("❌ Transaction failed",true);return;}
+  },(err, committed)=>{
+    if(err || !committed){ showPopup("❌ Transaction failed", true); return; }
 
-    // save investment
     db.ref('investments/'+uid).push({
-      investedAmount:amount,
-      returnAmount:roi,
-      investedAt:Date.now(),
-      status:"active"
+      investedAmount: amount,
+      returnAmount: roi,
+      investedAt: Date.now(),
+      status: "active",
+      planName: planName
     });
-
-    // ✅ also mark VIP unlocked for dashboard
-    db.ref('users/'+uid+'/vipLevels/'+vipLevel).set(true);
 
     showPopup(`✅ Invested ${amount.toLocaleString()} UGX`);
   });

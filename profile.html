@@ -226,7 +226,7 @@ auth.onAuthStateChanged(user => {
     document.getElementById('vip-stars').textContent = '★'.repeat(level);
   });
 
-  // Balances — update the whole <div> textContent
+  // Balances
   userRef.child('balance').on('value', snap => {
     const bal = parseFloat(snap.val() || 0);
     document.getElementById('total-balance').textContent =
@@ -239,16 +239,18 @@ auth.onAuthStateChanged(user => {
       `Recharged: UGX ${rech.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   });
 
-  // Change Password
+  // Change Password (send reset email)
   document.getElementById('change-password-btn').onclick = () => {
     auth.sendPasswordResetEmail(user.email).then(() => {
       showPopup('Password reset email sent');
     }).catch(() => showPopup('Error sending reset email', true));
   };
 
-  // Logout
+  // Logout with confirmation
   document.getElementById('logout-btn').onclick = () => {
-    auth.signOut().then(() => window.location = 'signin.html');
+    if (confirm("Are you sure you want to logout?")) {
+      auth.signOut().then(() => window.location = 'signin.html');
+    }
   };
 });
 
@@ -260,7 +262,7 @@ function showPopup(msg, red = false) {
   document.body.appendChild(p);
   setTimeout(() => p.remove(), 3000);
 }
-      </script>
+</script>
 
 </body>
-  </html>
+</html>

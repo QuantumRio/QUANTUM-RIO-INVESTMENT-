@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QUANTUM RIO – Transactions</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
@@ -23,61 +23,56 @@ const db   = firebase.database();
 </script>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#001f3f;
-  color:#fff;
-  padding-bottom:1cm;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #001f3f;
+  color: #fff;
+  padding-bottom: 1cm;
 }
-header{
-  background:#002f6c;
-  padding:12px;
-  text-align:center;
-  font-size:1.2rem;
-  font-weight:600;
+header {
+  background: #002f6c;
+  padding: 14px;
+  text-align: center;
 }
-.section{
-  margin:12px;
-  padding:12px;
-  background:#003366;
-  border-radius:8px;
+header h2 { margin: 0; font-size: 1.3rem; color: #ffcc00; }
+
+.container { padding: 16px; }
+.txn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
 }
-.txn{
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.1);
-  margin:8px 0;
-  padding:10px;
-  border-radius:6px;
-  font-size:0.9rem;
+.txn h4 { margin: 0 0 6px; font-size: 1rem; color: #90caf9; }
+.txn p { margin: 4px 0; font-size: 0.9rem; }
+.status {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
 }
-.txn.deposit{border-left:4px solid #28a745;}
-.txn.withdraw{border-left:4px solid #ffcc00;}
-.txn p{margin:4px 0;}
-.status{
-  font-weight:600;
-  padding:2px 6px;
-  border-radius:4px;
+.pending { background: #ff9800; color: #fff; }
+.approved { background: #4caf50; color: #fff; }
+.rejected { background: #f44336; color: #fff; }
+
+nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; justify-content: space-around;
+  background: #002244; padding: 8px 0;
 }
-.status.pending{background:#ffc107;color:#000;}
-.status.approved{background:#28a745;color:#fff;}
-.status.rejected{background:#dc3545;color:#fff;}
-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  display:flex;justify-content:space-around;
-  background:#002244;padding:8px 0;
-}
-nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}
-nav i{font-size:18px;}
+nav a { color: #fff; text-decoration: none; text-align: center; font-size: 0.8rem; }
+nav i { font-size: 18px; }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-<header>Transaction History</header>
+<header><h2>Transaction History</h2></header>
 
-<div class="section" id="txn-list">
-  <p>Loading transactions...</p>
+<div class="container" id="txn-list">
+  <p>Loading your transactions...</p>
 </div>
 
 <nav>
@@ -89,48 +84,52 @@ nav i{font-size:18px;}
 </nav>
 
 <script>
+function renderTxn(type, id, data){
+  const div = document.createElement('div');
+  div.className = 'txn';
+  div.innerHTML = `
+    <h4>${type} – UGX ${Number(data.amount).toLocaleString()}</h4>
+    <p><strong>Date:</strong> ${new Date(data.timestamp).toLocaleString()}</p>
+    <p><strong>Status:</strong> <span class="status ${data.status}">${data.status}</span></p>
+  `;
+  return div;
+}
+
 auth.onAuthStateChanged(user=>{
-  if(!user){window.location="signin.html";return;}
-  const uid=user.uid;
-  const list=document.getElementById('txn-list');
+  if(!user){ window.location='signin.html'; return; }
+  const uid = user.uid;
+  const list = document.getElementById('txn-list');
+  list.innerHTML = "";
 
-  function renderTxns(deposits,withdrawals){
-    list.innerHTML="";
-    const all=[];
-    for(const [k,v] of Object.entries(deposits||{})){
-      all.push({id:k,type:"deposit",...v});
-    }
-    for(const [k,v] of Object.entries(withdrawals||{})){
-      all.push({id:k,type:"withdraw",...v});
-    }
-    all.sort((a,b)=>b.timestamp-a.timestamp);
-    if(all.length===0){list.innerHTML="<p>No transactions found.</p>";return;}
-    all.forEach(tx=>{
-      const div=document.createElement("div");
-      div.className="txn "+tx.type;
-      div.innerHTML=`
-        <p><strong>${tx.type==="deposit"?"Deposit":"Withdrawal"}</strong> – UGX ${Number(tx.amount).toLocaleString()}</p>
-        <p>Status: <span class="status ${tx.status}">${tx.status||'pending'}</span></p>
-        <p>${new Date(tx.timestamp).toLocaleString()}</p>
-      `;
-      list.appendChild(div);
-    });
-  }
-
-  db.ref('deposits/'+uid).on('value',snap=>{
-    const deposits=snap.val()||{};
-    db.ref('withdrawals/'+uid).once('value').then(snap2=>{
-      renderTxns(deposits,snap2.val());
-    });
+  // Listen for deposits
+  db.ref('deposits/'+uid).on('child_added', snap=>{
+    const txn = renderTxn("Deposit", snap.key, snap.val());
+    list.prepend(txn);
   });
-  db.ref('withdrawals/'+uid).on('value',snap=>{
-    const withdrawals=snap.val()||{};
-    db.ref('deposits/'+uid).once('value').then(snap2=>{
-      renderTxns(snap2.val(),withdrawals);
-    });
+  db.ref('deposits/'+uid).on('child_changed', snap=>{
+    const txn = renderTxn("Deposit", snap.key, snap.val());
+    list.prepend(txn);
+    if(snap.val().status === "approved" && !snap.val().processed){
+      db.ref('users/'+uid+'/balance').transaction(b=>(+b||0)+(+snap.val().amount));
+      db.ref('deposits/'+uid+'/'+snap.key+'/processed').set(true);
+    }
+  });
+
+  // Listen for withdrawals
+  db.ref('withdrawals/'+uid).on('child_added', snap=>{
+    const txn = renderTxn("Withdrawal", snap.key, snap.val());
+    list.prepend(txn);
+  });
+  db.ref('withdrawals/'+uid).on('child_changed', snap=>{
+    const txn = renderTxn("Withdrawal", snap.key, snap.val());
+    list.prepend(txn);
+    if(snap.val().status === "approved" && !snap.val().processed){
+      db.ref('users/'+uid+'/balance').transaction(b=>(+b||0)-(+snap.val().amount));
+      db.ref('withdrawals/'+uid+'/'+snap.key+'/processed').set(true);
+    }
   });
 });
 </script>
 
 </body>
-  </html>
+</html>

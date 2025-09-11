@@ -143,6 +143,7 @@ header h2{margin:0;font-size:1.2rem;}
 .vip-box .info{flex-grow:1;margin-left:8px;}
 .vip-box .info .amount{font-weight:600;color:#ffcc00;}
 .vip-box .arrow{font-size:22px;cursor:pointer;}
+.vip-box.unlocked{border:1px solid #00ff88;background:rgba(0,255,100,0.08);}
 
 nav{
   position:fixed;
@@ -231,12 +232,14 @@ auth.onAuthStateChanged(user=>{
   const uid=user.uid;
   document.getElementById('user-email').textContent=user.email;
 
+  // Balance
   const balRef=db.ref('users/'+uid+'/balance');
   balRef.on('value',snap=>{
     const bal=parseFloat(snap.val()||0);
     document.getElementById('user-balance').textContent=`Balance: UGX ${bal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
   });
 
+  // Earnings breakdown
   const vipSimple={1:750,2:1250,3:2750,4:5250,5:9375,6:18750,7:28250,8:37750,9:50000,10:62500};
   const vipClaims=db.ref('users/'+uid+'/vipClaims');
   vipClaims.on('value',snap=>{
@@ -256,35 +259,41 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('vip-grand-total').textContent=`Total VIP Earnings: UGX ${total.toLocaleString()}`;
   });
 
-  // VIP list synced with Realtime Database
+  // VIP list synced with investments (REALTIME)
   const vipAmounts=[75000,105000,150000,200000,250000,300000,350000,400000,450000,500000];
-const vipNames=["Starter","Basic","Silver","Gold","Platinum","Diamond","Elite","VIP Pro","Executive","Ultimate"];
-const vipRef=db.ref('users/'+uid+'/vipLevels');
-vipRef.on('value', snap => {
-  const vipList = document.getElementById('vip-list');
-  const raw = snap.val() || [];
-  const unlocked = Array.isArray(raw) ? raw : Object.keys(raw).map(Number);
+  const vipNames=["Starter","Basic","Silver","Gold","Platinum","Diamond","Elite","VIP Pro","Executive","Ultimate"];
+  const vipList=document.getElementById('vip-list');
 
-  vipList.innerHTML = '';
-  vipAmounts.forEach((amt, idx) => {
-    const lvl = idx + 1;
-    const box = document.createElement('div');
-    box.className = 'vip-box';
-    box.innerHTML = `
-      <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png">
-      <div class="info">
-        <p>${vipNames[idx]} Plan – Unlock amount: <span class="amount">UGX ${amt.toLocaleString()}</span></p>
-        <p>${unlocked.includes(lvl) ? "✅" : "🔐"} VIP${lvl}</p>
-        <p>Income will be available in 24 hrs</p>
-      </div>
-      <div class="arrow">»</div>`;
-    box.querySelector('.arrow').onclick = () => showPopup(
-      unlocked.includes(lvl) ? "VIP already unlocked" : "Please unlock your VIP first",
-      !unlocked.includes(lvl)
-    );
-    vipList.appendChild(box);
+  db.ref('investments/'+uid).on('value', snap=>{
+    const invs=snap.val()||{};
+    const unlockedPlans=new Set();
+    Object.values(invs).forEach(inv=>{
+      if(inv.status==="active"||inv.status==="completed"){
+        if(inv.planName){ unlockedPlans.add(inv.planName); }
+      }
+    });
+
+    vipList.innerHTML='';
+    vipAmounts.forEach((amt,idx)=>{
+      const name=vipNames[idx];
+      const unlocked=unlockedPlans.has(name+" Plan")||unlockedPlans.has(name);
+      const box=document.createElement('div');
+      box.className='vip-box'+(unlocked?' unlocked':'');
+      box.innerHTML=`
+        <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png">
+        <div class="info">
+          <p>${name} Plan – Unlock amount: <span class="amount">UGX ${amt.toLocaleString()}</span></p>
+          <p>${unlocked?"✅ VIP Unlocked":"🔐 Locked"}</p>
+          <p>Income will be available in 24 hrs</p>
+        </div>
+        <div class="arrow">»</div>`;
+      box.querySelector('.arrow').onclick=()=>showPopup(
+        unlocked?"VIP already unlocked":"Please unlock your VIP first",
+        !unlocked
+      );
+      vipList.appendChild(box);
+    });
   });
-});
 
   // Claim Bonus
   const claimBtn = document.getElementById('claim-btn');

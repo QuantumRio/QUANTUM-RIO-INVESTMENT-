@@ -242,15 +242,16 @@ auth.onAuthStateChanged(user => {
   // Change Password (send reset email)
   document.getElementById('change-password-btn').onclick = () => {
     auth.sendPasswordResetEmail(user.email).then(() => {
-      showPopup('Password reset email sent');
-    }).catch(() => showPopup('Error sending reset email', true));
+      showPopup('✅ Password reset email sent');
+    }).catch(() => showPopup('❌ Error sending reset email', true));
   };
 
-  // Logout with confirmation
+  // Logout
   document.getElementById('logout-btn').onclick = () => {
-    if (confirm("Are you sure you want to logout?")) {
-      auth.signOut().then(() => window.location = 'signin.html');
-    }
+    auth.signOut().then(() => {
+      showPopup('✅ Logged out');
+      setTimeout(() => window.location = 'signin.html', 1500);
+    }).catch(() => showPopup('❌ Logout failed', true));
   };
 });
 

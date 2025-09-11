@@ -11,6 +11,9 @@
     font-family:system-ui, sans-serif;
     background:#041833;
     color:#fff;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none; /* Disable accidental text selection */
   }
   header{
     padding:14px;
@@ -32,6 +35,14 @@
     justify-content:space-between;
     align-items:center;
     cursor:pointer;  /* clickable */
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  .deposit-amt, .bonus-amt{
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
   .deposit-amt{
     font-size:1rem;

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>QUANTUM RIO – Transactions</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+  authDomain: "quantum-rio-uganda.firebaseapp.com",
+  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "quantum-rio-uganda",
+  storageBucket: "quantum-rio-uganda.appspot.com",
+  messagingSenderId: "840875099079",
+  appId: "1:840875099079:web:1cd06a78276842a787cfe2",
+  measurementId: "G-97G1PNQ9JB"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.database();
+</script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#001f3f;
+  color:#fff;
+  padding-bottom:1cm;
+}
+header{
+  background:#002f6c;
+  padding:12px;
+  text-align:center;
+  font-size:1.2rem;
+  font-weight:600;
+}
+.section{
+  margin:12px;
+  padding:12px;
+  background:#003366;
+  border-radius:8px;
+}
+.txn{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  margin:8px 0;
+  padding:10px;
+  border-radius:6px;
+  font-size:0.9rem;
+}
+.txn.deposit{border-left:4px solid #28a745;}
+.txn.withdraw{border-left:4px solid #ffcc00;}
+.txn p{margin:4px 0;}
+.status{
+  font-weight:600;
+  padding:2px 6px;
+  border-radius:4px;
+}
+.status.pending{background:#ffc107;color:#000;}
+.status.approved{background:#28a745;color:#fff;}
+.status.rejected{background:#dc3545;color:#fff;}
+nav{
+  position:fixed;bottom:0;left:0;right:0;
+  display:flex;justify-content:space-around;
+  background:#002244;padding:8px 0;
+}
+nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}
+nav i{font-size:18px;}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<header>Transaction History</header>
+
+<div class="section" id="txn-list">
+  <p>Loading transactions...</p>
+</div>
+
+<nav>
+  <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
+  <a href="task.html"><i class="fas fa-tasks"></i><br>Task</a>
+  <a href="team.html"><i class="fas fa-users"></i><br>Team</a>
+  <a href="vip.html"><i class="fas fa-crown"></i><br>VIP</a>
+  <a href="profile.html"><i class="fas fa-user"></i><br>Me</a>
+</nav>
+
+<script>
+auth.onAuthStateChanged(user=>{
+  if(!user){window.location="signin.html";return;}
+  const uid=user.uid;
+  const list=document.getElementById('txn-list');
+
+  function renderTxns(deposits,withdrawals){
+    list.innerHTML="";
+    const all=[];
+    for(const [k,v] of Object.entries(deposits||{})){
+      all.push({id:k,type:"deposit",...v});
+    }
+    for(const [k,v] of Object.entries(withdrawals||{})){
+      all.push({id:k,type:"withdraw",...v});
+    }
+    all.sort((a,b)=>b.timestamp-a.timestamp);
+    if(all.length===0){list.innerHTML="<p>No transactions found.</p>";return;}
+    all.forEach(tx=>{
+      const div=document.createElement("div");
+      div.className="txn "+tx.type;
+      div.innerHTML=`
+        <p><strong>${tx.type==="deposit"?"Deposit":"Withdrawal"}</strong> – UGX ${Number(tx.amount).toLocaleString()}</p>
+        <p>Status: <span class="status ${tx.status}">${tx.status||'pending'}</span></p>
+        <p>${new Date(tx.timestamp).toLocaleString()}</p>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  db.ref('deposits/'+uid).on('value',snap=>{
+    const deposits=snap.val()||{};
+    db.ref('withdrawals/'+uid).once('value').then(snap2=>{
+      renderTxns(deposits,snap2.val());
+    });
+  });
+  db.ref('withdrawals/'+uid).on('value',snap=>{
+    const withdrawals=snap.val()||{};
+    db.ref('deposits/'+uid).once('value').then(snap2=>{
+      renderTxns(snap2.val(),withdrawals);
+    });
+  });
+});
+</script>
+
+</body>
+  </html>

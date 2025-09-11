@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Reset – QUANTUM RIO</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+  authDomain: "quantum-rio-uganda.firebaseapp.com",
+  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "quantum-rio-uganda",
+  storageBucket: "quantum-rio-uganda.appspot.com",
+  messagingSenderId: "840875099079",
+  appId: "1:840875099079:web:1cd06a78276842a787cfe2",
+  measurementId: "G-97G1PNQ9JB"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+</script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #001f3f;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.container {
+  background: #002f6c;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 350px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+.container h2 {
+  margin-bottom: 15px;
+  color: #ffcc00;
+}
+input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  margin: 10px 0;
+  font-size: 1rem;
+}
+button {
+  width: 100%;
+  padding: 10px;
+  background: #ffcc00;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:hover { background: #ffb300; }
+.message {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Reset Password</h2>
+  <input type="email" id="reset-email" placeholder="Enter your email" required>
+  <button onclick="sendReset()">Send Reset Link</button>
+  <p class="message" id="msg"></p>
+</div>
+
+<script>
+function sendReset(){
+  const email = document.getElementById('reset-email').value.trim();
+  const msg = document.getElementById('msg');
+  if(!email){
+    msg.textContent = "Please enter your email.";
+    msg.style.color = "red";
+    return;
+  }
+  auth.sendPasswordResetEmail(email)
+    .then(()=>{
+      msg.textContent = "✅ Reset link sent! Check your email.";
+      msg.style.color = "lightgreen";
+    })
+    .catch(err=>{
+      msg.textContent = "❌ " + err.message;
+      msg.style.color = "red";
+    });
+}
+</script>
+
+</body>
+</html>

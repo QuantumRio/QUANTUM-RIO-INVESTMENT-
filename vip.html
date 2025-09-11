@@ -170,8 +170,7 @@ auth.onAuthStateChanged(user=>{
   });
 });
 
-// Create plan cards
-function loadPlans(uid){
+// ✅ Fixed plan rendering
 function loadPlans(uid){
   const container = document.getElementById('plansContainer');
   container.innerHTML='';
@@ -182,7 +181,6 @@ function loadPlans(uid){
     const div = document.createElement('div');
     div.className='plan-card';
 
-    // Create title & texts
     const h3 = document.createElement('h3');
     h3.textContent = name;
 
@@ -192,7 +190,6 @@ function loadPlans(uid){
     const roiP = document.createElement('p');
     roiP.textContent = `Income: ${roi.toLocaleString()} UGX (credited in 24 hrs)`;
 
-    // Button
     const btn = document.createElement('button');
     const active = activeInvestments[amount];
 
@@ -203,18 +200,17 @@ function loadPlans(uid){
         updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount, roi);
       },1000);
     } else {
-      btn.textContent = "Invest Now";
+      btn.textContent="Invest Now";
       btn.onclick = ()=>invest(amount, roi, uid);
     }
 
-    // Append all
     div.appendChild(h3);
     div.appendChild(investP);
     div.appendChild(roiP);
     div.appendChild(btn);
     container.appendChild(div);
   });
-                      }
+}
 
 function invest(amount, roi, uid){
   if(currentBalance < amount){
@@ -243,21 +239,14 @@ function invest(amount, roi, uid){
   });
 }
 
-// Auto-credit after 24hrs
 function creditAndUnlock(uid, key, inv){
-  // Add ROI to balance
   const userRef = db.ref('users/'+uid+'/balance');
   userRef.transaction(bal=>(bal||0)+inv.returnAmount);
-
-  // Mark investment completed
   db.ref('investments/'+uid+'/'+key+'/status').set("completed");
-
-  // Remove from active list so it unlocks
   delete activeInvestments[inv.investedAmount];
   loadPlans(uid);
 }
 
-// Countdown updater
 function updateCountdown(button, investedAt, uid, key, roi, amount, planRoi){
   const now = Date.now();
   const diff = 24*60*60*1000 - (now - investedAt);

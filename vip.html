@@ -172,6 +172,7 @@ auth.onAuthStateChanged(user=>{
 
 // Create plan cards
 function loadPlans(uid){
+function loadPlans(uid){
   const container = document.getElementById('plansContainer');
   container.innerHTML='';
   Object.values(countdownIntervals).forEach(id=>clearInterval(id));
@@ -180,8 +181,20 @@ function loadPlans(uid){
   plans.forEach(([amount, roi, name])=>{
     const div = document.createElement('div');
     div.className='plan-card';
-    const active = activeInvestments[amount];
+
+    // Create title & texts
+    const h3 = document.createElement('h3');
+    h3.textContent = name;
+
+    const investP = document.createElement('p');
+    investP.textContent = `Invest: ${amount.toLocaleString()} UGX`;
+
+    const roiP = document.createElement('p');
+    roiP.textContent = `Income: ${roi.toLocaleString()} UGX (credited in 24 hrs)`;
+
+    // Button
     const btn = document.createElement('button');
+    const active = activeInvestments[amount];
 
     if(active){
       btn.disabled = true;
@@ -190,19 +203,18 @@ function loadPlans(uid){
         updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount, roi);
       },1000);
     } else {
-      btn.textContent="Invest Now";
+      btn.textContent = "Invest Now";
       btn.onclick = ()=>invest(amount, roi, uid);
     }
 
-    div.innerHTML=`
-      <h3>${name}</h3>
-      <p>Invest: ${amount.toLocaleString()} UGX</p>
-      <p>Income: ${roi.toLocaleString()} UGX (credited in 24 hrs)</p>
-    `;
+    // Append all
+    div.appendChild(h3);
+    div.appendChild(investP);
+    div.appendChild(roiP);
     div.appendChild(btn);
     container.appendChild(div);
   });
-}
+                      }
 
 function invest(amount, roi, uid){
   if(currentBalance < amount){

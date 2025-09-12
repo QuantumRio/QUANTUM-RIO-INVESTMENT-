@@ -195,7 +195,7 @@ function loadPlans(uid){
     } else {
       btn.textContent="Invest Now";
       btn.className="invest";
-      btn.onclick = ()=>invest(amount, roi, uid);
+      btn.onclick = ()=>invest(amount, roi, uid, btn);
     }
 
     div.innerHTML=`
@@ -224,22 +224,23 @@ function invest(amount, roi, uid, button){
   },(err, committed)=>{
     if(err || !committed){ showPopup("❌ Transaction failed", true); return; }
 
-    const invRef = db.ref('investments/'+uid).push();
+    // ✅ use push(newInv) directly
     const newInv = {
       investedAmount: amount,
       returnAmount: roi,
       investedAt: Date.now(),
       status: "active"
     };
-    invRef.set(newInv).then(()=>{
+    db.ref('investments/'+uid).push(newInv).then(ref=>{
+      const key = ref.key;
 
-      // ✅ Immediately update button state (no waiting for refresh)
+      // Update button immediately
       button.disabled = true;
-      button.style.backgroundColor = "#555";
-      updateCountdown(button, newInv.investedAt, uid, invRef.key, roi, amount);
+      button.className = "disabled";
+      updateCountdown(button, newInv.investedAt, uid, key, roi, amount);
 
       countdownIntervals[amount] = setInterval(()=>{
-        updateCountdown(button, newInv.investedAt, uid, invRef.key, roi, amount);
+        updateCountdown(button, newInv.investedAt, uid, key, roi, amount);
       },1000);
 
       showPopup(`✅ Invested ${amount.toLocaleString()} UGX`);
@@ -249,36 +250,6 @@ function invest(amount, roi, uid, button){
   });
 }
 
-// Updated countdown
-function updateCountdown(button, investedAt, uid, key, roi, amount){
-  const now = Date.now();
-  const diff = 24*60*60*1000 - (now - investedAt);
-  if(diff <= 0){
-    clearInterval(countdownIntervals[amount]);
-    button.disabled = false;
-    button.style.backgroundColor = "green"; // ✅ turn green
-    button.textContent = "Receive";
-    button.onclick = ()=>receiveProfit(uid, key, roi, amount, button);
-    return;
-  }
-  const hours = Math.floor(diff/(1000*60*60));
-  const mins = Math.floor((diff%(1000*60*60))/(1000*60));
-  const secs = Math.floor((diff%(1000*60))/1000);
-  button.textContent = `${hours}h ${mins}m ${secs}s left`;
-}
-
-// Receive profits
-function receiveProfit(uid, key, roi, amount, button){
-  const userRef = db.ref('users/'+uid+'/balance');
-  userRef.transaction(bal=>(bal||0)+roi);
-
-  db.ref('investments/'+uid+'/'+key+'/status').set("completed");
-
-  button.disabled = true;
-  button.style.backgroundColor = "#555";
-  button.textContent = "Completed";
-  showPopup(`💰 Credited ${roi.toLocaleString()} UGX`);
-}
 function updateCountdown(button, investedAt, uid, key, roi, amount){
   const now = Date.now();
   const diff = 24*60*60*1000 - (now - investedAt);
@@ -287,13 +258,24 @@ function updateCountdown(button, investedAt, uid, key, roi, amount){
     button.textContent = "Receive";
     button.className="receive";
     button.disabled = false;
-    button.onclick = ()=>receiveProfits(uid, key, {investedAmount: amount, returnAmount: roi});
+    button.onclick = ()=>receiveProfit(uid, key, roi, amount, button);
     return;
   }
   const h = Math.floor(diff/(1000*60*60));
   const m = Math.floor((diff%(1000*60*60))/(1000*60));
   const s = Math.floor((diff%(1000*60))/1000);
   button.textContent = `Receive in ${h}h ${m}m ${s}s`;
+}
+
+function receiveProfit(uid, key, roi, amount, button){
+  db.ref('users/'+uid+'/balance').transaction(bal=>(bal||0)+roi);
+  db.ref('investments/'+uid+'/'+key+'/status').set("completed");
+  db.ref('users/'+uid+'/unlockedVips/'+amount).set(true);
+
+  button.disabled = true;
+  button.className="completed";
+  button.textContent = "✅ Completed";
+  showPopup(`💰 Credited ${roi.toLocaleString()} UGX`);
 }
 
 function showPopup(msg, red=false){

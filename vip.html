@@ -146,57 +146,41 @@ auth.onAuthStateChanged(user=>{
   if(!user){ window.location='signin.html'; return; }
   const uid = user.uid;
 
-  // balance
+  // balance listener
   db.ref('users/'+uid+'/balance').on('value', snap=>{
     currentBalance = snap.val() || 0;
     document.getElementById('userBalance').textContent =
       currentBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   });
 
-  // unlocked VIPs (permanent)
+  // unlocked VIPs (completed) listener
   db.ref('users/'+uid+'/unlockedVips').on('value', snap=>{
     unlockedVips = snap.val() || {};
     loadPlans(uid);
   });
 
-  // investments
+  // investments listener
   db.ref('investments/'+uid).on('value', snap=>{
     activeInvestments = {};
-    // collect any expired (>=24h) to auto-process
-    const toAutoProcess = [];
-
     snap.forEach(child=>{
-      const key = child.key;
       const inv = child.val();
-      if(inv && inv.status === "active"){
-        if(Date.now() - (inv.investedAt || 0) >= 24*60*60*1000){
-          // expired — auto-process (credit + mark completed + unlock)
-          toAutoProcess.push({ key, inv });
-        } else {
-          // still active within 24h
-          activeInvestments[inv.investedAmount] = { ...inv, key };
-        }
+      const key = child.key;
+      if(!inv) return;
+      // only treat active investments as active; completed ones are handled via unlockedVips
+      if(inv.status === "active"){
+        // keep investment in active map (we will check elapsed time when rendering)
+        activeInvestments[inv.investedAmount] = { ...inv, key };
       }
     });
-
-    // process expired ones (silently, so page load doesn't spam popups)
-    if(toAutoProcess.length){
-      // run sequentially
-      toAutoProcess.forEach(item => {
-        // pass auto=true to avoid popup spam
-        receiveProfits(uid, item.key, item.inv, true);
-      });
-    }
-
     loadPlans(uid);
   });
 });
 
-// render plans
+// build UI
 function loadPlans(uid){
   const container = document.getElementById('plansContainer');
   container.innerHTML = '';
-  // clear previous countdowns
+  // clear existing countdown intervals
   Object.values(countdownIntervals).forEach(id => clearInterval(id));
   countdownIntervals = {};
 
@@ -204,38 +188,79 @@ function loadPlans(uid){
     const div = document.createElement('div');
     div.className = 'plan-card';
 
-    // decide button state: active (countdown), completed (unlockedVips), or invest
-    const active = activeInvestments[amount];
-    const completed = Boolean(unlockedVips && unlockedVips[amount]);
+    const header = document.createElement('div');
+    header.innerHTML = `<h3>${name}</h3>
+                        <p>Invest: ${amount.toLocaleString()} UGX</p>
+                        <p>Income: ${roi.toLocaleString()} UGX (receive after 24 hrs)</p>`;
+    div.appendChild(header);
+
     const btn = document.createElement('button');
 
-    if(active){
-      // show disabled countdown "Receive in ...", will become enabled when timer hits 0
-      btn.className = "disabled";
-      btn.disabled = true;
-      updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount);
-      // store interval
-      countdownIntervals[amount] = setInterval(()=>{
-        updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount);
-      }, 1000);
-    } else if(completed){
+    const active = activeInvestments[amount];
+    const completed = Boolean(unlockedVips && unlockedVips[amount]);
+
+    if(completed){
       btn.textContent = "✅ Completed";
       btn.className = "completed";
       btn.disabled = true;
+    } else if(active){
+      // check elapsed time
+      const investedAt = Number(active.investedAt) || 0;
+      const elapsed = Date.now() - investedAt;
+      const dayMs = 24*60*60*1000;
+
+      if(elapsed >= dayMs){
+        // 24+ hours passed — show enabled Receive (user must click to claim)
+        btn.textContent = "Receive";
+        btn.className = "receive";
+        btn.disabled = false;
+        btn.addEventListener('click', ()=> receiveProfits(uid, active.key, active));
+      } else {
+        // still within 24 hours — disabled countdown button
+        btn.className = "disabled";
+        btn.disabled = true;
+        // initial label
+        btn.textContent = formatRemaining(investedAt);
+        // set interval to update label and enable button when time is up
+        countdownIntervals[amount] = setInterval(()=>{
+          const nowElapsed = Date.now() - investedAt;
+          if(nowElapsed >= dayMs){
+            clearInterval(countdownIntervals[amount]);
+            delete countdownIntervals[amount];
+            // enable receive button (user must click to claim)
+            btn.textContent = "Receive";
+            btn.className = "receive";
+            btn.disabled = false;
+            // replace listeners: ensure only one listener
+            btn.replaceWith(btn.cloneNode(true));
+            const newBtn = div.querySelector('button');
+            newBtn.addEventListener('click', ()=> receiveProfits(uid, active.key, active));
+          } else {
+            btn.textContent = formatRemaining(investedAt);
+          }
+        }, 1000);
+      }
     } else {
+      // no active investment and not completed => allow invest
       btn.textContent = "Invest Now";
       btn.className = "invest";
-      btn.onclick = ()=>invest(amount, roi, uid);
+      btn.disabled = false;
+      btn.addEventListener('click', ()=> invest(amount, roi, uid));
     }
 
-    div.innerHTML = `
-      <h3>${name}</h3>
-      <p>Invest: ${amount.toLocaleString()} UGX</p>
-      <p>Income: ${roi.toLocaleString()} UGX (receive after 24 hrs)</p>
-    `;
     div.appendChild(btn);
     container.appendChild(div);
   });
+}
+
+function formatRemaining(investedAt){
+  const dayMs = 24*60*60*1000;
+  const diff = dayMs - (Date.now() - investedAt);
+  if(diff <= 0) return "Receive";
+  const hours = Math.floor(diff / (1000*60*60));
+  const mins = Math.floor((diff % (1000*60*60)) / (1000*60));
+  const secs = Math.floor((diff % (1000*60)) / 1000);
+  return `Receive in ${hours}h ${mins}m ${secs}s`;
 }
 
 // invest: deduct balance (transaction), push investment, update local cache immediately
@@ -252,7 +277,7 @@ function invest(amount, roi, uid){
     if(current < amount) return userData;
     userData.balance = current - amount;
     return userData;
-  }, (err, committed) => {
+  }, (err, committed, snapshot) => {
     if(err || !committed){
       showPopup("❌ Transaction failed", true);
       return;
@@ -265,72 +290,45 @@ function invest(amount, roi, uid){
       investedAt: Date.now(),
       status: "active"
     };
-    newInvRef.set(newInvestment);
-
-    // immediate UI update so button becomes disabled (countdown) without waiting for DB roundtrip
-    activeInvestments[amount] = { ...newInvestment, key: newInvRef.key };
-    loadPlans(uid);
-
-    showPopup(`✅ Invested ${amount.toLocaleString()} UGX`);
+    newInvRef.set(newInvestment)
+      .then(()=>{
+        // immediate UI update: mark as active so button disables right away
+        activeInvestments[amount] = { ...newInvestment, key: newInvRef.key };
+        loadPlans(uid);
+        showPopup(`✅ Invested ${amount.toLocaleString()} UGX`);
+      })
+      .catch(()=> {
+        showPopup("❌ Could not record investment", true);
+      });
   });
 }
 
-/**
- * receiveProfits
- * uid - user id
- * key - investment key in DB
- * inv - investment object { investedAmount, returnAmount, investedAt, ... }
- * auto - boolean. if true, suppress the "received" popup to avoid spam when auto-processing on load
- */
-function receiveProfits(uid, key, inv, auto = false){
-  if(!inv || !inv.returnAmount) return;
-
-  // credit user balance using transaction
-  const balRef = db.ref('users/'+uid+'/balance');
-  balRef.transaction(bal => (bal || 0) + inv.returnAmount, (err, committed) => {
-    // regardless of transaction result, mark investment completed and unlock VIP to keep state consistent
-    db.ref('investments/'+uid+'/'+key+'/status').set("completed")
-      .catch(()=>{}); // ignore set errors here
-
-    // persist unlocked VIP so button remains completed across refreshes
-    if(inv.investedAmount) {
-      db.ref('users/'+uid+'/unlockedVips/'+inv.investedAmount).set(true).catch(()=>{});
-    }
-
-    // update local cache/UI
-    delete activeInvestments[inv.investedAmount];
+// receive profits: user clicks Receive (only after 24hrs). This credits + marks completed + unlocks
+function receiveProfits(uid, key, inv){
+  if(!inv || !key) return;
+  // double-check that 24h elapsed (prevent early click)
+  const investedAt = Number(inv.investedAt) || 0;
+  const dayMs = 24*60*60*1000;
+  if(Date.now() - investedAt < dayMs){
+    showPopup("⏳ Not ready yet", true);
+    // refresh UI to reflect true state
     loadPlans(uid);
-
-    if(!auto){
-      showPopup(`💰 Received ${inv.returnAmount.toLocaleString()} UGX`);
-    }
-  });
-}
-
-// updateCountdown: show remaining time; when reaches zero, turn into enabled Receive button
-function updateCountdown(button, investedAt, uid, key, roi, amount){
-  const now = Date.now();
-  const diff = 24*60*60*1000 - (now - investedAt);
-  if(diff <= 0){
-    // clear interval if exists
-    if(countdownIntervals[amount]) {
-      clearInterval(countdownIntervals[amount]);
-      delete countdownIntervals[amount];
-    }
-
-    // Instead of auto-crediting here, we enable the Receive button so user may click to claim.
-    // BUT because we also auto-process expired investments on load, this branch will typically
-    // be reached only when the client hits zero while page is open — we enable the Receive button.
-    button.textContent = "Receive";
-    button.className = "receive";
-    button.disabled = false;
-    button.onclick = ()=>receiveProfits(uid, key, {investedAmount: amount, returnAmount: roi});
     return;
   }
-  const hours = Math.floor(diff / (1000*60*60));
-  const mins = Math.floor((diff % (1000*60*60)) / (1000*60));
-  const secs = Math.floor((diff % (1000*60)) / 1000);
-  button.textContent = `Receive in ${hours}h ${mins}m ${secs}s`;
+
+  const balRef = db.ref('users/'+uid+'/balance');
+  balRef.transaction(bal => (bal || 0) + inv.returnAmount, (err, committed) => {
+    // mark investment completed and persist unlocked state
+    db.ref('investments/'+uid+'/'+key+'/status').set("completed").catch(()=>{});
+    db.ref('users/'+uid+'/unlockedVips/'+inv.investedAmount).set(true).catch(()=>{});
+
+    // update local caches and UI
+    delete activeInvestments[inv.investedAmount];
+    unlockedVips[inv.investedAmount] = true;
+    loadPlans(uid);
+
+    showPopup(`💰 Received ${inv.returnAmount.toLocaleString()} UGX`);
+  });
 }
 
 function showPopup(msg, red=false){

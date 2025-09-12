@@ -191,7 +191,6 @@ function loadPlans(uid){
     const btn = document.createElement('button');
 
     if(active){
-      // initially show disabled Receive button with countdown
       btn.className="disabled";
       btn.disabled = true;
       updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount);
@@ -214,6 +213,7 @@ function loadPlans(uid){
   });
 }
 
+// ✅ Fixed invest: disable button immediately
 function invest(amount, roi, uid){
   if(currentBalance < amount){
     showPopup("❌ Insufficient balance", true);
@@ -228,14 +228,23 @@ function invest(amount, roi, uid){
     userData.balance = current - amount;
     return userData;
   },(err, committed)=>{
-    if(err || !committed){ showPopup("❌ Transaction failed", true); return; }
+    if(err || !committed){ 
+      showPopup("❌ Transaction failed", true); 
+      return; 
+    }
 
-    db.ref('investments/'+uid).push({
+    const newInvRef = db.ref('investments/'+uid).push();
+    const newInvestment = {
       investedAmount: amount,
       returnAmount: roi,
       investedAt: Date.now(),
       status: "active"
-    });
+    };
+    newInvRef.set(newInvestment);
+
+    // ✅ update local cache immediately
+    activeInvestments[amount] = { ...newInvestment, key: newInvRef.key };
+    loadPlans(uid);
 
     showPopup(`✅ Invested ${amount.toLocaleString()} UGX`);
   });

@@ -123,6 +123,7 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
+// Plans: [amount, roi, name]
 const plans = [
   [75000,150000,"Starter Plan"],
   [105000,210000,"Bronze Plan"],
@@ -137,67 +138,97 @@ const plans = [
 ];
 
 let currentBalance = 0;
-let activeInvestments = {};
-let unlockedVips = {};
-let countdownIntervals = {};
+let activeInvestments = {};   // { amount: {investedAt, returnAmount, key} }
+let unlockedVips = {};        // { amount: true }
+let countdownIntervals = {};  // { amount: intervalId }
 
 auth.onAuthStateChanged(user=>{
   if(!user){ window.location='signin.html'; return; }
   const uid = user.uid;
 
+  // balance
   db.ref('users/'+uid+'/balance').on('value', snap=>{
     currentBalance = snap.val() || 0;
     document.getElementById('userBalance').textContent =
       currentBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   });
 
+  // unlocked VIPs (permanent)
   db.ref('users/'+uid+'/unlockedVips').on('value', snap=>{
     unlockedVips = snap.val() || {};
     loadPlans(uid);
   });
 
+  // investments
   db.ref('investments/'+uid).on('value', snap=>{
     activeInvestments = {};
+    // collect any expired (>=24h) to auto-process
+    const toAutoProcess = [];
+
     snap.forEach(child=>{
+      const key = child.key;
       const inv = child.val();
-      if(inv.status==="active"){
-        activeInvestments[inv.investedAmount] = { ...inv, key: child.key };
+      if(inv && inv.status === "active"){
+        if(Date.now() - (inv.investedAt || 0) >= 24*60*60*1000){
+          // expired — auto-process (credit + mark completed + unlock)
+          toAutoProcess.push({ key, inv });
+        } else {
+          // still active within 24h
+          activeInvestments[inv.investedAmount] = { ...inv, key };
+        }
       }
     });
+
+    // process expired ones (silently, so page load doesn't spam popups)
+    if(toAutoProcess.length){
+      // run sequentially
+      toAutoProcess.forEach(item => {
+        // pass auto=true to avoid popup spam
+        receiveProfits(uid, item.key, item.inv, true);
+      });
+    }
+
     loadPlans(uid);
   });
 });
 
+// render plans
 function loadPlans(uid){
   const container = document.getElementById('plansContainer');
-  container.innerHTML='';
-  Object.values(countdownIntervals).forEach(id=>clearInterval(id));
+  container.innerHTML = '';
+  // clear previous countdowns
+  Object.values(countdownIntervals).forEach(id => clearInterval(id));
   countdownIntervals = {};
 
   plans.forEach(([amount, roi, name])=>{
     const div = document.createElement('div');
-    div.className='plan-card';
+    div.className = 'plan-card';
+
+    // decide button state: active (countdown), completed (unlockedVips), or invest
     const active = activeInvestments[amount];
+    const completed = Boolean(unlockedVips && unlockedVips[amount]);
     const btn = document.createElement('button');
 
     if(active){
-      btn.className="disabled";
+      // show disabled countdown "Receive in ...", will become enabled when timer hits 0
+      btn.className = "disabled";
       btn.disabled = true;
       updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount);
+      // store interval
       countdownIntervals[amount] = setInterval(()=>{
         updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount);
-      },1000);
-    } else if(unlockedVips[amount]){
-      btn.textContent="✅ Completed";
-      btn.className="completed";
+      }, 1000);
+    } else if(completed){
+      btn.textContent = "✅ Completed";
+      btn.className = "completed";
       btn.disabled = true;
     } else {
-      btn.textContent="Invest Now";
-      btn.className="invest";
+      btn.textContent = "Invest Now";
+      btn.className = "invest";
       btn.onclick = ()=>invest(amount, roi, uid);
     }
 
-    div.innerHTML=`
+    div.innerHTML = `
       <h3>${name}</h3>
       <p>Invest: ${amount.toLocaleString()} UGX</p>
       <p>Income: ${roi.toLocaleString()} UGX (receive after 24 hrs)</p>
@@ -207,6 +238,7 @@ function loadPlans(uid){
   });
 }
 
+// invest: deduct balance (transaction), push investment, update local cache immediately
 function invest(amount, roi, uid){
   if(currentBalance < amount){
     showPopup("❌ Insufficient balance", true);
@@ -216,14 +248,14 @@ function invest(amount, roi, uid){
   const userRef = db.ref('users/'+uid);
   userRef.transaction(userData=>{
     if(!userData) userData={};
-    const current = parseFloat(userData.balance||0);
+    const current = parseFloat(userData.balance || 0);
     if(current < amount) return userData;
     userData.balance = current - amount;
     return userData;
-  },(err, committed)=>{
-    if(err || !committed){ 
-      showPopup("❌ Transaction failed", true); 
-      return; 
+  }, (err, committed) => {
+    if(err || !committed){
+      showPopup("❌ Transaction failed", true);
+      return;
     }
 
     const newInvRef = db.ref('investments/'+uid).push();
@@ -235,6 +267,7 @@ function invest(amount, roi, uid){
     };
     newInvRef.set(newInvestment);
 
+    // immediate UI update so button becomes disabled (countdown) without waiting for DB roundtrip
     activeInvestments[amount] = { ...newInvestment, key: newInvRef.key };
     loadPlans(uid);
 
@@ -242,41 +275,70 @@ function invest(amount, roi, uid){
   });
 }
 
-function receiveProfits(uid, key, inv){
-  const userRef = db.ref('users/'+uid+'/balance');
-  userRef.transaction(bal=>(bal||0)+inv.returnAmount);
+/**
+ * receiveProfits
+ * uid - user id
+ * key - investment key in DB
+ * inv - investment object { investedAmount, returnAmount, investedAt, ... }
+ * auto - boolean. if true, suppress the "received" popup to avoid spam when auto-processing on load
+ */
+function receiveProfits(uid, key, inv, auto = false){
+  if(!inv || !inv.returnAmount) return;
 
-  db.ref('investments/'+uid+'/'+key+'/status').set("completed");
-  db.ref('users/'+uid+'/unlockedVips/'+inv.investedAmount).set(true);
+  // credit user balance using transaction
+  const balRef = db.ref('users/'+uid+'/balance');
+  balRef.transaction(bal => (bal || 0) + inv.returnAmount, (err, committed) => {
+    // regardless of transaction result, mark investment completed and unlock VIP to keep state consistent
+    db.ref('investments/'+uid+'/'+key+'/status').set("completed")
+      .catch(()=>{}); // ignore set errors here
 
-  delete activeInvestments[inv.investedAmount];
-  loadPlans(uid);
-  showPopup(`💰 Received ${inv.returnAmount.toLocaleString()} UGX`);
+    // persist unlocked VIP so button remains completed across refreshes
+    if(inv.investedAmount) {
+      db.ref('users/'+uid+'/unlockedVips/'+inv.investedAmount).set(true).catch(()=>{});
+    }
+
+    // update local cache/UI
+    delete activeInvestments[inv.investedAmount];
+    loadPlans(uid);
+
+    if(!auto){
+      showPopup(`💰 Received ${inv.returnAmount.toLocaleString()} UGX`);
+    }
+  });
 }
 
+// updateCountdown: show remaining time; when reaches zero, turn into enabled Receive button
 function updateCountdown(button, investedAt, uid, key, roi, amount){
   const now = Date.now();
   const diff = 24*60*60*1000 - (now - investedAt);
   if(diff <= 0){
-    clearInterval(countdownIntervals[amount]);
+    // clear interval if exists
+    if(countdownIntervals[amount]) {
+      clearInterval(countdownIntervals[amount]);
+      delete countdownIntervals[amount];
+    }
+
+    // Instead of auto-crediting here, we enable the Receive button so user may click to claim.
+    // BUT because we also auto-process expired investments on load, this branch will typically
+    // be reached only when the client hits zero while page is open — we enable the Receive button.
     button.textContent = "Receive";
-    button.className="receive";
+    button.className = "receive";
     button.disabled = false;
     button.onclick = ()=>receiveProfits(uid, key, {investedAmount: amount, returnAmount: roi});
     return;
   }
-  const hours = Math.floor(diff/(1000*60*60));
-  const mins = Math.floor((diff%(1000*60*60))/(1000*60));
-  const secs = Math.floor((diff%(1000*60))/1000);
+  const hours = Math.floor(diff / (1000*60*60));
+  const mins = Math.floor((diff % (1000*60*60)) / (1000*60));
+  const secs = Math.floor((diff % (1000*60)) / 1000);
   button.textContent = `Receive in ${hours}h ${mins}m ${secs}s`;
 }
 
 function showPopup(msg, red=false){
-  const popup=document.getElementById('popupMsg');
-  popup.innerText=msg;
-  popup.className='popup'+(red?' red':'');
-  popup.style.display='block';
-  setTimeout(()=>popup.style.display='none',4000);
+  const popup = document.getElementById('popupMsg');
+  popup.innerText = msg;
+  popup.className = 'popup' + (red ? ' red' : '');
+  popup.style.display = 'block';
+  setTimeout(()=> popup.style.display = 'none', 3500);
 }
 </script>
 </body>

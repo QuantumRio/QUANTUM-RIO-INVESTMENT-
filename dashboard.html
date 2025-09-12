@@ -173,11 +173,12 @@ auth.onAuthStateChanged(user=>{
   // Show all locked by default
   renderVipLevels([]);
 
-  // Update when Firebase has data
-const vipRef = db.ref('users/' + uid + '/unlockedVips');
+  const vipRef = db.ref('users/' + uid + '/vipLevels');
 vipRef.on('value', snap => {
   const raw = snap.val() || {};
-  const unlocked = Object.keys(raw).map(Number);
+  const unlocked = Object.keys(raw)
+    .filter(k => raw[k] === true || (raw[k] && raw[k].unlocked === true))
+    .map(Number);
   renderVipLevels(unlocked);
 });
 

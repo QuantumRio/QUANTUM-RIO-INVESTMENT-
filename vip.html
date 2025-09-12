@@ -42,30 +42,29 @@
     padding: 20px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
-  .plan-card h3 {
-    margin: 0 0 6px 0;
-    color: #ffd966;
-  }
-  .plan-card p {
-    font-size: 14px;
-    color: #cfe6ff;
-    margin: 4px 0;
-  }
+  .plan-card h3 { margin: 0 0 6px 0; color: #ffd966; }
+  .plan-card p { font-size: 14px; color: #cfe6ff; margin: 4px 0; }
   .plan-card button {
     margin-top: 10px;
     padding: 10px;
     width: 100%;
-    background-color: #ffcc00;
-    color: #002244;
     border: none;
     border-radius: 6px;
     font-weight: bold;
     cursor: pointer;
   }
-  .plan-card button:disabled {
+  .plan-card button.invest {
+    background-color: #ffcc00;
+    color: #002244;
+  }
+  .plan-card button.disabled {
     background: #555;
     color: #ccc;
     cursor: not-allowed;
+  }
+  .plan-card button.receive {
+    background: #28a745;
+    color: #fff;
   }
   .popup {
     position: fixed;
@@ -192,6 +191,8 @@ function loadPlans(uid){
     const btn = document.createElement('button');
 
     if(active){
+      // initially show disabled Receive button with countdown
+      btn.className="disabled";
       btn.disabled = true;
       updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount);
       countdownIntervals[amount] = setInterval(()=>{
@@ -199,13 +200,14 @@ function loadPlans(uid){
       },1000);
     } else {
       btn.textContent="Invest Now";
+      btn.className="invest";
       btn.onclick = ()=>invest(amount, roi, uid);
     }
 
     div.innerHTML=`
       <h3>${name}</h3>
       <p>Invest: ${amount.toLocaleString()} UGX</p>
-      <p>Income: ${roi.toLocaleString()} UGX (credited in 24 hrs)</p>
+      <p>Income: ${roi.toLocaleString()} UGX (receive after 24 hrs)</p>
     `;
     div.appendChild(btn);
     container.appendChild(div);
@@ -239,18 +241,17 @@ function invest(amount, roi, uid){
   });
 }
 
-// Auto-credit after 24hrs + unlock VIP
-function creditAndUnlock(uid, key, inv){
+// Receive profits after 24h
+function receiveProfits(uid, key, inv){
   const userRef = db.ref('users/'+uid+'/balance');
   userRef.transaction(bal=>(bal||0)+inv.returnAmount);
 
   db.ref('investments/'+uid+'/'+key+'/status').set("completed");
-
-  // ✅ Save unlocked VIP in user profile
   db.ref('users/'+uid+'/unlockedVips/'+inv.investedAmount).set(true);
 
   delete activeInvestments[inv.investedAmount];
   loadPlans(uid);
+  showPopup(`💰 Received ${inv.returnAmount.toLocaleString()} UGX`);
 }
 
 // Countdown updater
@@ -259,13 +260,16 @@ function updateCountdown(button, investedAt, uid, key, roi, amount){
   const diff = 24*60*60*1000 - (now - investedAt);
   if(diff <= 0){
     clearInterval(countdownIntervals[amount]);
-    creditAndUnlock(uid, key, {investedAmount: amount, returnAmount: roi});
+    button.textContent = "Receive";
+    button.className="receive";
+    button.disabled = false;
+    button.onclick = ()=>receiveProfits(uid, key, {investedAmount: amount, returnAmount: roi});
     return;
   }
   const hours = Math.floor(diff/(1000*60*60));
   const mins = Math.floor((diff%(1000*60*60))/(1000*60));
   const secs = Math.floor((diff%(1000*60))/1000);
-  button.textContent = `${hours}h ${mins}m ${secs}s left`;
+  button.textContent = `Receive in ${hours}h ${mins}m ${secs}s`;
 }
 
 function showPopup(msg, red=false){

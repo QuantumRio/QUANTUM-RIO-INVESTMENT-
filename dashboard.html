@@ -173,12 +173,10 @@ auth.onAuthStateChanged(user=>{
   // Show all locked by default
   renderVipLevels([]);
 
-  const vipRef = db.ref('users/' + uid + '/vipLevels');
+  const vipRef = db.ref('users/' + uid + '/unlockedVips');
 vipRef.on('value', snap => {
   const raw = snap.val() || {};
-  const unlocked = Object.keys(raw)
-    .filter(k => raw[k] === true || (raw[k] && raw[k].unlocked === true))
-    .map(Number);
+  const unlocked = Object.keys(raw).map(Number); // keys are level numbers
   renderVipLevels(unlocked);
 });
 

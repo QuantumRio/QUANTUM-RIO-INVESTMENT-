@@ -1,225 +1,158 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>QUANTUM RIO – Team</title>
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width,initial-scale=1.0">  
+<title>QUANTUM RIO – Team</title>  
 
-<!-- use compat bundle so auth/database work exactly like v8 -->
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
-  authDomain: "quantum-rio-uganda.firebaseapp.com",
-  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "quantum-rio-uganda",
-  storageBucket: "quantum-rio-uganda.appspot.com",
-  messagingSenderId: "840875099079",
-  appId: "1:840875099079:web:1cd06a78276842a787cfe2",
-  measurementId: "G-97G1PNQ9JB"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db   = firebase.database();
-</script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>  
+<script>  
+const firebaseConfig = {  
+  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",  
+  authDomain: "quantum-rio-uganda.firebaseapp.com",  
+  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",  
+  projectId: "quantum-rio-uganda",  
+  storageBucket: "quantum-rio-uganda.appspot.com",  
+  messagingSenderId: "840875099079",  
+  appId: "1:840875099079:web:1cd06a78276842a787cfe2",  
+  measurementId: "G-97G1PNQ9JB"  
+};  
+firebase.initializeApp(firebaseConfig);  
+const auth = firebase.auth();  
+const db   = firebase.database();  
+</script>  
 
-<style>
-html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#001f3f;
-  color:#fff;
-  padding-bottom:1cm;
-}
-header{
-  background:#002f6c;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:12px 16px;
-}
-header img{height:32px;}
-header h2{margin:0;font-size:1.2rem;}
-.section{margin:12px;padding:12px;background:#003366;border-radius:8px;}
-h3{margin:0 0 8px 0;color:#ffcc00;}
-.stats-grid{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:8px;
-}
-.stat{
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.1);
-  text-align:center;
-  padding:6px;
-  border-radius:6px;
-  font-size:0.85rem;
-}
-.stat-label{color:#cfe6ff;font-size:0.75rem;}
-.stat-value{color:#ffd966;font-size:1rem;font-weight:600;}
-.copy-btn{
-  background:#ffcc00;
-  color:#002244;
-  border:none;
-  padding:6px 12px;
-  border-radius:6px;
-  font-weight:600;
-  cursor:pointer;
-}
-.level-box{
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.1);
-  margin:8px 0;
-  padding:8px;
-  border-radius:6px;
-}
-.level-box h4{margin:0 0 4px 0;color:#ffd966;font-size:0.95rem;}
-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  display:flex;justify-content:space-around;
-  background:#002244;padding:8px 0;
-}
-nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}
-nav i{font-size:18px;}
-.toast{
-  position:fixed;bottom:70px;left:50%;transform:translateX(-50%);
-  padding:10px 20px;color:#fff;border-radius:6px;
-  opacity:0;transition:opacity .3s;
-  font-size:0.85rem;
-}
-.toast.show{opacity:1;}
-.toast.success{background:#28a745;}
-.toast.error{background:#c0392b;}
-</style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
+<style>  
+html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}  
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#001f3f;color:#fff;padding-bottom:1cm;}  
+header{background:#002f6c;display:flex;align-items:center;gap:10px;padding:12px 16px}  
+header img{height:32px;}  
+header h2{margin:0;font-size:1.2rem;}  
+.section{margin:12px;padding:12px;background:#003366;border-radius:8px;}  
+h3{margin:0 0 8px 0;color:#ffcc00;}  
+.stats-grid{display:grid;grid-template-columns: repeat(3, 1fr);gap:8px;}  
+.stat{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);text-align:center;padding:6px;border-radius:6px;font-size:0.85rem;}  
+.stat-label{color:#cfe6ff;font-size:0.75rem;}  
+.stat-value{color:#ffd966;font-size:1rem;font-weight:600;}  
+.copy-btn{background:#ffcc00;color:#002244;border:none;padding:6px 12px;border-radius:6px;font-weight:600;cursor:pointer;}  
+.level-box{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);margin:8px 0;padding:8px;border-radius:6px;}  
+.level-box h4{margin:0 0 4px 0;color:#ffd966;font-size:0.95rem;}  
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:#002244;padding:8px 0;}  
+nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}  
+nav i{font-size:18px;}  
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);padding:10px 20px;color:#fff;border-radius:6px;opacity:0;transition:opacity .3s;font-size:0.85rem;}  
+.toast.show{opacity:1;}  
+.toast.success{background:#28a745;}  
+.toast.error{background:#c0392b;}  
+</style>  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">  
+</head>  
+<body>  
 
-<header>
-  <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png" alt="logo">
-  <h2>QUANTUM RIO – Team</h2>
-</header>
+<header>  
+  <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png" alt="logo">  
+  <h2>QUANTUM RIO – Team</h2>  
+</header>  
 
-<div class="section">
-  <h3>Your Referral Link</h3>
-  <div style="display:flex;align-items:center;gap:6px;">
-    <input id="ref-link" style="flex:1;border:none;padding:6px;" readonly>
-    <button class="copy-btn" id="copyRefBtn">Copy</button>
-  </div>
-</div>
+<div class="section">  
+  <h3>Your Referral Link</h3>  
+  <div style="display:flex;align-items:center;gap:6px;">  
+    <input id="ref-link" style="flex:1;border:none;padding:6px;" readonly>  
+    <button class="copy-btn" id="copyRefBtn">Copy</button>  
+  </div>  
+</div>  
 
-<div class="section">
-  <h3>Team Stats</h3>
-  <div class="stats-grid">
-    <div class="stat"><div class="stat-label">Team Size</div><div class="stat-value" id="team-size">0</div></div>
-    <div class="stat"><div class="stat-label">Team Recharge</div><div class="stat-value" id="team-recharge">0</div></div>
-    <div class="stat"><div class="stat-label">First Recharge</div><div class="stat-value" id="first-recharge">0</div></div>
-    <div class="stat"><div class="stat-label">New Team</div><div class="stat-value" id="new-team">0</div></div>
-    <div class="stat"><div class="stat-label">Team Withdraw</div><div class="stat-value" id="team-withdraw">0</div></div>
-    <div class="stat"><div class="stat-label">First Withdraw</div><div class="stat-value" id="first-withdraw">0</div></div>
-  </div>
-</div>
+<div class="section">  
+  <h3>Team Stats</h3>  
+  <div class="stats-grid">  
+    <div class="stat"><div class="stat-label">Team Size</div><div class="stat-value" id="team-size">0</div></div>  
+    <div class="stat"><div class="stat-label">Team Recharge</div><div class="stat-value" id="team-recharge">0</div></div>  
+    <div class="stat"><div class="stat-label">First Recharge</div><div class="stat-value" id="first-recharge">0</div></div>  
+    <div class="stat"><div class="stat-label">New Team</div><div class="stat-value" id="new-team">0</div></div>  
+    <div class="stat"><div class="stat-label">Team Withdraw</div><div class="stat-value" id="team-withdraw">0</div></div>  
+    <div class="stat"><div class="stat-label">First Withdraw</div><div class="stat-value" id="first-withdraw">0</div></div>  
+  </div>  
+</div>  
 
-<div class="section">
-  <h3>Commission by Level</h3>
-  <div class="level-box"><h4>Level 1 – 17%</h4><p>Total UGX <span id="lvl1-total">0</span></p></div>
-  <div class="level-box"><h4>Level 2 – 2%</h4><p>Total UGX <span id="lvl2-total">0</span></p></div>
-  <div class="level-box"><h4>Level 3 – 1%</h4><p>Total UGX <span id="lvl3-total">0</span></p></div>
-</div>
+<div class="section">  
+  <h3>Commission by Level</h3>  
+  <div class="level-box"><h4>Level 1 – 17%</h4><p>Total UGX <span id="lvl1-total">0</span></p></div>  
+  <div class="level-box"><h4>Level 2 – 2%</h4><p>Total UGX <span id="lvl2-total">0</span></p></div>  
+  <div class="level-box"><h4>Level 3 – 1%</h4><p>Total UGX <span id="lvl3-total">0</span></p></div>  
+</div>  
 
-<nav>
-  <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
-  <a href="task.html"><i class="fas fa-tasks"></i><br>Task</a>
-  <a href="team.html"><i class="fas fa-users"></i><br>Team</a>
-  <a href="vip.html"><i class="fas fa-crown"></i><br>VIP</a>
-  <a href="profile.html"><i class="fas fa-user"></i><br>Me</a>
-</nav>
+<nav>  
+  <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>  
+  <a href="task.html"><i class="fas fa-tasks"></i><br>Task</a>  
+  <a href="team.html"><i class="fas fa-users"></i><br>Team</a>  
+  <a href="vip.html"><i class="fas fa-crown"></i><br>VIP</a>  
+  <a href="profile.html"><i class="fas fa-user"></i><br>Me</a>  
+</nav>  
 
-<div id="toast" class="toast"></div>
+<div id="toast" class="toast"></div>  
 
-<script>
-function showToast(msg,type='success'){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.className='toast show '+type;
-  setTimeout(()=>t.classList.remove('show'),2500);
-}
+<script>  
+function showToast(msg,type='success'){  
+  const t=document.getElementById('toast');  
+  t.textContent=msg;  
+  t.className='toast show '+type;  
+  setTimeout(()=>t.classList.remove('show'),2500);  
+}  
 
-auth.onAuthStateChanged(user=>{
-  if(!user){window.location='signin.html';return;}
-  const uid=user.uid;
+auth.onAuthStateChanged(user=>{  
+  if(!user){window.location='signin.html';return;}  
+  const uid=user.uid;  
 
-  // Referral link
-  db.ref('users/'+uid+'/username').once('value').then(snap=>{
-    const username = snap.val() || uid;
-    const link = `${location.origin}/signup.html?ref=${encodeURIComponent(username)}`;
-    document.getElementById('ref-link').value = link;
-    document.getElementById('copyRefBtn').onclick = () => {
-      navigator.clipboard.writeText(link).then(() => {
-        db.ref('users/' + uid + '/referralLogs').push({
-          copiedAt: firebase.database.ServerValue.TIMESTAMP,
-          link: link
-        });
-        showToast('Referral link copied!', 'success');
-      }).catch(() => showToast('Copy failed', 'error'));
-    };
-  });
+  // Referral link  
+  db.ref('users/'+uid+'/username').once('value').then(snap=>{  
+    const username = snap.val() || uid;  
+    const link = `${location.origin}/QUANTUM-RIO-INVESTMENT-/signup.html?ref=${encodeURIComponent(username)}`;  
+    document.getElementById('ref-link').value = link;  
 
-  // Live team stats listener
-  const teamStatsRef=db.ref('users/'+uid+'/teamStats');
-  teamStatsRef.on('value',snap=>{
-    const s=snap.val()||{};
-    document.getElementById('team-size').textContent=s.size||0;
-    document.getElementById('team-recharge').textContent=(s.recharge||0).toLocaleString();
-    document.getElementById('team-withdraw').textContent=(s.withdraw||0).toLocaleString();
-    document.getElementById('new-team').textContent=s.newTeam||0;
-    document.getElementById('first-recharge').textContent=(s.firstRecharge||0).toLocaleString();
-    document.getElementById('first-withdraw').textContent=(s.firstWithdraw||0).toLocaleString();
-  });
+    document.getElementById('copyRefBtn').onclick = () => {  
+      navigator.clipboard.writeText(link).then(() => {  
+        db.ref('users/' + uid + '/referralLogs').push({  
+          copiedAt: firebase.database.ServerValue.TIMESTAMP,  
+          link: link  
+        });  
+        showToast('Referral link copied!', 'success');  
+      }).catch(() => showToast('Copy failed', 'error'));  
+    };  
 
-  // Commissions listener
-  const commissionsRef=db.ref('users/'+uid+'/commissions');
-  commissionsRef.on('value',snap=>{
-    const c=snap.val()||{};
-    document.getElementById('lvl1-total').textContent=(c.level1||0).toLocaleString();
-    document.getElementById('lvl2-total').textContent=(c.level2||0).toLocaleString();
-    document.getElementById('lvl3-total').textContent=(c.level3||0).toLocaleString();
-  });
+    // 🔥 Count all users that have referrer == this user/username  
+    db.ref('users').on('value', allSnap=>{  
+      let count=0;  
+      allSnap.forEach(child=>{  
+        const u=child.val()||{};  
+        if(u.referrer===uid || u.referrer===username){  
+          count++;  
+        }  
+      });  
+      document.getElementById('team-size').textContent=count;  
+      db.ref('users/'+uid+'/teamStats/size').set(count);  
+    });  
+  });  
 
-  // ---- FIXED TEAM SIZE COUNTING ----
-  function recalcTeamSize(){
-    Promise.all([
-      db.ref('users/'+uid+'/username').once('value'),
-      db.ref('users').once('value')
-    ]).then(([nameSnap,allSnap])=>{
-      const username=nameSnap.val()||uid;
-      const users=allSnap.val()||{};
-      let teamSize=0;
-      Object.values(users).forEach(u=>{
-        if(u.referrer===uid || u.referrer===username){
-          teamSize++;
-        }
-      });
-      teamStatsRef.child('size').set(teamSize);
-    });
-  }
+  // Live team stats (recharge, withdraw etc.)  
+  const teamStatsRef=db.ref('users/'+uid+'/teamStats');  
+  teamStatsRef.on('value',snap=>{  
+    const s=snap.val()||{};  
+    document.getElementById('team-recharge').textContent=(s.recharge||0).toLocaleString();  
+    document.getElementById('team-withdraw').textContent=(s.withdraw||0).toLocaleString();  
+    document.getElementById('new-team').textContent=s.newTeam||0;  
+    document.getElementById('first-recharge').textContent=(s.firstRecharge||0).toLocaleString();  
+    document.getElementById('first-withdraw').textContent=(s.firstWithdraw||0).toLocaleString();  
+  });  
 
-  // Initial calculation
-  recalcTeamSize();
-
-  // Watch for new users
-  db.ref('users').on('child_added',snap=>{
-    const newUser=snap.val()||{};
-    db.ref('users/'+uid+'/username').once('value').then(nameSnap=>{
-      const username=nameSnap.val()||uid;
-      if(newUser.referrer===uid||newUser.referrer===username){
-        recalcTeamSize();
-        teamStatsRef.child('newTeam').transaction(n=>(n||0)+1);
-      }
-    });
-  });
-});
-</script>
-</body>
+  // Live commissions  
+  const commissionsRef=db.ref('users/'+uid+'/commissions');  
+  commissionsRef.on('value',snap=>{  
+    const c=snap.val()||{};  
+    document.getElementById('lvl1-total').textContent=(c.level1||0).toLocaleString();  
+    document.getElementById('lvl2-total').textContent=(c.level2||0).toLocaleString();  
+    document.getElementById('lvl3-total').textContent=(c.level3||0).toLocaleString();  
+  });  
+});  
+</script>  
+</body>  
 </html>

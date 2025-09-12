@@ -53,19 +53,10 @@
     font-weight: bold;
     cursor: pointer;
   }
-  .plan-card button.invest {
-    background-color: #ffcc00;
-    color: #002244;
-  }
-  .plan-card button.disabled {
-    background: #555;
-    color: #ccc;
-    cursor: not-allowed;
-  }
-  .plan-card button.receive {
-    background: #28a745;
-    color: #fff;
-  }
+  .plan-card button.invest { background-color: #ffcc00; color: #002244; }
+  .plan-card button.disabled { background: #555; color: #ccc; cursor: not-allowed; }
+  .plan-card button.receive { background: #28a745; color: #fff; }
+  .plan-card button.completed { background: #444; color: #0f0; cursor: not-allowed; }
   .popup {
     position: fixed;
     top: 50%; left: 50%;
@@ -132,7 +123,6 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-// Plans: [amount, roi, name]
 const plans = [
   [75000,150000,"Starter Plan"],
   [105000,210000,"Bronze Plan"],
@@ -148,23 +138,24 @@ const plans = [
 
 let currentBalance = 0;
 let activeInvestments = {};
+let unlockedVips = {};
 let countdownIntervals = {};
 
 auth.onAuthStateChanged(user=>{
   if(!user){ window.location='signin.html'; return; }
   const uid = user.uid;
 
-  const balRef = db.ref('users/'+uid+'/balance');
-  balRef.on('value', snap=>{
+  db.ref('users/'+uid+'/balance').on('value', snap=>{
     currentBalance = snap.val() || 0;
     document.getElementById('userBalance').textContent =
       currentBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   });
 
-  // Show all plans initially
-  loadPlans(uid);
+  db.ref('users/'+uid+'/unlockedVips').on('value', snap=>{
+    unlockedVips = snap.val() || {};
+    loadPlans(uid);
+  });
 
-  // Track active investments
   db.ref('investments/'+uid).on('value', snap=>{
     activeInvestments = {};
     snap.forEach(child=>{
@@ -177,7 +168,6 @@ auth.onAuthStateChanged(user=>{
   });
 });
 
-// Create plan cards
 function loadPlans(uid){
   const container = document.getElementById('plansContainer');
   container.innerHTML='';
@@ -197,6 +187,10 @@ function loadPlans(uid){
       countdownIntervals[amount] = setInterval(()=>{
         updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount);
       },1000);
+    } else if(unlockedVips[amount]){
+      btn.textContent="✅ Completed";
+      btn.className="completed";
+      btn.disabled = true;
     } else {
       btn.textContent="Invest Now";
       btn.className="invest";
@@ -213,7 +207,6 @@ function loadPlans(uid){
   });
 }
 
-// ✅ Fixed invest: disable button immediately
 function invest(amount, roi, uid){
   if(currentBalance < amount){
     showPopup("❌ Insufficient balance", true);
@@ -242,7 +235,6 @@ function invest(amount, roi, uid){
     };
     newInvRef.set(newInvestment);
 
-    // ✅ update local cache immediately
     activeInvestments[amount] = { ...newInvestment, key: newInvRef.key };
     loadPlans(uid);
 
@@ -250,7 +242,6 @@ function invest(amount, roi, uid){
   });
 }
 
-// Receive profits after 24h
 function receiveProfits(uid, key, inv){
   const userRef = db.ref('users/'+uid+'/balance');
   userRef.transaction(bal=>(bal||0)+inv.returnAmount);
@@ -263,7 +254,6 @@ function receiveProfits(uid, key, inv){
   showPopup(`💰 Received ${inv.returnAmount.toLocaleString()} UGX`);
 }
 
-// Countdown updater
 function updateCountdown(button, investedAt, uid, key, roi, amount){
   const now = Date.now();
   const diff = 24*60*60*1000 - (now - investedAt);

@@ -174,7 +174,7 @@ function loadPlans(uid){
   Object.values(countdownIntervals).forEach(id => clearInterval(id));
   countdownIntervals = {};
 
-  plans.forEach(([amount, roi, name])=>{
+  plans.forEach(([amount, roi, name], index)=>{
     const div = document.createElement('div');
     div.className='plan-card';
     const active = activeInvestments[amount];
@@ -198,10 +198,15 @@ function loadPlans(uid){
       btn.onclick = ()=>invest(amount, roi, uid, btn);
     }
 
+    const dailyProfit = roi - amount;
+
     div.innerHTML=`
-      <h3>${name}</h3>
-      <p>Invest: ${amount.toLocaleString()} UGX</p>
-      <p>Income: ${roi.toLocaleString()} UGX (receive after 24 hrs)</p>
+      <h3>VIP${index+1}</h3>
+      <p>Daily Tasks: 1</p>
+      <p>Simple Interest: ${dailyProfit.toLocaleString()} UGX</p>
+      <p>Daily Profit: ${dailyProfit.toLocaleString()} UGX</p>
+      <p>Total Profit: ${roi.toLocaleString()} UGX</p>
+      <p>Receive after 24 hrs</p>
     `;
     div.appendChild(btn);
     container.appendChild(div);

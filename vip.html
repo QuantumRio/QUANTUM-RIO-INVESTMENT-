@@ -280,6 +280,7 @@ function receiveProfit(uid, key, roi, amount, button){
   button.textContent = "Completed";
   showPopup(`💰 Credited ${roi.toLocaleString()} UGX`);
 }
+</script>
 function updateCountdown(button, investedAt, uid, key, roi, amount){
   const now = Date.now();
   const diff = 24*60*60*1000 - (now - investedAt);

@@ -150,27 +150,23 @@ auth.onAuthStateChanged(user=>{
   if(!user){window.location='signin.html';return;}
   const uid=user.uid;
 
-// Referral link
-db.ref('users/'+uid+'/username').once('value').then(snap=>{
-  const username = snap.val() || uid;
+  // Referral link
+  db.ref('users/'+uid+'/username').once('value').then(snap=>{
+    const username = snap.val() || uid;
+    const link = `${location.origin}/signup.html?ref=${encodeURIComponent(username)}`;
+    document.getElementById('ref-link').value = link;
+    document.getElementById('copyRefBtn').onclick = () => {
+      navigator.clipboard.writeText(link).then(() => {
+        db.ref('users/' + uid + '/referralLogs').push({
+          copiedAt: firebase.database.ServerValue.TIMESTAMP,
+          link: link
+        });
+        showToast('Referral link copied!', 'success');
+      }).catch(() => showToast('Copy failed', 'error'));
+    };
+  });
 
-  // Hard-set folder path exactly the way you want:
-  const link = `${location.origin}/QUANTUM-RIO-INVESTMENT-/signup.html?ref=${encodeURIComponent(username)}`;
-
-  document.getElementById('ref-link').value = link;
-
-  document.getElementById('copyRefBtn').onclick = () => {
-    navigator.clipboard.writeText(link).then(() => {
-      db.ref('users/' + uid + '/referralLogs').push({
-        copiedAt: firebase.database.ServerValue.TIMESTAMP,
-        link: link
-      });
-      showToast('Referral link copied!', 'success');
-    }).catch(() => showToast('Copy failed', 'error'));
-  };
-});
-
-  // Live team stats
+  // Live team stats listener
   const teamStatsRef=db.ref('users/'+uid+'/teamStats');
   teamStatsRef.on('value',snap=>{
     const s=snap.val()||{};
@@ -182,7 +178,7 @@ db.ref('users/'+uid+'/username').once('value').then(snap=>{
     document.getElementById('first-withdraw').textContent=(s.firstWithdraw||0).toLocaleString();
   });
 
-  // Live commissions
+  // Commissions listener
   const commissionsRef=db.ref('users/'+uid+'/commissions');
   commissionsRef.on('value',snap=>{
     const c=snap.val()||{};
@@ -191,27 +187,35 @@ db.ref('users/'+uid+'/username').once('value').then(snap=>{
     document.getElementById('lvl3-total').textContent=(c.level3||0).toLocaleString();
   });
 
-  // Auto-count new team members
+  // ---- FIXED TEAM SIZE COUNTING ----
+  function recalcTeamSize(){
+    Promise.all([
+      db.ref('users/'+uid+'/username').once('value'),
+      db.ref('users').once('value')
+    ]).then(([nameSnap,allSnap])=>{
+      const username=nameSnap.val()||uid;
+      const users=allSnap.val()||{};
+      let teamSize=0;
+      Object.values(users).forEach(u=>{
+        if(u.referrer===uid || u.referrer===username){
+          teamSize++;
+        }
+      });
+      teamStatsRef.child('size').set(teamSize);
+    });
+  }
+
+  // Initial calculation
+  recalcTeamSize();
+
+  // Watch for new users
   db.ref('users').on('child_added',snap=>{
     const newUser=snap.val()||{};
     db.ref('users/'+uid+'/username').once('value').then(nameSnap=>{
       const username=nameSnap.val()||uid;
       if(newUser.referrer===uid||newUser.referrer===username){
-        teamStatsRef.transaction(prev=>{
-          const p=prev||{};
-          p.size=(p.size||0)+1;
-          p.newTeam=(p.newTeam||0)+1;
-          return p;
-        });
-        commissionsRef.transaction(prev=>{
-          const p=prev||{};
-          const r=newUser.recharge||0;
-          const w=newUser.withdraw||0;
-          p.level1=(p.level1||0)+(r*0.17)+(w*0.17);
-          p.level2=(p.level2||0)+(r*0.02)+(w*0.02);
-          p.level3=(p.level3||0)+(r*0.01)+(w*0.01);
-          return p;
-        });
+        recalcTeamSize();
+        teamStatsRef.child('newTeam').transaction(n=>(n||0)+1);
       }
     });
   });

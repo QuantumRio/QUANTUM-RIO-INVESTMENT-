@@ -140,14 +140,37 @@ auth.onAuthStateChanged(user=>{
     return;
   }
   const uid = user.uid;
+  const totalLevels = 10; // 10 VIP levels
 
-  // Live task stats
-  db.ref('users/'+uid+'/tasks').on('value', snap=>{
-    const val = snap.val() || {};
-    document.getElementById('total-tasks').textContent     = val.total      ?? 10;
-    document.getElementById('remaining-tasks').textContent = val.remaining  ?? 0;
-    document.getElementById('inprogress-tasks').textContent= val.inprogress ?? 0;
-    document.getElementById('completed-tasks').textContent = val.completed  ?? 0;
+  // Watch unlocked VIP levels
+  db.ref('users/'+uid+'/unlockedVips').on('value', snap=>{
+    const raw = snap.val() || {};
+    let inprogress = 0, completed = 0;
+
+    Object.entries(raw).forEach(([vip, data])=>{
+      let unlockedAt = 0;
+      if (typeof data === 'object' && data.timestamp) {
+        unlockedAt = data.timestamp;
+      } else if (typeof data === 'number') {
+        unlockedAt = data;
+      } else {
+        unlockedAt = Date.now();
+      }
+
+      const diffHrs = (Date.now() - unlockedAt) / (1000*60*60);
+      if (diffHrs >= 24) {
+        completed++;
+      } else {
+        inprogress++;
+      }
+    });
+
+    const remaining = totalLevels - (inprogress + completed);
+
+    document.getElementById('total-tasks').textContent     = totalLevels;
+    document.getElementById('remaining-tasks').textContent = remaining;
+    document.getElementById('inprogress-tasks').textContent= inprogress;
+    document.getElementById('completed-tasks').textContent = completed;
   });
 
   // Live history

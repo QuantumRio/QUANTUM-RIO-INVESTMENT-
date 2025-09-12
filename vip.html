@@ -208,50 +208,78 @@ function loadPlans(uid){
   });
 }
 
-function invest(amount, roi, uid){
+<script>
+function invest(amount, roi, uid, button){
   if(currentBalance < amount){
     showPopup("❌ Insufficient balance", true);
     return;
   }
 
-  const balanceRef = db.ref('users/'+uid+'/balance');
-  balanceRef.transaction(bal=>{
-    if(bal === null) bal = 0;
-    if(bal < amount) return; // abort
-    return bal - amount;
-  },(err, committed, snap)=>{
-    if(err || !committed){
-      showPopup("❌ Could not record investment", true);
-      return;
-    }
+  const userRef = db.ref('users/'+uid);
+  userRef.transaction(userData=>{
+    if(!userData) userData={};
+    const current = parseFloat(userData.balance||0);
+    if(current < amount) return userData;
+    userData.balance = current - amount;
+    return userData;
+  },(err, committed)=>{
+    if(err || !committed){ showPopup("❌ Transaction failed", true); return; }
 
-    const newInvRef = db.ref('investments/'+uid).push();
-    const newInvestment = {
+    const invRef = db.ref('investments/'+uid).push();
+    const newInv = {
       investedAmount: amount,
       returnAmount: roi,
       investedAt: Date.now(),
       status: "active"
     };
-    newInvRef.set(newInvestment).then(()=>{
-      activeInvestments[amount] = { ...newInvestment, key: newInvRef.key };
-      loadPlans(uid);
+    invRef.set(newInv).then(()=>{
+
+      // ✅ Immediately update button state (no waiting for refresh)
+      button.disabled = true;
+      button.style.backgroundColor = "#555";
+      updateCountdown(button, newInv.investedAt, uid, invRef.key, roi, amount);
+
+      countdownIntervals[amount] = setInterval(()=>{
+        updateCountdown(button, newInv.investedAt, uid, invRef.key, roi, amount);
+      },1000);
+
       showPopup(`✅ Invested ${amount.toLocaleString()} UGX`);
+    }).catch(()=>{
+      showPopup("❌ Could not record investment", true);
     });
   });
 }
 
-function receiveProfits(uid, key, inv){
-  const balRef = db.ref('users/'+uid+'/balance');
-  balRef.transaction(bal=>(bal||0)+inv.returnAmount);
-
-  db.ref('investments/'+uid+'/'+key+'/status').set("completed");
-  db.ref('users/'+uid+'/unlockedVips/'+inv.investedAmount).set(true);
-
-  delete activeInvestments[inv.investedAmount];
-  loadPlans(uid);
-  showPopup(`💰 Received ${inv.returnAmount.toLocaleString()} UGX`);
+// Updated countdown
+function updateCountdown(button, investedAt, uid, key, roi, amount){
+  const now = Date.now();
+  const diff = 24*60*60*1000 - (now - investedAt);
+  if(diff <= 0){
+    clearInterval(countdownIntervals[amount]);
+    button.disabled = false;
+    button.style.backgroundColor = "green"; // ✅ turn green
+    button.textContent = "Receive";
+    button.onclick = ()=>receiveProfit(uid, key, roi, amount, button);
+    return;
+  }
+  const hours = Math.floor(diff/(1000*60*60));
+  const mins = Math.floor((diff%(1000*60*60))/(1000*60));
+  const secs = Math.floor((diff%(1000*60))/1000);
+  button.textContent = `${hours}h ${mins}m ${secs}s left`;
 }
 
+// Receive profits
+function receiveProfit(uid, key, roi, amount, button){
+  const userRef = db.ref('users/'+uid+'/balance');
+  userRef.transaction(bal=>(bal||0)+roi);
+
+  db.ref('investments/'+uid+'/'+key+'/status').set("completed");
+
+  button.disabled = true;
+  button.style.backgroundColor = "#555";
+  button.textContent = "Completed";
+  showPopup(`💰 Credited ${roi.toLocaleString()} UGX`);
+}
 function updateCountdown(button, investedAt, uid, key, roi, amount){
   const now = Date.now();
   const diff = 24*60*60*1000 - (now - investedAt);

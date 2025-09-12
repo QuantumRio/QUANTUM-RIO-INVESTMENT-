@@ -122,7 +122,7 @@ auth.onAuthStateChanged(user=>{
   });
 
   // Earnings
-  const vipSimple={1:750,2:1250,3:2750,4:5250,5:9375,6:18750,7:28250,8:37750,9:50000,10:62500};
+  const vipSimple={1:75000,2:105000,3:150000,4:200000,5:250000,6:300000,7:350000,8:400000,9:450000,10:500000};
   const vipClaims=db.ref('users/'+uid+'/vipClaims');
   vipClaims.on('value',snap=>{
     const claims=snap.val()||{};

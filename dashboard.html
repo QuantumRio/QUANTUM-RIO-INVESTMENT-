@@ -176,7 +176,14 @@ auth.onAuthStateChanged(user=>{
   const vipRef = db.ref('users/' + uid + '/unlockedVips');
 vipRef.on('value', snap => {
   const raw = snap.val() || {};
-  const unlocked = Object.keys(raw).map(Number); // keys are level numbers
+  const unlocked = [];
+
+  Object.keys(raw).forEach(amountStr => {
+    const amount = parseInt(amountStr, 10);
+    const idx = vipAmounts.indexOf(amount);
+    if (idx !== -1) unlocked.push(idx + 1); // level number
+  });
+
   renderVipLevels(unlocked);
 });
 

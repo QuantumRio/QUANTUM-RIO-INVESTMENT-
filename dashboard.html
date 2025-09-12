@@ -173,14 +173,13 @@ auth.onAuthStateChanged(user=>{
   // Show all locked by default
   renderVipLevels([]);
 
-  // ✅ Update when Firebase has data
-  const vipRef = db.ref('users/' + uid + '/vipLevels');
-  vipRef.on('value', snap => {
-    const raw = snap.val() || {};
-    // Firebase saves objects { "1": true, "2": true } instead of arrays
-    const unlocked = Object.keys(raw).map(Number);
-    renderVipLevels(unlocked);
-  });
+  // Update when Firebase has data
+const vipRef = db.ref('users/' + uid + '/unlockedVips');
+vipRef.on('value', snap => {
+  const raw = snap.val() || {};
+  const unlocked = Object.keys(raw).map(Number);
+  renderVipLevels(unlocked);
+});
 
   // Claim Bonus
   const claimBtn=document.getElementById('claim-btn');

@@ -20,15 +20,15 @@
     background-attachment:fixed;
   }
   .card{
-  background:rgba(13,27,63,0.92);
-  color:#fff;
-  padding:28px 28px 48px; /* top-right-left = 28px, bottom = 48px */
-  border-radius:14px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.4);
-  max-width:420px;
-  width:90%;
-  animation:fadeIn .6s ease;
-}
+    background:rgba(13,27,63,0.92);
+    color:#fff;
+    padding:28px 28px 48px;
+    border-radius:14px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.4);
+    max-width:420px;
+    width:90%;
+    animation:fadeIn .6s ease;
+  }
   @keyframes fadeIn{
     from{opacity:0;transform:translateY(10px);}
     to{opacity:1;transform:translateY(0);}
@@ -57,7 +57,6 @@
   .links a{color:#90caf9;text-decoration:none;}
   .links a:hover{text-decoration:underline;}
 
-  /* Toast (centered screen) */
   .toast{
     position:fixed;
     top:50%;
@@ -114,11 +113,12 @@ const firebaseConfig = {
   authDomain: "quantum-rio-uganda.firebaseapp.com",
   databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "quantum-rio-uganda",
-  storageBucket: "quantum-rio-uganda.firebasestorage.app",
+  storageBucket: "quantum-rio-uganda.appspot.com",
   messagingSenderId: "840875099079",
   appId: "1:840875099079:web:1cd06a78276842a787cfe2",
   measurementId: "G-97G1PNQ9JB"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -134,20 +134,24 @@ document.getElementById("signinBtn").addEventListener("click", async ()=>{
   const email=document.getElementById("email").value.trim();
   const password=document.getElementById("password").value;
 
-  if(!email||!password){toast("Please enter email & password","error");return;}
+  if(!email||!password){toast("Please enter email & password");return;}
 
   try{
-    // Check DB for this email
+    // Check if user exists in DB
     const q=query(ref(db,"users"),orderByChild("email"),equalTo(email));
     const snap=await get(q);
     if(!snap.exists()){toast("No account found for this email","error");return;}
 
+    // Sign in with Firebase Auth
     const cred = await signInWithEmailAndPassword(auth,email,password);
-    // Grab username for greeting
+
+    // Get username for greeting
     let username="User";
     snap.forEach(child=>{username = child.val().username || username;});
+
     toast("Welcome back "+username+"!","success",1600);
     setTimeout(()=>window.location.href="dashboard.html",1600);
+
   }catch(err){
     console.error(err);
     toast("Sign in failed: "+(err.message||"Unknown"),"error");

@@ -18,77 +18,41 @@
       radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1) 0%, transparent 55%),
       linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     background-attachment: fixed;
-    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
   }
-  input,textarea,select,button { -webkit-user-select:auto; user-select:auto; }
+  input,textarea,select,button { user-select:auto; }
   .card {
     background: rgba(13, 27, 63, 0.92);
     color: #fff;
     padding: 28px;
     border-radius: 14px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     max-width: 420px;
     width: 90%;
     animation: fadeIn .6s ease;
   }
   @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
   .brand { text-align: center; margin-bottom: 20px; }
-  .brand h1 { font-size: 22px; color: #fff; margin: 6px 0 4px; }
+  .brand h1 { font-size: 22px; margin: 6px 0 4px; }
   .brand span { font-size: 13px; color: #e0e0e0; }
-  .ref-banner {
-    display: none;
-    background: rgba(227,242,253,0.3);
-    color: #fff;
-    text-align: center;
-    padding: 8px;
-    font-size: 14px;
-    border-radius: 6px;
-    margin-bottom: 14px;
-  }
+  .ref-banner { display: none; background: rgba(227,242,253,0.3); color: #fff; text-align: center; padding: 8px; font-size: 14px; border-radius: 6px; margin-bottom: 14px; }
   label { font-size: 14px; display: block; margin: 10px 0 4px; color: #f5f5f5; }
   .phone-row { display: flex; align-items: center; gap: 8px; }
-  .phone-code {
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.3);
-    padding: 10px 12px;
-    border-radius: 6px;
-    display: flex; align-items: center; gap: 6px; font-size: 14px;
-  }
+  .phone-code { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); padding: 10px 12px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 14px; }
   .phone-code span { font-size: 18px; }
-  .phone-number {
-    flex: 1;
-    padding: 12px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-  }
+  .phone-number { flex: 1; padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: #fff; }
   .phone-number::placeholder { color: #ccc; }
-  input[type="text"],input[type="email"],input[type="password"] {
-    width: 100%; padding: 12px; border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.1); color: #fff;
-  }
+  input[type="text"],input[type="email"],input[type="password"] { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: #fff; }
   input::placeholder { color: #ccc; }
   input:focus { outline: none; border-color: #90caf9; }
-  button {
-    width: 100%; padding: 12px; background-color: #ffcc00;
-    color: #0d1b3f; font-weight: 700; border: none; border-radius: 6px;
-    margin-top: 15px; cursor: pointer; transition: background 0.3s ease;
-  }
+  button { width: 100%; padding: 12px; background-color: #ffcc00; color: #0d1b3f; font-weight: 700; border: none; border-radius: 6px; margin-top: 15px; cursor: pointer; transition: background 0.3s ease; }
   button:hover { background-color: #fbc02d; }
   .links { text-align: center; margin-top: 18px; font-size: 14px; color: #e0e0e0; }
   .links a { color: #90caf9; text-decoration: none; }
   .links a:hover { text-decoration: underline; }
-  .toast {
-    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    background: #323232; color: #fff; padding: 12px 24px; border-radius: 6px;
-    opacity: 0; pointer-events: none; transition: opacity .3s ease;
-    z-index: 9999; font-size: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  }
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #323232; color: #fff; padding: 12px 24px; border-radius: 6px; opacity: 0; pointer-events: none; transition: opacity .3s ease; z-index: 9999; font-size: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
   .toast.show { opacity: 1; }
   .toast.success { background: #2e7d32; }
-  .toast.error   { background: #c62828; }
+  .toast.error { background: #c62828; }
 </style>
 </head>
 <body>
@@ -112,17 +76,14 @@
   <label for="confirmPassword">Confirm Password</label>
   <input type="password" id="confirmPassword" placeholder="Repeat password" required>
   <button id="signupBtn">Create Account</button>
-  <div class="links">
-    Already have an account? <a href="signin.html">Sign In</a><br>
-  </div>
+  <div class="links">Already have an account? <a href="signin.html">Sign In</a><br></div>
 </div>
 <div id="toast" class="toast"></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import {
-  getDatabase, ref, set, get, query, orderByChild, equalTo, runTransaction
-} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+import { getDatabase, ref, set, get, query, orderByChild, equalTo, runTransaction } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -138,75 +99,68 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-function toast(msg, type="error", delay=3000){
-  const el = document.getElementById("toast");
-  el.textContent = msg;
-  el.className = "toast " + type + " show";
-  setTimeout(()=>el.className="toast " + type, delay);
+function toast(msg,type="error",delay=3000){
+  const el=document.getElementById("toast");
+  el.textContent=msg;
+  el.className="toast "+type+" show";
+  setTimeout(()=>el.className="toast "+type,delay);
 }
 
-// pull ?ref=username from URL
+// referral from URL
 let referrer = null;
 const params = new URLSearchParams(location.search);
-if (params.has("ref")){
-  referrer = params.get("ref");
-  const banner = document.getElementById("refBanner");
-  banner.textContent = "You were referred by " + referrer;
-  banner.style.display = "block";
+if(params.has("ref")){
+  referrer=params.get("ref");
+  const banner=document.getElementById("refBanner");
+  banner.textContent="You were referred by "+referrer;
+  banner.style.display="block";
 }
 
 document.getElementById("signupBtn").addEventListener("click", async ()=>{
   const username = document.getElementById("username").value.trim();
-  const phone    = document.getElementById("phone").value.trim();
-  const email    = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
-  const confirm  = document.getElementById("confirmPassword").value;
+  const confirm = document.getElementById("confirmPassword").value;
 
-  if(!username || !phone || !email || !password || !confirm)
-    return toast("Please fill all fields.");
-  if(password.length < 6) return toast("Password must be at least 6 characters.");
-  if(password !== confirm) return toast("Passwords do not match.");
+  if(!username || !phone || !email || !password || !confirm) return toast("Please fill all fields");
+  if(password.length<6) return toast("Password must be at least 6 characters");
+  if(password!==confirm) return toast("Passwords do not match");
 
   try {
-    // uniqueness checks
-    const snapU = await get(query(ref(db,"users"), orderByChild("username"), equalTo(username)));
-    if (snapU.exists()) return toast("Username already taken.");
-    const snapP = await get(query(ref(db,"users"), orderByChild("phone"), equalTo(phone)));
-    if (snapP.exists()) return toast("Phone already registered.");
-    const snapE = await get(query(ref(db,"users"), orderByChild("email"), equalTo(email)));
-    if (snapE.exists()) return toast("Email already registered.");
+    const snapU = await get(query(ref(db,"users"),orderByChild("username"),equalTo(username)));
+    if(snapU.exists()) return toast("Username already taken");
+    const snapP = await get(query(ref(db,"users"),orderByChild("phone"),equalTo(phone)));
+    if(snapP.exists()) return toast("Phone already registered");
+    const snapE = await get(query(ref(db,"users"),orderByChild("email"),equalTo(email)));
+    if(snapE.exists()) return toast("Email already registered");
 
-    // create auth user
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    const uid  = cred.user.uid;
+    const cred = await createUserWithEmailAndPassword(auth,email,password);
+    const uid = cred.user.uid;
 
-    // write new profile (store referrer)
-    await set(ref(db, "users/" + uid), {
+    await set(ref(db,"users/"+uid),{
       uid, username, phone, email,
-      refBy: referrer || null,
+      refBy: referrer||null,
       joinedAt: Date.now(),
       balance: 0,
       earnings: 0,
       referralsCount: 0,
-      vipLevels: { level1:false, level2:false, level3:false, level4:false, level5:false }
+      vipLevels: {level1:false,level2:false,level3:false,level4:false,level5:false}
     });
 
-    // bump inviter’s counter
     if(referrer){
-      const inviterSnap = await get(query(ref(db, "users"), orderByChild("username"), equalTo(referrer)));
-      if (inviterSnap.exists()){
-        inviterSnap.forEach(c=>{
-          runTransaction(ref(db, "users/" + c.key + "/referralsCount"), cur => (cur||0)+1);
-        });
-      }
+      const inviterSnap=await get(query(ref(db,"users"),orderByChild("username"),equalTo(referrer)));
+      if(inviterSnap.exists()) inviterSnap.forEach(c=>{
+        runTransaction(ref(db,"users/"+c.key+"/referralsCount"), cur=>(cur||0)+1);
+      });
     }
 
     toast("Account created successfully!","success");
     setTimeout(()=>location.href="dashboard.html",1200);
 
   } catch(err){
-    console.error("Signup error:", err);
-    toast("Sign up failed: " + (err.message || "Unknown"));
+    console.error(err);
+    toast("Signup failed: "+(err.message||"Unknown"));
   }
 });
 </script>

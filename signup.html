@@ -82,7 +82,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+import { getDatabase, ref, set, update, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -133,7 +133,7 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
     // Save user data
     await set(ref(db,"users/"+uid),{
       uid, username, phone, email,
-      joinedAt: Date.now(),
+      joinedAt: serverTimestamp(),
       balance: 0,
       earnings: 0,
       referralsCount: 0,
@@ -143,12 +143,13 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
     // ✅ If signed up with referral link → record under referrals/<referrerUsername>/<uid>
     if(referrerUsername){
       await set(ref(db,"referrals/"+referrerUsername+"/"+uid),{
-        username, email, joinedAt: Date.now()
+        username, email, joinedAt: serverTimestamp()
       });
 
-      // Increment referrer's referral count
-      const referrerUserRef = ref(db,"usersByUsername/"+referrerUsername+"/referralsCount");
-      update(referrerUserRef, { ".sv":"increment", amount:1 }).catch(()=>{});
+      // Increment referrer's referral count properly
+      await update(ref(db,"usersByUsername/"+referrerUsername),{
+        referralsCount: increment(1)
+      });
     }
 
     toast("Account created successfully!","success");

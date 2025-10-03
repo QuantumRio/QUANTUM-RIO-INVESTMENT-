@@ -106,7 +106,6 @@ function toast(msg,type="error",delay=3000){
   setTimeout(()=>el.className="toast "+type,delay);
 }
 
-// referral from URL
 let referrer = null;
 const params = new URLSearchParams(location.search);
 if(params.has("ref")){
@@ -128,6 +127,7 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
   if(password!==confirm) return toast("Passwords do not match");
 
   try {
+    // Uniqueness checks
     const snapU = await get(query(ref(db,"users"),orderByChild("username"),equalTo(username)));
     if(snapU.exists()) return toast("Username already taken");
     const snapP = await get(query(ref(db,"users"),orderByChild("phone"),equalTo(phone)));
@@ -160,7 +160,7 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
 
   } catch(err){
     console.error(err);
-    toast("Signup failed: "+(err.message||"Unknown"));
+    toast("Signup failed: "+(err.code||err.message||"Unknown"));
   }
 });
 </script>

@@ -107,6 +107,15 @@ function toast(msg,type="error",delay=3000){
   setTimeout(()=>el.className="toast "+type,delay);
 }
 
+// capture referrer from URL
+const params = new URLSearchParams(window.location.search);
+const referrer = params.get("ref");
+if(referrer){
+  const banner = document.getElementById("refBanner");
+  banner.style.display="block";
+  banner.textContent = "You were invited by: "+referrer;
+}
+
 document.getElementById("signupBtn").addEventListener("click", async ()=>{
   const username = document.getElementById("username").value.trim();
   const phone = document.getElementById("phone").value.trim();
@@ -119,18 +128,23 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
   if(password!==confirm) return toast("Passwords do not match");
 
   try {
-    // Firebase Auth
     const cred = await createUserWithEmailAndPassword(auth,email,password);
     const uid = cred.user.uid;
 
-    // Save to Realtime Database
     await set(ref(db,"users/"+uid),{
       uid, username, phone, email,
       joinedAt: Date.now(),
       balance: 0,
       earnings: 0,
-      referralsCount: 0
+      referralsCount: 0,
+      referrer: referrer || null
     });
+
+    if(referrer){
+      await set(ref(db,"referrals/"+referrer+"/"+uid),{
+        username, email, joinedAt: Date.now()
+      });
+    }
 
     toast("Account created successfully!","success");
     setTimeout(()=>location.href="dashboard.html",1200);
@@ -142,4 +156,4 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
 });
 </script>
 </body>
-  </html>
+</html>

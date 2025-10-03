@@ -7,6 +7,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>  
 <script>  
+// Firebase Config
 const firebaseConfig = {  
   apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",  
   authDomain: "quantum-rio-uganda.firebaseapp.com",  
@@ -23,7 +24,6 @@ const db   = firebase.database();
 </script>  
 
 <style>  
-html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}  
 body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#001f3f;color:#fff;padding-bottom:1cm;}  
 header{background:#002f6c;display:flex;align-items:center;gap:10px;padding:12px 16px}  
 header img{height:32px;}  
@@ -106,7 +106,7 @@ auth.onAuthStateChanged(user=>{
   // Referral link  
   db.ref('users/'+uid+'/username').once('value').then(snap=>{  
     const username = snap.val() || uid;  
-    const link = `${location.origin}/QUANTUM-RIO-INVESTMENT-/signup.html?ref=${encodeURIComponent(username)}`;  
+    const link = `${location.origin}/signup.html?ref=${encodeURIComponent(username)}`;  
     document.getElementById('ref-link').value = link;  
 
     document.getElementById('copyRefBtn').onclick = () => {  
@@ -118,40 +118,29 @@ auth.onAuthStateChanged(user=>{
         showToast('Referral link copied!', 'success');  
       }).catch(() => showToast('Copy failed', 'error'));  
     };  
-
-    // 🔥 Count all users that have referrer == this user/username  
-    db.ref('users').on('value', allSnap=>{  
-      let count=0;  
-      allSnap.forEach(child=>{  
-        const u=child.val()||{};  
-        if(u.referrer===uid || u.referrer===username){  
-          count++;  
-        }  
-      });  
-      document.getElementById('team-size').textContent=count;  
-      db.ref('users/'+uid+'/teamStats/size').set(count);  
-    });  
   });  
 
-  // Live team stats (recharge, withdraw etc.)  
-  const teamStatsRef=db.ref('users/'+uid+'/teamStats');  
-  teamStatsRef.on('value',snap=>{  
-    const s=snap.val()||{};  
-    document.getElementById('team-recharge').textContent=(s.recharge||0).toLocaleString();  
-    document.getElementById('team-withdraw').textContent=(s.withdraw||0).toLocaleString();  
-    document.getElementById('new-team').textContent=s.newTeam||0;  
-    document.getElementById('first-recharge').textContent=(s.firstRecharge||0).toLocaleString();  
-    document.getElementById('first-withdraw').textContent=(s.firstWithdraw||0).toLocaleString();  
+  // ✅ Team Size from referrals/<uid>  
+  db.ref('referrals/'+uid).on('value', snap=>{  
+    const referrals = snap.val() || {};  
+    const count = Object.keys(referrals).length;  
+    document.getElementById('team-size').textContent = count;  
   });  
 
-  // Live commissions  
-  const commissionsRef=db.ref('users/'+uid+'/commissions');  
-  commissionsRef.on('value',snap=>{  
-    const c=snap.val()||{};  
-    document.getElementById('lvl1-total').textContent=(c.level1||0).toLocaleString();  
-    document.getElementById('lvl2-total').textContent=(c.level2||0).toLocaleString();  
-    document.getElementById('lvl3-total').textContent=(c.level3||0).toLocaleString();  
+  // ✅ Commission tracking  
+  db.ref('commissions/'+uid).on('value', snap=>{  
+    const data = snap.val() || {};  
+    document.getElementById('lvl1-total').textContent = data.lvl1 || 0;  
+    document.getElementById('lvl2-total').textContent = data.lvl2 || 0;  
+    document.getElementById('lvl3-total').textContent = data.lvl3 || 0;  
   });  
+
+  // ✅ Other stats placeholder (you can update when deposits/withdrawals logic ready)
+  document.getElementById('team-recharge').textContent = 0;  
+  document.getElementById('first-recharge').textContent = 0;  
+  document.getElementById('new-team').textContent = 0;  
+  document.getElementById('team-withdraw').textContent = 0;  
+  document.getElementById('first-withdraw').textContent = 0;  
 });  
 </script>  
 </body>  

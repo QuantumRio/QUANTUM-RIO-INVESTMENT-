@@ -39,6 +39,10 @@ nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}
 nav i{font-size:18px;}
 .popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#28a745;color:#fff;padding:14px 18px;border-radius:8px;font-weight:600;z-index:9999;}
 .popup.red{background:#cc0000;}
+.confirm-box{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#012a50;color:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.6);z-index:10000;text-align:center;width:80%;max-width:350px;}
+.confirm-box button{margin:10px;padding:10px 16px;border:none;border-radius:6px;font-weight:600;cursor:pointer;}
+.confirm-box .cancel{background:#cc0000;color:#fff;}
+.confirm-box .ok{background:#28a745;color:#fff;}
 </style>
 </head>
 <body>
@@ -98,27 +102,45 @@ auth.onAuthStateChanged(user=>{
     if(amt < 2000){ return showPopup('Minimum is 2,000 UGX',true); }
     if(amt > currentBalance){ return showPopup('Insufficient funds',true); }
 
-    // deduct + record
-    const newBalance = currentBalance - amt;
-    const wRef = db.ref('withdrawals/'+uid).push();
-    const withdrawal = {
-      amount: amt,
-      status: 'pending',
-      method: network,
-      created: Date.now()
-    };
-    const updates = {};
-    updates['users/'+uid+'/balance'] = newBalance;
-    updates['withdrawals/'+uid+'/'+wRef.key] = withdrawal;
-    db.ref().update(updates).then(()=>{
-      showPopup('Withdrawal request sent');
-      document.getElementById('amount').value = '';
-    }).catch(err=>{
-      console.error(err);
-      showPopup('Error saving withdrawal',true);
+    // check referrals
+    db.ref('users/'+uid+'/referrals').once('value').then(snap=>{
+      const refs = snap.val() || {};
+      let qualified = 0;
+      Object.keys(refs).forEach(rid=>{
+        if(refs[rid].deposit && refs[rid].deposit >= 75000){
+          qualified++;
+        }
+      });
+
+      if(qualified < 2){
+        showConfirmBox("You must at least have two referrals who have deposited 75,000 UGX to withdraw. Do you want to proceed?");
+      }else{
+        processWithdrawal(uid,amt,network);
+      }
     });
   };
 });
+
+function processWithdrawal(uid,amt,network){
+  const newBalance = currentBalance - amt;
+  const wRef = db.ref('withdrawals/'+uid).push();
+  const withdrawal = {
+    amount: amt,
+    status: 'pending',
+    method: network,
+    created: Date.now()
+  };
+  const updates = {};
+  updates['users/'+uid+'/balance'] = newBalance;
+  updates['withdrawals/'+uid+'/'+wRef.key] = withdrawal;
+  db.ref().update(updates).then(()=>{
+    showPopup('Withdrawal request sent');
+    document.getElementById('amount').value = '';
+  }).catch(err=>{
+    console.error(err);
+    showPopup('Error saving withdrawal',true);
+  });
+}
 
 function showPopup(msg, red=false){
   const p = document.createElement('div');
@@ -126,6 +148,18 @@ function showPopup(msg, red=false){
   p.textContent = msg;
   document.body.appendChild(p);
   setTimeout(()=>p.remove(),3000);
+}
+
+function showConfirmBox(msg){
+  const box = document.createElement('div');
+  box.className = 'confirm-box';
+  box.innerHTML = `<p>${msg}</p>
+    <button class="cancel">Cancel</button>
+    <button class="ok">Confirm</button>`;
+  document.body.appendChild(box);
+
+  box.querySelector('.cancel').onclick = ()=>box.remove();
+  box.querySelector('.ok').onclick = ()=>{ window.location='select.html'; };
 }
 </script>
 

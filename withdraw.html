@@ -106,10 +106,11 @@ auth.onAuthStateChanged(user=>{
       return showPopup('Enter a valid phone number (e.g. 0784513172)', true);
     }
 
-    // Check if phone matches network
-    const mtnPrefixes = ['070','071','072','074','075','076'];
-    const airtelPrefixes = ['077','078','079'];
+    // Correct MTN and Airtel prefixes
+    const mtnPrefixes = ['070','071','072','074','075','076','077','078']; // 078 added to MTN
+    const airtelPrefixes = ['079']; // Airtel
     const prefix = phone.substring(0,3);
+
     if(network === 'MTN' && !mtnPrefixes.includes(prefix)){
       return showPopup('Phone number does not match MTN network', true);
     }
@@ -184,4 +185,4 @@ function showConfirmBox(msg){
 </script>
 
 </body>
-</html>
+</html

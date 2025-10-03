@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign Up – QUANTUM RIO INVESTMENT</title>
 <style>
+  /* --- styles unchanged --- */
   body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
@@ -82,7 +83,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import { getDatabase, ref, set, update, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+import { getDatabase, ref, set, get, update, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -106,7 +107,7 @@ function toast(msg,type="error",delay=3000){
   setTimeout(()=>el.className="toast "+type,delay);
 }
 
-// ✅ Capture referrer from URL
+// ✅ Capture referrer username from URL
 const params = new URLSearchParams(window.location.search);
 const referrerUsername = params.get("ref");
 if(referrerUsername){
@@ -140,16 +141,24 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
       referrer: referrerUsername || null
     });
 
-    // ✅ If signed up with referral link → record under referrals/<referrerUsername>/<uid>
+    // ✅ If referred, map referrer username → uid and record referral
     if(referrerUsername){
-      await set(ref(db,"referrals/"+referrerUsername+"/"+uid),{
-        username, email, joinedAt: serverTimestamp()
-      });
-
-      // Increment referrer's referral count properly
-      await update(ref(db,"usersByUsername/"+referrerUsername),{
-        referralsCount: increment(1)
-      });
+      // Look up referrer UID by username
+      const refSnap = await get(ref(db,"users"));
+      if(refSnap.exists()){
+        let referrerUid = null;
+        refSnap.forEach(child=>{
+          if(child.val().username === referrerUsername) referrerUid = child.key;
+        });
+        if(referrerUid){
+          await set(ref(db,"referrals/"+referrerUid+"/"+uid),{
+            username, email, joinedAt: serverTimestamp()
+          });
+          await update(ref(db,"users/"+referrerUid),{
+            referralsCount: increment(1)
+          });
+        }
+      }
     }
 
     toast("Account created successfully!","success");

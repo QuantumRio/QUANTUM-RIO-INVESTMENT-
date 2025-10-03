@@ -53,22 +53,25 @@ nav i{font-size:18px;}
 <div class="card">
   <span class="tag"><i class="fas fa-mobile-alt"></i> MTN / Airtel (Uganda)</span>
   <h4>Minimum withdrawal is 2,000 UGX</h4>
-  <p>Withdrawals will be sent directly to your registered number.</p>
+  <p>Withdrawals will be sent to the number you provide below.</p>
 </div>
 
 <!-- Request Form -->
 <div class="input-card">
   <h4><i class="fas fa-money-bill-wave"></i> Request Withdrawal</h4>
-  
+    
   <label for="network">Select Network</label>
   <select id="network">
     <option value="MTN">MTN</option>
     <option value="Airtel">Airtel</option>
   </select>
-  
+
+  <label for="phone">Enter Phone Number</label>
+  <input type="tel" id="phone" placeholder="e.g. 0784513172">
+    
   <label for="amount">Withdrawal Amount (UGX)</label>
   <input type="number" id="amount" placeholder="e.g. 2000">
-  
+    
   <button class="btn" id="submit-withdraw">Submit Withdrawal</button>
 </div>
 
@@ -87,20 +90,35 @@ let currentBalance = 0;
 auth.onAuthStateChanged(user=>{
   if(!user){ window.location='signin.html'; return; }
   const uid = user.uid;
-  const userRef = db.ref('users/'+uid);
 
   // live balance
-  userRef.child('balance').on('value',snap=>{
+  db.ref('users/'+uid+'/balance').on('value', snap=>{
     currentBalance = parseFloat(snap.val() || 0);
   });
 
-  // withdrawal submit
   document.getElementById('submit-withdraw').onclick = ()=>{
     const amt = parseFloat(document.getElementById('amount').value || 0);
     const network = document.getElementById('network').value;
+    const phone = document.getElementById('phone').value.trim();
 
-    if(amt < 2000){ return showPopup('Minimum is 2,000 UGX',true); }
-    if(amt > currentBalance){ return showPopup('Insufficient funds',true); }
+    // Uganda phone format validation
+    if(!phone.match(/^07\d{8}$/)){
+      return showPopup('Enter a valid phone number (e.g. 0784513172)', true);
+    }
+
+    // Check if phone matches network
+    const mtnPrefixes = ['070','071','072','074','075','076'];
+    const airtelPrefixes = ['077','078','079'];
+    const prefix = phone.substring(0,3);
+    if(network === 'MTN' && !mtnPrefixes.includes(prefix)){
+      return showPopup('Phone number does not match MTN network', true);
+    }
+    if(network === 'Airtel' && !airtelPrefixes.includes(prefix)){
+      return showPopup('Phone number does not match Airtel network', true);
+    }
+
+    if(amt < 2000){ return showPopup('Minimum is 2,000 UGX', true); }
+    if(amt > currentBalance){ return showPopup('Insufficient funds', true); }
 
     // check referrals
     db.ref('users/'+uid+'/referrals').once('value').then(snap=>{
@@ -115,19 +133,20 @@ auth.onAuthStateChanged(user=>{
       if(qualified < 2){
         showConfirmBox("You must at least have two referrals who have deposited 75,000 UGX to withdraw. Do you want to proceed?");
       }else{
-        processWithdrawal(uid,amt,network);
+        processWithdrawal(uid, amt, network, phone);
       }
     });
   };
 });
 
-function processWithdrawal(uid,amt,network){
+function processWithdrawal(uid, amt, network, phone){
   const newBalance = currentBalance - amt;
   const wRef = db.ref('withdrawals/'+uid).push();
   const withdrawal = {
     amount: amt,
     status: 'pending',
     method: network,
+    phone: phone,
     created: Date.now()
   };
   const updates = {};
@@ -136,9 +155,10 @@ function processWithdrawal(uid,amt,network){
   db.ref().update(updates).then(()=>{
     showPopup('Withdrawal request sent');
     document.getElementById('amount').value = '';
+    document.getElementById('phone').value = '';
   }).catch(err=>{
     console.error(err);
-    showPopup('Error saving withdrawal',true);
+    showPopup('Error saving withdrawal', true);
   });
 }
 

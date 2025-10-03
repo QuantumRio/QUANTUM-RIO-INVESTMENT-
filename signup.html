@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign Up – QUAANTUM RIO INVESTMENT</title>
+<title>Sign Up – QUANTUM RIO INVESTMENT</title>
 <style>
   body {
     margin: 0;
@@ -19,7 +19,6 @@
       linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     background-attachment: fixed;
   }
-  input,textarea,select,button { user-select:auto; }
   .card {
     background: rgba(13, 27, 63, 0.92);
     color: #fff;
@@ -58,7 +57,7 @@
 <body>
 <div class="card">
   <div class="brand">
-    <h1>QUAANTUM RIO INVESTMENT</h1>
+    <h1>QUANTUM RIO INVESTMENT</h1>
     <span>Secure • Reliable • Growth</span>
   </div>
   <div id="refBanner" class="ref-banner"></div>
@@ -83,7 +82,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -107,13 +106,13 @@ function toast(msg,type="error",delay=3000){
   setTimeout(()=>el.className="toast "+type,delay);
 }
 
-// capture referrer from URL
+// ✅ Capture referrer from URL
 const params = new URLSearchParams(window.location.search);
-const referrer = params.get("ref");
-if(referrer){
+const referrerUsername = params.get("ref");
+if(referrerUsername){
   const banner = document.getElementById("refBanner");
   banner.style.display="block";
-  banner.textContent = "You were invited by: "+referrer;
+  banner.textContent = "You were invited by: "+referrerUsername;
 }
 
 document.getElementById("signupBtn").addEventListener("click", async ()=>{
@@ -131,19 +130,25 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
     const cred = await createUserWithEmailAndPassword(auth,email,password);
     const uid = cred.user.uid;
 
+    // Save user data
     await set(ref(db,"users/"+uid),{
       uid, username, phone, email,
       joinedAt: Date.now(),
       balance: 0,
       earnings: 0,
       referralsCount: 0,
-      referrer: referrer || null
+      referrer: referrerUsername || null
     });
 
-    if(referrer){
-      await set(ref(db,"referrals/"+referrer+"/"+uid),{
+    // ✅ If signed up with referral link → record under referrals/<referrerUsername>/<uid>
+    if(referrerUsername){
+      await set(ref(db,"referrals/"+referrerUsername+"/"+uid),{
         username, email, joinedAt: Date.now()
       });
+
+      // Increment referrer's referral count
+      const referrerUserRef = ref(db,"usersByUsername/"+referrerUsername+"/referralsCount");
+      update(referrerUserRef, { ".sv":"increment", amount:1 }).catch(()=>{});
     }
 
     toast("Account created successfully!","success");

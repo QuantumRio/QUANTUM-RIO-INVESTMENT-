@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Buy Now – MTN Mobile Money</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
+  authDomain: "quantum-rio-uganda.firebaseapp.com",
+  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "quantum-rio-uganda",
+  storageBucket: "quantum-rio-uganda.appspot.com",
+  messagingSenderId: "840875099079",
+  appId: "1:840875099079:web:1cd06a78276842a787cfe2"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+</script>
+
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#001f3f;color:#fff;padding-bottom:60px;}
+header{background:#002f6c;padding:14px 16px;font-size:1.2rem;font-weight:600;text-align:center;}
+.card{margin:16px;padding:16px;background:#012a50;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
+.card h3{margin:0 0 8px;font-size:1.1rem;font-weight:600;}
+.card p{margin:0 0 6px;color:#cfcfcf;font-size:0.9rem;line-height:1.4;}
+.input-card{margin:16px;padding:16px;background:#012a50;border-radius:10px;}
+.input-card label{display:block;margin-bottom:6px;font-weight:600;}
+.input-card input{width:100%;padding:10px;border:none;border-radius:6px;font-size:1rem;margin-bottom:12px;}
+.btn{display:block;width:100%;padding:12px;background:#28a745;color:#fff;border:none;border-radius:6px;font-size:1rem;font-weight:600;cursor:pointer;}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:#002244;padding:6px 0;}
+nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}
+nav i{font-size:18px;}
+.popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#28a745;color:#fff;padding:14px 18px;border-radius:8px;font-weight:600;z-index:9999;}
+.popup.red{background:#cc0000;}
+</style>
+</head>
+<body>
+
+<header>Complete Your Purchase</header>
+
+<!-- Payment Instructions -->
+<div class="card">
+  <h3><i class="fas fa-mobile-alt"></i> MTN Mobile Money</h3>
+  <p><strong>Send Money To:</strong></p>
+  <p>Phone: <span style="color:#ffcc00;font-weight:600;">0784513172</span></p>
+  <p>Name: <span style="color:#ffcc00;font-weight:600;">David Makwa</span></p>
+  <p>Please send the exact package amount. After payment, enter your phone number below.</p>
+</div>
+
+<!-- Input for sender phone -->
+<div class="input-card">
+  <label for="senderPhone">Your Phone Number (used to send)</label>
+  <input type="tel" id="senderPhone" placeholder="e.g. 078XXXXXXX">
+
+  <button class="btn" id="submit-deposit">Submit Deposit</button>
+</div>
+
+<!-- Extra info -->
+<div class="card">
+  <h3><i class="fas fa-info-circle"></i> Important Information</h3>
+  <p>1. Make sure you send from your registered number.</p>
+  <p>2. After submitting, our team will verify within a short time.</p>
+  <p>3. Once confirmed, your referrals will be added automatically.</p>
+</div>
+
+<!-- Bottom Navigation -->
+<nav>
+  <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
+  <a href="task.html"><i class="fas fa-tasks"></i><br>Task</a>
+  <a href="team.html"><i class="fas fa-users"></i><br>Team</a>
+  <a href="vip.html"><i class="fas fa-crown"></i><br>VIP</a>
+  <a href="profile.html"><i class="fas fa-user"></i><br>Me</a>
+</nav>
+
+<script>
+auth.onAuthStateChanged(user=>{
+  if(!user){ window.location='signin.html'; return; }
+  const uid=user.uid;
+
+  document.getElementById('submit-deposit').onclick=()=>{
+    const phone=document.getElementById('senderPhone').value.trim();
+    if(!phone){ return showPopup('Please enter your phone number',true); }
+
+    // detect group from URL
+    const params=new URLSearchParams(window.location.search);
+    const group=params.get('group')||'unknown';
+
+    const depositRef=db.ref('deposits/'+uid).push();
+    const depositData={
+      phone:phone,
+      group:group,
+      status:'pending',
+      created:Date.now()
+    };
+    depositRef.set(depositData).then(()=>{
+      showPopup('Deposit submitted successfully');
+      document.getElementById('senderPhone').value='';
+    }).catch(err=>{
+      console.error(err);
+      showPopup('Error saving deposit',true);
+    });
+  };
+});
+
+function showPopup(msg,red=false){
+  const p=document.createElement('div');
+  p.className='popup'+(red?' red':'');
+  p.textContent=msg;
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(),3000);
+}
+</script>
+
+</body>
+</html>

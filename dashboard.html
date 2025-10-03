@@ -121,7 +121,7 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('user-balance').textContent=`Balance: UGX ${bal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
   });
 
-  // Earnings breakdown (using both daysClaimed + earned)
+  // Earnings
   const vipSimple={1:75000,2:105000,3:150000,4:200000,5:250000,6:300000,7:350000,8:400000,9:450000,10:500000};
   const vipClaims=db.ref('users/'+uid+'/vipClaims');
   vipClaims.on('value',snap=>{
@@ -130,9 +130,8 @@ auth.onAuthStateChanged(user=>{
     list.innerHTML='';
     let total=0;
     for(let i=1;i<=10;i++){
-      const data=claims[i]||{};
-      const days=data.daysClaimed?parseInt(data.daysClaimed):0;
-      const earned=data.earned?parseFloat(data.earned):days*(vipSimple[i]||0);
+      const days=(claims[i]&&claims[i].daysClaimed)?parseInt(claims[i].daysClaimed):0;
+      const earned=days*(vipSimple[i]||0);
       total+=earned;
       const row=document.createElement('div');
       row.className='row';
@@ -171,21 +170,22 @@ auth.onAuthStateChanged(user=>{
     });
   }
 
+  // Show all locked by default
   renderVipLevels([]);
 
   const vipRef = db.ref('users/' + uid + '/unlockedVips');
-  vipRef.on('value', snap => {
-    const raw = snap.val() || {};
-    const unlocked = [];
+vipRef.on('value', snap => {
+  const raw = snap.val() || {};
+  const unlocked = [];
 
-    Object.keys(raw).forEach(amountStr => {
-      const amount = parseInt(amountStr, 10);
-      const idx = vipAmounts.indexOf(amount);
-      if (idx !== -1) unlocked.push(idx + 1);
-    });
-
-    renderVipLevels(unlocked);
+  Object.keys(raw).forEach(amountStr => {
+    const amount = parseInt(amountStr, 10);
+    const idx = vipAmounts.indexOf(amount);
+    if (idx !== -1) unlocked.push(idx + 1); // level number
   });
+
+  renderVipLevels(unlocked);
+});
 
   // Claim Bonus
   const claimBtn=document.getElementById('claim-btn');
@@ -201,13 +201,6 @@ auth.onAuthStateChanged(user=>{
       const current=parseFloat(userData.balance||0);
       userData.balance=current+500;
       userData.hasClaimedBonus=true;
-
-      // also record into vipClaims[1] as example (bonus as VIP1)
-      if(!userData.vipClaims) userData.vipClaims={};
-      if(!userData.vipClaims[1]) userData.vipClaims[1]={daysClaimed:0,earned:0};
-      userData.vipClaims[1].daysClaimed++;
-      userData.vipClaims[1].earned=(userData.vipClaims[1].daysClaimed)*(vipSimple[1]);
-
       return userData;
     },(error,committed)=>{
       if(error) showPopup('Error claiming bonus',true);

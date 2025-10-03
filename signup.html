@@ -83,7 +83,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import { getDatabase, ref, set, get, query, orderByChild, equalTo, runTransaction } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -95,6 +95,7 @@ const firebaseConfig = {
   appId: "1:840875099079:web:1cd06a78276842a787cfe2",
   measurementId: "G-97G1PNQ9JB"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -104,15 +105,6 @@ function toast(msg,type="error",delay=3000){
   el.textContent=msg;
   el.className="toast "+type+" show";
   setTimeout(()=>el.className="toast "+type,delay);
-}
-
-let referrer = null;
-const params = new URLSearchParams(location.search);
-if(params.has("ref")){
-  referrer=params.get("ref");
-  const banner=document.getElementById("refBanner");
-  banner.textContent="You were referred by "+referrer;
-  banner.style.display="block";
 }
 
 document.getElementById("signupBtn").addEventListener("click", async ()=>{
@@ -127,42 +119,27 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
   if(password!==confirm) return toast("Passwords do not match");
 
   try {
-    // Uniqueness checks
-    const snapU = await get(query(ref(db,"users"),orderByChild("username"),equalTo(username)));
-    if(snapU.exists()) return toast("Username already taken");
-    const snapP = await get(query(ref(db,"users"),orderByChild("phone"),equalTo(phone)));
-    if(snapP.exists()) return toast("Phone already registered");
-    const snapE = await get(query(ref(db,"users"),orderByChild("email"),equalTo(email)));
-    if(snapE.exists()) return toast("Email already registered");
-
+    // Firebase Auth
     const cred = await createUserWithEmailAndPassword(auth,email,password);
     const uid = cred.user.uid;
 
+    // Save to Realtime Database
     await set(ref(db,"users/"+uid),{
       uid, username, phone, email,
-      refBy: referrer||null,
       joinedAt: Date.now(),
       balance: 0,
       earnings: 0,
-      referralsCount: 0,
-      vipLevels: {level1:false,level2:false,level3:false,level4:false,level5:false}
+      referralsCount: 0
     });
-
-    if(referrer){
-      const inviterSnap=await get(query(ref(db,"users"),orderByChild("username"),equalTo(referrer)));
-      if(inviterSnap.exists()) inviterSnap.forEach(c=>{
-        runTransaction(ref(db,"users/"+c.key+"/referralsCount"), cur=>(cur||0)+1);
-      });
-    }
 
     toast("Account created successfully!","success");
     setTimeout(()=>location.href="dashboard.html",1200);
 
   } catch(err){
-    console.error(err);
+    console.error("Signup error:", err);
     toast("Signup failed: "+(err.code||err.message||"Unknown"));
   }
 });
 </script>
 </body>
-</html>
+  </html>

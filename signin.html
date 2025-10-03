@@ -19,7 +19,7 @@
   button:hover{background:#fbc02d;}
   .links{text-align:center;margin-top:18px;font-size:14px;color:#e0e0e0;}
   .links a{color:#90caf9;text-decoration:none;}
-  .links a:hover{text-decoration:underline;}
+  .links a:hover{ text-decoration:underline;}
   .toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#323232;color:#fff;padding:14px 28px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:9999;font-size:16px;text-align:center;min-width:220px;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
   .toast.show{opacity:1;}
   .toast.success{background:#2e7d32;}
@@ -42,7 +42,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -73,27 +73,21 @@ document.getElementById("signinBtn").addEventListener("click", async ()=>{
   if(!email||!password){toast("Please enter email & password"); return;}
 
   try{
-    // Check if user exists in DB
-    const q=query(ref(db,"users"),orderByChild("email"),equalTo(email));
-    const snap=await get(q);
-    if(!snap.exists()){toast("No account found for this email","error"); return;}
-
-    // Sign in with Firebase Auth
     const cred = await signInWithEmailAndPassword(auth,email,password);
     const uid = cred.user.uid;
 
-    // Get username for greeting
-    let username="User";
-    snap.forEach(child=>{username = child.val().username || username;});
+    const snap = await get(ref(db,"users/"+uid));
+    let username = "User";
+    if(snap.exists()) username = snap.val().username || username;
 
     toast("Welcome back "+username+"!","success",1600);
     setTimeout(()=>window.location.href="dashboard.html",1600);
 
   }catch(err){
     console.error("Sign-in error:", err);
-    toast("Sign in failed: "+(err.message||"Unknown"),"error");
+    toast("Sign in failed: "+(err.code||err.message||"Unknown"),"error");
   }
 });
 </script>
 </body>
-  </html>
+</html>

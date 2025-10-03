@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">  
 <title>QUANTUM RIO – Team</title>  
 
+<!-- Firebase compat build -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>  
 <script>  
 // Firebase Config
@@ -103,10 +104,10 @@ auth.onAuthStateChanged(user=>{
   if(!user){window.location='signin.html';return;}  
   const uid=user.uid;  
 
-  // Referral link  
+  // ✅ Referral link (fixed format)
   db.ref('users/'+uid+'/username').once('value').then(snap=>{  
     const username = snap.val() || uid;  
-    const link = `${location.origin}/signup.html?ref=${encodeURIComponent(username)}`;  
+    const link = `https://quantumrio.github.io/QUANTUM-RIO-INVESTMENT-/signup.html?ref=${encodeURIComponent(username)}`;  
     document.getElementById('ref-link').value = link;  
 
     document.getElementById('copyRefBtn').onclick = () => {  
@@ -135,7 +136,7 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('lvl3-total').textContent = data.lvl3 || 0;  
   });  
 
-  // ✅ Other stats placeholder (you can update when deposits/withdrawals logic ready)
+  // ✅ Other stats placeholders  
   document.getElementById('team-recharge').textContent = 0;  
   document.getElementById('first-recharge').textContent = 0;  
   document.getElementById('new-team').textContent = 0;  

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QUANTUM RIO INVESTMENT – Dashboard</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
+
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
@@ -43,13 +43,21 @@ header h2{margin:0;font-size:1.2rem}
 .extra-info p{font-size:.9rem;line-height:1.4}
 .claim-btn{background:#ffcc00;color:#000;font-weight:700;border:none;border-radius:8px;padding:8px 18px;cursor:pointer}
 .task-countdown{background:#001a33;text-align:center;padding:8px;font-weight:600;color:#ffcc00}
-.earnings-card{margin:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px}
+.earnings-card{margin:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;
+  box-shadow:0 0 10px 1px rgba(255,215,0,0.2), inset 0 0 10px rgba(255,215,0,0.1);
+  animation:gold-glow 3s ease-in-out infinite alternate;}
+@keyframes gold-glow{
+  from{box-shadow:0 0 10px 1px rgba(255,215,0,0.2), inset 0 0 10px rgba(255,215,0,0.1);}
+  to{box-shadow:0 0 25px 3px rgba(255,215,0,0.6), inset 0 0 15px rgba(255,215,0,0.3);}
+}
 .earnings-card h3{margin:0 0 6px 0;color:#ffd965}
 .earnings-list{max-height:160px;overflow-y:auto;padding:6px 0}
 .earnings-list .row{display:flex;justify-content:space-between;padding:4px 0;color:#cfe6ff;border-bottom:1px dotted rgba(255,255,255,0.05)}
 .earnings-total{text-align:right;margin-top:6px;font-weight:700;color:#fff}
 .vip-list{padding:10px}
-.vip-box{display:flex;justify-content:space-between;align-items:center;background:#003366;padding:10px;margin:6px 0;border-radius:8px}
+.vip-box{display:flex;justify-content:space-between;align-items:center;background:#003366;padding:10px;margin:6px 0;border-radius:8px;
+  box-shadow:0 0 10px 1px rgba(255,215,0,0.2), inset 0 0 10px rgba(255,215,0,0.1);
+  animation:gold-glow 3s ease-in-out infinite alternate;}
 .vip-box img{height:38px}
 .vip-box .info{flex-grow:1;margin-left:8px}
 .vip-box .info .amount{font-weight:600;color:#ffcc00}
@@ -59,10 +67,39 @@ nav a{color:#fff;text-decoration:none;text-align:center;font-size:.8rem}
 nav i{font-size:18px}
 .popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#28a745;color:#fff;padding:16px 20px;border-radius:8px;font-weight:600;z-index:9999;text-align:center}
 .popup.red{background:#cc0000}
+
+/* 🔄 Loading Animation */
+#loader{
+  position:fixed;
+  top:0;left:0;width:100%;height:100%;
+  background:#001f3f;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:10000;
+}
+.loader-spinner{
+  width:70px;height:70px;
+  border:6px solid rgba(255,215,0,0.2);
+  border-top:6px solid gold;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{100%{transform:rotate(360deg)}}
+#loader p{color:#ffd700;font-weight:bold;margin-top:10px;font-size:1rem;}
+.hidden{opacity:0;visibility:hidden;transition:opacity .5s ease;}
 </style>
 </head>
 <body>
-<div class="page-content">
+
+<!-- 🔄 Loader -->
+<div id="loader">
+  <div class="loader-spinner"></div>
+  <p>Loading Dashboard...</p>
+</div>
+
+<div class="page-content" style="display:none;">
   <header>
     <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png" alt="logo">
     <h2>QUANTUM RIO INVESTMENT</h2>
@@ -114,14 +151,22 @@ auth.onAuthStateChanged(user=>{
   const uid=user.uid;
   document.getElementById('user-email').textContent=user.email;
 
-  // Balance sync
+  // When Firebase data starts loading
+  const loader=document.getElementById('loader');
+  const page=document.querySelector('.page-content');
+
+  // Show dashboard after short delay
+  setTimeout(()=>{
+    loader.classList.add('hidden');
+    page.style.display='block';
+  },1500);
+
   const balRef=db.ref('users/'+uid+'/balance');
   balRef.on('value',snap=>{
     const bal=parseFloat(snap.val()||0);
     document.getElementById('user-balance').textContent=`Balance: UGX ${bal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
   });
 
-  // Earnings
   const vipSimple={1:75000,2:105000,3:150000,4:200000,5:250000,6:300000,7:350000,8:400000,9:450000,10:500000};
   const vipClaims=db.ref('users/'+uid+'/vipClaims');
   vipClaims.on('value',snap=>{
@@ -141,7 +186,6 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('vip-grand-total').textContent=`Total VIP Earnings: UGX ${total.toLocaleString()}`;
   });
 
-  // VIP List
   const vipAmounts=[75000,105000,150000,200000,250000,300000,350000,400000,450000,500000];
   const vipNames=["Starter","Basic","Silver","Gold","Platinum","Diamond","Elite","VIP Pro","Executive","Ultimate"];
   const vipList=document.getElementById('vip-list');
@@ -170,45 +214,41 @@ auth.onAuthStateChanged(user=>{
     });
   }
 
-  // Show all locked by default
   renderVipLevels([]);
 
-  const vipRef = db.ref('users/' + uid + '/unlockedVips');
-vipRef.on('value', snap => {
-  const raw = snap.val() || {};
-  const unlocked = [];
-
-  Object.keys(raw).forEach(amountStr => {
-    const amount = parseInt(amountStr, 10);
-    const idx = vipAmounts.indexOf(amount);
-    if (idx !== -1) unlocked.push(idx + 1); // level number
+  const vipRef=db.ref('users/'+uid+'/unlockedVips');
+  vipRef.on('value',snap=>{
+    const raw=snap.val()||{};
+    const unlocked=[];
+    Object.keys(raw).forEach(amountStr=>{
+      const amount=parseInt(amountStr,10);
+      const idx=vipAmounts.indexOf(amount);
+      if(idx!==-1)unlocked.push(idx+1);
+    });
+    renderVipLevels(unlocked);
   });
 
-  renderVipLevels(unlocked);
-});
-
-  // Claim Bonus
   const claimBtn=document.getElementById('claim-btn');
   const userRef=db.ref('users/'+uid);
   userRef.child('hasClaimedBonus').once('value').then(snap=>{
     if(snap.val()){claimBtn.textContent='Completed';claimBtn.disabled=true;}
   });
   claimBtn.onclick=()=>{
-    if(claimBtn.disabled) return;
+    if(claimBtn.disabled)return;
     userRef.transaction(userData=>{
       userData=userData||{};
-      if(userData.hasClaimedBonus) return userData;
+      if(userData.hasClaimedBonus)return userData;
       const current=parseFloat(userData.balance||0);
       userData.balance=current+500;
       userData.hasClaimedBonus=true;
       return userData;
     },(error,committed)=>{
-      if(error) showPopup('Error claiming bonus',true);
+      if(error)showPopup('Error claiming bonus',true);
       else if(committed){
         claimBtn.textContent='Completed';
         claimBtn.disabled=true;
         showPopup('500 UGX Claimed');
-      } else {
+      }else{
         claimBtn.textContent='Completed';
         claimBtn.disabled=true;
       }

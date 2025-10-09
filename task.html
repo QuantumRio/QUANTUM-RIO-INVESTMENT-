@@ -1,202 +1,242 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>QUANTUM RIO – Tasks</title>
+<!DOCTYPE html>    
+<html lang="en">    
+<head>    
+<meta charset="UTF-8">    
+<meta name="viewport" content="width=device-width,initial-scale=1.0">    
+<title>QUANTUM RIO – Tasks</title>    
+    
+<!-- Firebase compat -->    
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>    
+<script>    
+const firebaseConfig = {    
+  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",    
+  authDomain: "quantum-rio-uganda.firebaseapp.com",    
+  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",    
+  projectId: "quantum-rio-uganda",    
+  storageBucket: "quantum-rio-uganda.appspot.com",    
+  messagingSenderId: "840875099079",    
+  appId: "1:840875099079:web:1cd06a78276842a787cfe2",    
+  measurementId: "G-97G1PNQ9JB"    
+};    
+firebase.initializeApp(firebaseConfig);    
+const auth = firebase.auth();    
+const db   = firebase.database();    
+</script>    
+    
+<style>    
+html,body{    
+  margin:0;    
+  font-family:Arial,Helvetica,sans-serif;    
+  background:#001f3f;    
+  color:#fff;    
+  -webkit-user-select:none;    
+  user-select:none;    
+  -webkit-touch-callout:none;    
+}    
+input,textarea,select,button{-webkit-user-select:auto;user-select:auto}    
+    
+/* header */    
+header{background:#002f6c;display:flex;align-items:center;gap:10px;padding:12px 16px}    
+header img{height:32px}    
+header h2{margin:0;font-size:1.2rem}    
+    
+/* stats grid */    
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px}    
+.stat-box{background:#003366;padding:12px;border-radius:8px;text-align:center}    
+.stat-box h3{margin:0 0 4px 0;color:#ffcc00;font-size:0.9rem}    
+.stat-box p{margin:0;font-size:1.2rem;font-weight:700}    
+    
+/* task/history card */    
+.history{    
+  margin:12px;    
+  background:rgba(255,255,255,0.03);    
+  border:1px solid rgba(255,255,255,0.05);    
+  border-radius:8px;    
+  padding:10px;    
+  margin-top:1cm;    
+  margin-bottom:0.5cm;    
+  max-height:400px;    
+  overflow-y:auto;    
+}    
+.history h3{    
+  margin:0 0 8px 0;    
+  color:#ffcc00;    
+}    
+.history .row{    
+  display:flex;    
+  justify-content:space-between;    
+  padding:4px 0;    
+  border-bottom:1px dotted rgba(255,255,255,0.1);    
+  color:#cfe6ff;    
+  font-size:0.85rem;    
+}    
+    
+/* popup */    
+.popup{    
+  position:fixed;    
+  top:50%;    
+  left:50%;    
+  transform:translate(-50%,-50%);    
+  background:#28a745;    
+  color:#fff;    
+  padding:16px 20px;    
+  border-radius:8px;    
+  font-weight:600;    
+  z-index:9999;    
+  text-align:center;    
+}    
+.popup.red{background:#cc0000}    
+    
+/* bottom nav */    
+nav {    
+  position:fixed;    
+  bottom:0; left:0; right:0;    
+  display:flex; justify-content:space-around;    
+  background:#002244; padding:8px 0;    
+}    
+nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem}    
+nav i{font-size:18px}    
+    
+/* bottom spacing */    
+body::after{    
+  content:"";    
+  display:block;    
+  height:0.5cm;    
+}    
 
-<!-- Firebase compat -->
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
-  authDomain: "quantum-rio-uganda.firebaseapp.com",
-  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "quantum-rio-uganda",
-  storageBucket: "quantum-rio-uganda.appspot.com",
-  messagingSenderId: "840875099079",
-  appId: "1:840875099079:web:1cd06a78276842a787cfe2",
-  measurementId: "G-97G1PNQ9JB"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db   = firebase.database();
-</script>
+/* Loading animation */    
+#loader {    
+  position: fixed;    
+  top: 0; left: 0; right: 0; bottom: 0;    
+  background: rgba(0, 0, 0, 0.8);    
+  display: flex;    
+  justify-content: center;    
+  align-items: center;    
+  z-index: 99999;    
+  flex-direction: column;    
+}    
+.spinner {    
+  border: 4px solid #f3f3f3;    
+  border-top: 4px solid #ffcc00;    
+  border-radius: 50%;    
+  width: 50px;    
+  height: 50px;    
+  animation: spin 1s linear infinite;    
+}    
+@keyframes spin {    
+  0% { transform: rotate(0deg); }    
+  100% { transform: rotate(360deg); }    
+}    
+#loader p {    
+  margin-top: 10px;    
+  color: #fff;    
+  font-size: 0.9rem;    
+  letter-spacing: 1px;    
+}    
+</style>    
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">    
+</head>    
+<body>    
 
-<style>
-html,body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#001f3f;
-  color:#fff;
-  -webkit-user-select:none;
-  user-select:none;
-  -webkit-touch-callout:none;
-}
-input,textarea,select,button{-webkit-user-select:auto;user-select:auto}
+<!-- Loading animation -->    
+<div id="loader">    
+  <div class="spinner"></div>    
+  <p>Loading tasks...</p>    
+</div>    
 
-/* header */
-header{background:#002f6c;display:flex;align-items:center;gap:10px;padding:12px 16px}
-header img{height:32px}
-header h2{margin:0;font-size:1.2rem}
+<header>    
+  <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png" alt="logo">    
+  <h2>QUANTUM RIO – Tasks</h2>    
+</header>    
+    
+<div class="stats">    
+  <div class="stat-box"><h3>Total Tasks</h3><p id="total-tasks">0</p></div>    
+  <div class="stat-box"><h3>Remaining</h3><p id="remaining-tasks">0</p></div>    
+  <div class="stat-box"><h3>In Progress</h3><p id="inprogress-tasks">0</p></div>    
+  <div class="stat-box"><h3>Completed</h3><p id="completed-tasks">0</p></div>    
+</div>    
+    
+<div class="history">    
+  <h3>Task / Action History</h3>    
+  <div id="task-history"></div>    
+</div>    
+    
+<nav>    
+  <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>    
+  <a href="task.html"><i class="fas fa-tasks"></i><br>Task</a>    
+  <a href="team.html"><i class="fas fa-users"></i><br>Team</a>    
+  <a href="vip.html"><i class="fas fa-crown"></i><br>VIP</a>    
+  <a href="profile.html"><i class="fas fa-user"></i><br>Me</a>    
+</nav>    
+    
+<script>    
+auth.onAuthStateChanged(user=>{    
+  if(!user){    
+    window.location='signin.html';    
+    return;    
+  }    
+  const uid = user.uid;    
+  const totalLevels = 10;    
 
-/* stats grid */
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px}
-.stat-box{background:#003366;padding:12px;border-radius:8px;text-align:center}
-.stat-box h3{margin:0 0 4px 0;color:#ffcc00;font-size:0.9rem}
-.stat-box p{margin:0;font-size:1.2rem;font-weight:700}
+  // Watch unlocked VIP levels    
+  db.ref('users/'+uid+'/unlockedVips').on('value', snap=>{    
+    const raw = snap.val() || {};    
+    let inprogress = 0, completed = 0;    
+    
+    Object.entries(raw).forEach(([vip, data])=>{    
+      let unlockedAt = 0;    
+      if (typeof data === 'object' && data.timestamp) {    
+        unlockedAt = data.timestamp;    
+      } else if (typeof data === 'number') {    
+        unlockedAt = data;    
+      } else {    
+        unlockedAt = Date.now();    
+      }    
+    
+      const diffHrs = (Date.now() - unlockedAt) / (1000*60*60);    
+      if (diffHrs >= 24) {    
+        completed++;    
+      } else {    
+        inprogress++;    
+      }    
+    });    
+    
+    const remaining = totalLevels - (inprogress + completed);    
+    
+    document.getElementById('total-tasks').textContent     = totalLevels;    
+    document.getElementById('remaining-tasks').textContent = remaining;    
+    document.getElementById('inprogress-tasks').textContent= inprogress;    
+    document.getElementById('completed-tasks').textContent = completed;    
+  });    
+    
+  // Live history    
+  db.ref('users/'+uid+'/taskHistory').limitToLast(50).on('value', snap=>{    
+    const hist = snap.val() || {};    
+    const container = document.getElementById('task-history');    
+    container.innerHTML = '';    
+    const items = Object.values(hist).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));    
+    items.forEach(item=>{    
+      const row = document.createElement('div');    
+      row.className='row';    
+      const ts = new Date(item.timestamp||Date.now()).toLocaleString();    
+      row.innerHTML = `<div>${item.action||'Action'}</div><div>${ts}</div>`;    
+      container.appendChild(row);    
+    });    
 
-/* task/history card taller */
-.history{
-  margin:12px;
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.05);
-  border-radius:8px;
-  padding:10px;
-  margin-top:1cm;      /* 1 cm below stats */
-  margin-bottom:0.5cm; /* 0.5 cm above bottom nav */
-  max-height:400px;    /* increased height */
-  overflow-y:auto;
-}
-.history h3{
-  margin:0 0 8px 0;
-  color:#ffcc00;
-}
-.history .row{
-  display:flex;
-  justify-content:space-between;
-  padding:4px 0;
-  border-bottom:1px dotted rgba(255,255,255,0.1);
-  color:#cfe6ff;
-  font-size:0.85rem;
-}
-
-/* popup */
-.popup{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background:#28a745;
-  color:#fff;
-  padding:16px 20px;
-  border-radius:8px;
-  font-weight:600;
-  z-index:9999;
-  text-align:center;
-}
-.popup.red{background:#cc0000}
-
-/* bottom nav */
-nav {
-  position:fixed;
-  bottom:0; left:0; right:0;
-  display:flex; justify-content:space-around;
-  background:#002244; padding:8px 0;
-}
-nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem}
-nav i{font-size:18px}
-
-/* breathing space at bottom */
-body::after{
-  content:"";
-  display:block;
-  height:0.5cm;
-}
-</style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-
-<header>
-  <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png" alt="logo">
-  <h2>QUANTUM RIO – Tasks</h2>
-</header>
-
-<div class="stats">
-  <div class="stat-box"><h3>Total Tasks</h3><p id="total-tasks">0</p></div>
-  <div class="stat-box"><h3>Remaining</h3><p id="remaining-tasks">0</p></div>
-  <div class="stat-box"><h3>In Progress</h3><p id="inprogress-tasks">0</p></div>
-  <div class="stat-box"><h3>Completed</h3><p id="completed-tasks">0</p></div>
-</div>
-
-<div class="history">
-  <h3>Task / Action History</h3>
-  <div id="task-history"></div>
-</div>
-
-<nav>
-  <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
-  <a href="task.html"><i class="fas fa-tasks"></i><br>Task</a>
-  <a href="team.html"><i class="fas fa-users"></i><br>Team</a>
-  <a href="vip.html"><i class="fas fa-crown"></i><br>VIP</a>
-  <a href="profile.html"><i class="fas fa-user"></i><br>Me</a>
-</nav>
-
-<script>
-auth.onAuthStateChanged(user=>{
-  if(!user){
-    window.location='signin.html';
-    return;
-  }
-  const uid = user.uid;
-  const totalLevels = 10; // 10 VIP levels
-
-  // Watch unlocked VIP levels
-  db.ref('users/'+uid+'/unlockedVips').on('value', snap=>{
-    const raw = snap.val() || {};
-    let inprogress = 0, completed = 0;
-
-    Object.entries(raw).forEach(([vip, data])=>{
-      let unlockedAt = 0;
-      if (typeof data === 'object' && data.timestamp) {
-        unlockedAt = data.timestamp;
-      } else if (typeof data === 'number') {
-        unlockedAt = data;
-      } else {
-        unlockedAt = Date.now();
-      }
-
-      const diffHrs = (Date.now() - unlockedAt) / (1000*60*60);
-      if (diffHrs >= 24) {
-        completed++;
-      } else {
-        inprogress++;
-      }
-    });
-
-    const remaining = totalLevels - (inprogress + completed);
-
-    document.getElementById('total-tasks').textContent     = totalLevels;
-    document.getElementById('remaining-tasks').textContent = remaining;
-    document.getElementById('inprogress-tasks').textContent= inprogress;
-    document.getElementById('completed-tasks').textContent = completed;
-  });
-
-  // Live history
-  db.ref('users/'+uid+'/taskHistory').limitToLast(50).on('value', snap=>{
-    const hist = snap.val() || {};
-    const container = document.getElementById('task-history');
-    container.innerHTML = '';
-    const items = Object.values(hist).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
-    items.forEach(item=>{
-      const row = document.createElement('div');
-      row.className='row';
-      const ts = new Date(item.timestamp||Date.now()).toLocaleString();
-      row.innerHTML = `<div>${item.action||'Action'}</div><div>${ts}</div>`;
-      container.appendChild(row);
-    });
-  });
-});
-
-// centered popup
-function showPopup(msg, red=false){
-  const p = document.createElement('div');
-  p.className='popup' + (red?' red':'');
-  p.textContent = msg;
-  document.body.appendChild(p);
-  setTimeout(()=>p.remove(),3000);
-}
-</script>
-</body>
+    // Hide loader when data is loaded    
+    document.getElementById('loader').style.display = 'none';    
+  });    
+});    
+    
+// centered popup    
+function showPopup(msg, red=false){    
+  const p = document.createElement('div');    
+  p.className='popup' + (red?' red':'');    
+  p.textContent = msg;    
+  document.body.appendChild(p);    
+  setTimeout(()=>p.remove(),3000);    
+}    
+</script>    
+</body>    
 </html>

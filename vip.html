@@ -1,295 +1,356 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>VIP Plans | Quantum Rio Uganda</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-<style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #001f3f;
-    margin: 0;
-    padding: 0 0 0.5cm 0;
-    color: #fff;
-  }
-  header {
-    background-color: #002f6c;
-    text-align: center;
-    padding: 20px;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-  header img { height:32px; }
-  .container { padding: 20px; }
-  .intro {
-    background: rgba(255,255,255,0.05);
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-  }
-  .plans {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-  }
-  .plan-card {
-    background: rgba(255,255,255,0.05);
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  }
-  .plan-card h3 { margin: 0 0 6px 0; color: #ffd966; }
-  .plan-card p { font-size: 14px; color: #cfe6ff; margin: 4px 0; }
-  .plan-card button {
-    margin-top: 10px;
-    padding: 10px;
-    width: 100%;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  .plan-card button.invest { background-color: #ffcc00; color: #002244; }
-  .plan-card button.disabled { background: #555; color: #ccc; cursor: not-allowed; }
-  .plan-card button.receive { background: #28a745; color: #fff; }
-  .plan-card button.completed { background: #444; color: #0f0; cursor: not-allowed; }
-  .popup {
-    position: fixed;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: #28a745;
-    color: white;
-    padding: 15px 30px;
-    border-radius: 8px;
-    display: none;
-    z-index: 999;
-    font-weight: bold;
-    font-size: 14px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    text-align: center;
-  }
-  .popup.red{background:#cc0000;}
-  nav{
-    position:fixed;bottom:0;left:0;right:0;
-    display:flex;justify-content:space-around;
-    background:#002244;padding:8px 0;
-  }
-  nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}
-  nav i{font-size:18px;}
-</style>
-</head>
-<body>
-
-<header>
-  <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png" alt="logo">
-  <h2>QUANTUM RIO – VIP Plans</h2>
-</header>
-
-<div class="container">
-  <div class="intro">
-    <p>Welcome! Invest today in your VIP plan and watch your returns grow.</p>
-    <p>Current Balance: <span id="userBalance">0</span> UGX</p>
-  </div>
-  <div class="plans" id="plansContainer"></div>
-</div>
-
-<div class="popup" id="popupMsg"></div>
-
-<nav>
-  <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>
-  <a href="task.html"><i class="fas fa-tasks"></i><br>Task</a>
-  <a href="team.html"><i class="fas fa-users"></i><br>Team</a>
-  <a href="vip.html"><i class="fas fa-crown"></i><br>VIP</a>
-  <a href="profile.html"><i class="fas fa-user"></i><br>Me</a>
-</nav>
-
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",
-  authDomain: "quantum-rio-uganda.firebaseapp.com",
-  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "quantum-rio-uganda",
-  storageBucket: "quantum-rio-uganda.appspot.com",
-  messagingSenderId: "840875099079",
-  appId: "1:840875099079:web:1cd06a78276842a787cfe2",
-  measurementId: "G-97G1PNQ9JB"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
-
-const plans = [
-  [75000,150000,"Starter Plan"],
-  [105000,210000,"Bronze Plan"],
-  [150000,300000,"Silver Plan"],
-  [200000,400000,"Gold Plan"],
-  [250000,500000,"Platinum Plan"],
-  [300000,600000,"Diamond Plan"],
-  [350000,700000,"Ruby Plan"],
-  [400000,800000,"Emerald Plan"],
-  [450000,900000,"Sapphire Plan"],
-  [500000,1000000,"Elite Plan"]
-];
-
-let currentBalance = 0;
-let activeInvestments = {};
-let unlockedVips = {};
-let countdownIntervals = {};
-
-auth.onAuthStateChanged(user=>{
-  if(!user){ window.location='signin.html'; return; }
-  const uid = user.uid;
-
-  db.ref('users/'+uid+'/balance').on('value', snap=>{
-    currentBalance = snap.val() || 0;
-    document.getElementById('userBalance').textContent =
-      currentBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-  });
-
-  db.ref('users/'+uid+'/unlockedVips').on('value', snap=>{
-    unlockedVips = snap.val() || {};
-    loadPlans(uid);
-  });
-
-  db.ref('investments/'+uid).on('value', snap=>{
-    activeInvestments = {};
-    snap.forEach(child=>{
-      const inv = child.val();
-      if(inv && inv.status==="active"){
-        activeInvestments[inv.investedAmount] = { ...inv, key: child.key };
-      }
-    });
-    loadPlans(uid);
-  });
-});
-
-function loadPlans(uid){
-  const container = document.getElementById('plansContainer');
-  container.innerHTML = '';
-  Object.values(countdownIntervals).forEach(id => clearInterval(id));
-  countdownIntervals = {};
-
-  plans.forEach(([amount, roi, name], index)=>{
-    const div = document.createElement('div');
-    div.className='plan-card';
-    const active = activeInvestments[amount];
-    const completed = unlockedVips && unlockedVips[amount];
-    const btn = document.createElement('button');
-
-    if(active){
-      btn.className="disabled";
-      btn.disabled = true;
-      updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount);
-      countdownIntervals[amount] = setInterval(()=>{
-        updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount);
-      },1000);
-    } else if(completed){
-      btn.textContent="✅ Completed";
-      btn.className="completed";
-      btn.disabled = true;
-    } else {
-      btn.textContent="Invest Now";
-      btn.className="invest";
-      btn.onclick = ()=>invest(amount, roi, uid, btn);
-    }
-
-    const dailyProfit = roi - amount;
-
-    div.innerHTML=`
-      <h3>VIP${index+1}</h3>
-      <p>Daily Tasks: 1</p>
-      <p>Simple Interest: ${dailyProfit.toLocaleString()} UGX</p>
-      <p>Daily Profit: ${dailyProfit.toLocaleString()} UGX</p>
-      <p>Total Profit: ${roi.toLocaleString()} UGX</p>
-      <p>Receive after 24 hrs</p>
-    `;
-    div.appendChild(btn);
-    container.appendChild(div);
-  });
-}
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+<meta charset="UTF-8" />  
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>  
+<title>VIP Plans | Quantum Rio Uganda</title>  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>  
+<style>  
+  body {  
+    font-family: 'Segoe UI', sans-serif;  
+    background-color: #001f3f;  
+    margin: 0;  
+    padding: 0 0 0.5cm 0;  
+    color: #fff;  
+  }  
+  header {  
+    background-color: #002f6c;  
+    text-align: center;  
+    padding: 20px;  
+    color: white;  
+    display: flex;  
+    align-items: center;  
+    justify-content: center;  
+    gap: 10px;  
+  }  
+  header img { height:32px; }  
+  .container { padding: 20px; }  
+  .intro {  
+    background: rgba(255,255,255,0.05);  
+    padding: 15px;  
+    border-radius: 10px;  
+    margin-bottom: 20px;  
+  }  
+  .plans {  
+    display: grid;  
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));  
+    gap: 20px;  
+  }  
+  .plan-card {  
+    background: rgba(255,255,255,0.05);  
+    border-radius: 10px;  
+    padding: 20px;  
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);  
+  }  
+  .plan-card h3 { margin: 0 0 6px 0; color: #ffd966; }  
+  .plan-card p { font-size: 14px; color: #cfe6ff; margin: 4px 0; }  
   
-function invest(amount, roi, uid, button){
-  if(currentBalance < amount){
-    showPopup("❌ Insufficient balance", true);
-    return;
-  }
-
-  const userRef = db.ref('users/'+uid);
-  userRef.transaction(userData=>{
-    if(!userData) userData={};
-    const current = parseFloat(userData.balance||0);
-    if(current < amount) return userData;
-    userData.balance = current - amount;
-    return userData;
-  },(err, committed)=>{
-    if(err || !committed){ showPopup("❌ Transaction failed", true); return; }
-
-    // ✅ use push(newInv) directly
-    const newInv = {
-      investedAmount: amount,
-      returnAmount: roi,
-      investedAt: Date.now(),
-      status: "active"
-    };
-    db.ref('investments/'+uid).push(newInv).then(ref=>{
-      const key = ref.key;
-
-      // Update button immediately
-      button.disabled = true;
-      button.className = "disabled";
-      updateCountdown(button, newInv.investedAt, uid, key, roi, amount);
-
-      countdownIntervals[amount] = setInterval(()=>{
-        updateCountdown(button, newInv.investedAt, uid, key, roi, amount);
-      },1000);
-
-      showPopup(`✅ Invested ${amount.toLocaleString()} UGX`);
-    }).catch(()=>{
-      showPopup("❌ Could not record investment", true);
-    });
-  });
-}
-
-function updateCountdown(button, investedAt, uid, key, roi, amount){
-  const now = Date.now();
-  const diff = 24*60*60*1000 - (now - investedAt);
-  if(diff <= 0){
-    clearInterval(countdownIntervals[amount]);
-    button.textContent = "Receive";
-    button.className="receive";
-    button.disabled = false;
-    button.onclick = ()=>receiveProfit(uid, key, roi, amount, button);
-    return;
-  }
-  const h = Math.floor(diff/(1000*60*60));
-  const m = Math.floor((diff%(1000*60*60))/(1000*60));
-  const s = Math.floor((diff%(1000*60))/1000);
-  button.textContent = `Receive in ${h}h ${m}m ${s}s`;
-}
-
-function receiveProfit(uid, key, roi, amount, button){
-  db.ref('users/'+uid+'/balance').transaction(bal=>(bal||0)+roi);
-  db.ref('investments/'+uid+'/'+key+'/status').set("completed");
-  db.ref('users/'+uid+'/unlockedVips/'+amount).set(true);
-
-  button.disabled = true;
-  button.className="completed";
-  button.textContent = "✅ Completed";
-  showPopup(`💰 Credited ${roi.toLocaleString()} UGX`);
-}
-
-function showPopup(msg, red=false){
-  const popup=document.getElementById('popupMsg');
-  popup.innerText=msg;
-  popup.className='popup'+(red?' red':'');
-  popup.style.display='block';
-  setTimeout(()=>popup.style.display='none',3500);
-}
-</script>
-</body>
+  /* === Buttons === */  
+  .plan-card button {  
+    margin-top: 10px;  
+    padding: 10px;  
+    width: 100%;  
+    border: none;  
+    border-radius: 6px;  
+    font-weight: bold;  
+    cursor: pointer;  
+    transition: transform 0.2s ease;  
+  }  
+  .plan-card button.invest {  
+    background: linear-gradient(135deg, #0078FF, #8A2BE2, #FF00FF);  
+    color: #fff;  
+  }  
+  .plan-card button.invest:hover {  
+    transform: scale(1.03);  
+    opacity: 0.95;  
+  }  
+  .plan-card button.disabled { background: #555; color: #ccc; cursor: not-allowed; }  
+  .plan-card button.receive { background: #28a745; color: #fff; }  
+  .plan-card button.completed { background: #444; color: #0f0; cursor: not-allowed; }  
+  
+  /* === Popup === */  
+  .popup {  
+    position: fixed;  
+    top: 50%; left: 50%;  
+    transform: translate(-50%, -50%);  
+    background: #001f3f;  /* same as signup page background */  
+    color: red;  
+    padding: 12px 18px;  
+    border-radius: 10px;  
+    display: none;  
+    z-index: 999;  
+    font-weight: 600;  
+    font-size: 13px;  
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);  
+    text-align: center;  
+    width: fit-content;  
+    max-width: 85%;  
+  }  
+  .popup button {  
+    margin-top: 8px;  
+    background: linear-gradient(135deg, #0078FF, #8A2BE2, #FF00FF);  
+    color: #fff;  
+    border: none;  
+    padding: 6px 14px;  
+    border-radius: 6px;  
+    cursor: pointer;  
+    font-size: 13px;  
+    font-weight: 600;  
+  }  
+  
+  nav{  
+    position:fixed;bottom:0;left:0;right:0;  
+    display:flex;justify-content:space-around;  
+    background:#002244;padding:8px 0;  
+  }  
+  nav a{color:#fff;text-decoration:none;text-align:center;font-size:0.8rem;}  
+  nav i{font-size:18px;}  
+  
+  /* === Loading Animation === */  
+  #loader {  
+    position: fixed;  
+    top: 0; left: 0; right: 0; bottom: 0;  
+    background: rgba(0,0,0,0.7);  
+    display: flex;  
+    justify-content: center;  
+    align-items: center;  
+    z-index: 2000;  
+  }  
+  .spinner {  
+    border: 6px solid rgba(255,255,255,0.2);  
+    border-top: 6px solid #8A2BE2;  
+    border-radius: 50%;  
+    width: 60px;  
+    height: 60px;  
+    animation: spin 1s linear infinite;  
+  }  
+  @keyframes spin {  
+    0% { transform: rotate(0deg); }  
+    100% { transform: rotate(360deg); }  
+  }  
+</style>  
+</head>  
+<body>  
+  
+<!-- 🔄 Loading Spinner -->  
+<div id="loader">  
+  <div class="spinner"></div>  
+</div>  
+  
+<header>  
+  <img src="https://png.pngtree.com/png-clipart/20221216/original/pngtree-vip-icon-design-png-image_8749175.png" alt="logo">  
+  <h2>QUANTUM RIO – VIP Plans</h2>  
+</header>  
+  
+<div class="container">  
+  <div class="intro">  
+    <p>Welcome! Invest today in your VIP plan and watch your returns grow.</p>  
+    <p>Current Balance: <span id="userBalance">0</span> UGX</p>  
+  </div>  
+  <div class="plans" id="plansContainer"></div>  
+</div>  
+  
+<div class="popup" id="popupMsg"></div>  
+  
+<nav>  
+  <a href="dashboard.html"><i class="fas fa-home"></i><br>Home</a>  
+  <a href="task.html"><i class="fas fa-tasks"></i><br>Task</a>  
+  <a href="team.html"><i class="fas fa-users"></i><br>Team</a>  
+  <a href="vip.html"><i class="fas fa-crown"></i><br>VIP</a>  
+  <a href="profile.html"><i class="fas fa-user"></i><br>Me</a>  
+</nav>  
+  
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>  
+<script>  
+const firebaseConfig = {  
+  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJERweY",  
+  authDomain: "quantum-rio-uganda.firebaseapp.com",  
+  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",  
+  projectId: "quantum-rio-uganda",  
+  storageBucket: "quantum-rio-uganda.appspot.com",  
+  messagingSenderId: "840875099079",  
+  appId: "1:840875099079:web:1cd06a78276842a787cfe2",  
+  measurementId: "G-97G1PNQ9JB"  
+};  
+firebase.initializeApp(firebaseConfig);  
+const auth = firebase.auth();  
+const db = firebase.database();  
+  
+const loader = document.getElementById('loader');  
+  
+const plans = [  
+  [75000,150000,"Starter Plan"],  
+  [105000,210000,"Bronze Plan"],  
+  [150000,300000,"Silver Plan"],  
+  [200000,400000,"Gold Plan"],  
+  [250000,500000,"Platinum Plan"],  
+  [300000,600000,"Diamond Plan"],  
+  [350000,700000,"Ruby Plan"],  
+  [400000,800000,"Emerald Plan"],  
+  [450000,900000,"Sapphire Plan"],  
+  [500000,1000000,"Elite Plan"]  
+];  
+  
+let currentBalance = 0;  
+let activeInvestments = {};  
+let unlockedVips = {};  
+let countdownIntervals = {};  
+  
+auth.onAuthStateChanged(user=>{  
+  if(!user){ window.location='signin.html'; return; }  
+  const uid = user.uid;  
+  
+  let loadedSections = 0;  
+  function checkAllLoaded(){  
+    loadedSections++;  
+    if(loadedSections >= 3){  
+      loader.style.display = 'none';   
+    }  
+  }  
+  
+  db.ref('users/'+uid+'/balance').on('value', snap=>{  
+    currentBalance = snap.val() || 0;  
+    document.getElementById('userBalance').textContent =  
+      currentBalance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});  
+    checkAllLoaded();  
+  });  
+  
+  db.ref('users/'+uid+'/unlockedVips').on('value', snap=>{  
+    unlockedVips = snap.val() || {};  
+    loadPlans(uid);  
+    checkAllLoaded();  
+  });  
+  
+  db.ref('investments/'+uid).on('value', snap=>{  
+    activeInvestments = {};  
+    snap.forEach(child=>{  
+      const inv = child.val();  
+      if(inv && inv.status==="active"){  
+        activeInvestments[inv.investedAmount] = { ...inv, key: child.key };  
+      }  
+    });  
+    loadPlans(uid);  
+    checkAllLoaded();  
+  });  
+});  
+  
+function loadPlans(uid){  
+  const container = document.getElementById('plansContainer');  
+  container.innerHTML = '';  
+  Object.values(countdownIntervals).forEach(id => clearInterval(id));  
+  countdownIntervals = {};  
+  
+  plans.forEach(([amount, roi, name], index)=>{  
+    const div = document.createElement('div');  
+    div.className='plan-card';  
+    const active = activeInvestments[amount];  
+    const completed = unlockedVips && unlockedVips[amount];  
+    const btn = document.createElement('button');  
+  
+    if(active){  
+      btn.className="disabled";  
+      btn.disabled = true;  
+      updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount);  
+      countdownIntervals[amount] = setInterval(()=>{  
+        updateCountdown(btn, active.investedAt, uid, active.key, active.returnAmount, amount);  
+      },1000);  
+    } else if(completed){  
+      btn.textContent="✅ Completed";  
+      btn.className="completed";  
+      btn.disabled = true;  
+    } else {  
+      btn.textContent="Invest Now";  
+      btn.className="invest";  
+      btn.onclick = ()=>invest(amount, roi, uid, btn);  
+    }  
+  
+    const dailyProfit = roi - amount;  
+  
+    div.innerHTML=`  
+      <h3>VIP${index+1}</h3>  
+      <p>Daily Tasks: 1</p>  
+      <p>Simple Interest: ${dailyProfit.toLocaleString()} UGX</p>  
+      <p>Daily Profit: ${dailyProfit.toLocaleString()} UGX</p>  
+      <p>Total Profit: ${roi.toLocaleString()} UGX</p>  
+      <p>Receive after 24 hrs</p>  
+    `;  
+    div.appendChild(btn);  
+    container.appendChild(div);  
+  });  
+}  
+    
+function invest(amount, roi, uid, button){  
+  if(currentBalance < amount){  
+    showPopup("⚠️ Insufficient balance to invest. Proceed to deposit?", true);  
+    return;  
+  }  
+  
+  const userRef = db.ref('users/'+uid);  
+  userRef.transaction(userData=>{  
+    if(!userData) userData={};  
+    const current = parseFloat(userData.balance||0);  
+    if(current < amount) return userData;  
+    userData.balance = current - amount;  
+    return userData;  
+  },(err, committed)=>{  
+    if(err || !committed){ showPopup("❌ Transaction failed", true); return; }  
+  
+    const newInv = {  
+      investedAmount: amount,  
+      returnAmount: roi,  
+      investedAt: Date.now(),  
+      status: "active"  
+    };  
+    db.ref('investments/'+uid).push(newInv).then(ref=>{  
+      const key = ref.key;  
+      button.disabled = true;  
+      button.className = "disabled";  
+      updateCountdown(button, newInv.investedAt, uid, key, roi, amount);  
+      countdownIntervals[amount] = setInterval(()=>{  
+        updateCountdown(button, newInv.investedAt, uid, key, roi, amount);  
+      },1000);  
+      showPopup(`✅ Invested ${amount.toLocaleString()} UGX`);  
+    }).catch(()=>{  
+      showPopup("❌ Could not record investment", true);  
+    });  
+  });  
+}  
+  
+function updateCountdown(button, investedAt, uid, key, roi, amount){  
+  const now = Date.now();  
+  const diff = 24*60*60*1000 - (now - investedAt);  
+  if(diff <= 0){  
+    clearInterval(countdownIntervals[amount]);  
+    button.textContent = "Receive";  
+    button.className="receive";  
+    button.disabled = false;  
+    button.onclick = ()=>receiveProfit(uid, key, roi, amount, button);  
+    return;  
+  }  
+  const h = Math.floor(diff/(1000*60*60));  
+  const m = Math.floor((diff%(1000*60*60))/(1000*60));  
+  const s = Math.floor((diff%(1000*60))/1000);  
+  button.textContent = `Receive in ${h}h ${m}m ${s}s`;  
+}  
+  
+function receiveProfit(uid, key, roi, amount, button){  
+  db.ref('users/'+uid+'/balance').transaction(bal=>(bal||0)+roi);  
+  db.ref('investments/'+uid+'/'+key+'/status').set("completed");  
+  db.ref('users/'+uid+'/unlockedVips/'+amount).set(true);  
+  button.disabled = true;  
+  button.className="completed";  
+  button.textContent = "✅ Completed";  
+  showPopup(`💰 Credited ${roi.toLocaleString()} UGX`);  
+}  
+  
+function showPopup(msg, isInsufficient=false){  
+  const popup=document.getElementById('popupMsg');  
+  popup.innerHTML = isInsufficient   
+    ? `${msg}<br><button onclick="window.location='deposit.html'">Confirm</button>`  
+    : msg;  
+  popup.style.display='block';  
+  setTimeout(()=>popup.style.display='none', isInsufficient?8000:3500);  
+}  
+</script>  
+</body>  
 </html>

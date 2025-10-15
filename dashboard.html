@@ -186,7 +186,7 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('vip-grand-total').textContent=`Total VIP Earnings: UGX ${total.toLocaleString()}`;
   });
 
-  const vipAmounts=[75000,105000,150000,200000,250000,300000,350000,400000,450000,500000];
+  const vipAmounts=[400000,600000,800000,1000000,1500000,2000000,3000000,4000000,5000000,6000000];
   const vipNames=["Starter","Basic","Silver","Gold","Platinum","Diamond","Elite","VIP Pro","Executive","Ultimate"];
   const vipList=document.getElementById('vip-list');
 
@@ -275,8 +275,6 @@ function showPopup(msg,red=false){
   p.className='popup'+(red?' red':'');
   p.textContent=msg;
   document.body.appendChild(p);
-  setTimeout(()=>p.remove(),3000);
-}
-</script>
+  setTimeout(()=>p.remove(),3000);Startercript>
 </body>
 </html>

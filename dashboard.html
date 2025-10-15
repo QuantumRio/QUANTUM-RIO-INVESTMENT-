@@ -123,7 +123,7 @@ nav i{font-size:18px}
       Improve VIP task rules on the same day. Upgrading the VIP level on the same day allows you to complete multiple tasks without restriction.  
       You are now VIP1 and have completed today's task. You can upgrade to VIP2 to continue completing VIP2 tasks. Highest VIP level is VIP10.  
     </p>
-    <button class="claim-btn" id="claim-btn">Claim 500 UGX</button>
+    <button class="claim-btn" id="claim-btn">Claim 1000 UGX</button>
   </div>
 
   <div class="task-countdown">Task Reset Countdown: <span id="countdown"></span></div>
@@ -167,7 +167,7 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('user-balance').textContent=`Balance: UGX ${bal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
   });
 
-  const vipSimple={1:75000,2:105000,3:150000,4:200000,5:250000,6:300000,7:350000,8:400000,9:450000,10:500000};
+  const vipSimple={1:400000,2:600000,3:800000,4:1000000,5:1500000,6:2000000,7:3000000,8:4000000,9:5000000,10:6000000};
   const vipClaims=db.ref('users/'+uid+'/vipClaims');
   vipClaims.on('value',snap=>{
     const claims=snap.val()||{};
@@ -239,7 +239,7 @@ auth.onAuthStateChanged(user=>{
       userData=userData||{};
       if(userData.hasClaimedBonus)return userData;
       const current=parseFloat(userData.balance||0);
-      userData.balance=current+500;
+      userData.balance=current+1000;
       userData.hasClaimedBonus=true;
       return userData;
     },(error,committed)=>{
@@ -247,7 +247,7 @@ auth.onAuthStateChanged(user=>{
       else if(committed){
         claimBtn.textContent='Completed';
         claimBtn.disabled=true;
-        showPopup('500 UGX Claimed');
+        showPopup('1000 UGX Claimed');
       }else{
         claimBtn.textContent='Completed';
         claimBtn.disabled=true;

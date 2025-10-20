@@ -220,13 +220,13 @@ auth.onAuthStateChanged(user => {
   loader.style.display = 'none';
 
   if (!user) {
-    document.getElementById('ref-link').value = "Login required to generate referral link";
+    document.getElementById('ref-link').value = "https://quantumrio.github.io/QUANTUM-RIO-INVESTMENT-/signup.html?ref=username";
     return;
   }
 
   const uid = user.uid;
 
-  // ✅ Generate referral link whether username exists or not
+  // ✅ Generate referral link
   db.ref('users/' + uid + '/username').once('value').then(snap => {
     let username = snap.val();
     if (!username || username.trim() === "") username = uid;
@@ -235,14 +235,31 @@ auth.onAuthStateChanged(user => {
     const refInput = document.getElementById('ref-link');
     refInput.value = link;
 
+    // ✅ Reliable Copy Function (with fallback)
     document.getElementById('copyRefBtn').onclick = () => {
       navigator.clipboard.writeText(link).then(() => {
+        logCopy();
+      }).catch(() => {
+        const temp = document.createElement("textarea");
+        temp.value = link;
+        document.body.appendChild(temp);
+        temp.select();
+        try {
+          document.execCommand("copy");
+          logCopy();
+        } catch (err) {
+          showToast('Copy failed', 'error');
+        }
+        document.body.removeChild(temp);
+      });
+
+      function logCopy() {
         db.ref('users/' + uid + '/referralLogs').push({
           copiedAt: firebase.database.ServerValue.TIMESTAMP,
           link: link
         });
         showToast('Referral link copied!', 'success');
-      }).catch(() => showToast('Copy failed', 'error'));
+      }
     };
   });
 

@@ -44,6 +44,7 @@
   }  
   .plan-card h3 { margin: 0 0 6px 0; color: #ffd966; }  
   .plan-card p { font-size: 14px; color: #cfe6ff; margin: 4px 0; }  
+  .plan-card p.green-text { color: #00ff00; font-weight: bold; }  
   
   /* === Buttons === */  
   .plan-card button {  
@@ -73,7 +74,7 @@
     position: fixed;  
     top: 50%; left: 50%;  
     transform: translate(-50%, -50%);  
-    background: #001f3f;  /* same as signup page background */  
+    background: #001f3f;  
     color: red;  
     padding: 12px 18px;  
     border-radius: 10px;  
@@ -189,7 +190,7 @@ const plans = [
   [4000000,9000000,"Emerald Plan"],  
   [5000000,11000000,"Sapphire Plan"],  
   [6000000,13000000,"Elite Plan"]  
-];
+];  
   
 let currentBalance = 0;  
 let activeInvestments = {};  
@@ -269,15 +270,15 @@ function loadPlans(uid){
     div.innerHTML=`    
       <h3>VIP${index+1}</h3>    
       <p>Invest amount: ${amount.toLocaleString()} UGX</p>    
-      <p>Simple Interest: ${simpleInterest.toLocaleString()} UGX</p>    
+      <p class="green-text">Simple Interest: ${simpleInterest.toLocaleString()} UGX</p>    
       <p>Total Profit: ${roi.toLocaleString()} UGX</p>    
       <p>Receive after 24 hrs</p>    
     `;    
     div.appendChild(btn);    
     container.appendChild(div);    
   });    
-  }
-    
+}    
+  
 function invest(amount, roi, uid, button){  
   if(currentBalance < amount){  
     showPopup("⚠️ Insufficient balance to invest. Proceed to deposit?", true);  

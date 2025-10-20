@@ -39,23 +39,17 @@ header {
   gap: 10px;
   padding: 12px 16px;
 }
-header img {
-  height: 32px;
-}
-header h2 {
-  margin: 0;
-  font-size: 1.2rem;
-}
+header img { height: 32px; }
+header h2 { margin: 0; font-size: 1.2rem; }
+
 .section {
   margin: 12px;
   padding: 12px;
   background: #003366;
   border-radius: 8px;
 }
-h3 {
-  margin: 0 0 8px 0;
-  color: #ffcc00;
-}
+h3 { margin: 0 0 8px 0; color: #ffcc00; }
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -69,15 +63,9 @@ h3 {
   border-radius: 6px;
   font-size: 0.85rem;
 }
-.stat-label {
-  color: #cfe6ff;
-  font-size: 0.75rem;
-}
-.stat-value {
-  color: #ffd966;
-  font-size: 1rem;
-  font-weight: 600;
-}
+.stat-label { color: #cfe6ff; font-size: 0.75rem; }
+.stat-value { color: #ffd966; font-size: 1rem; font-weight: 600; }
+
 .copy-btn {
   background: linear-gradient(90deg, #0084FF, #A259FF, #00E6FF);
   color: #fff;
@@ -88,10 +76,8 @@ h3 {
   cursor: pointer;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
-.copy-btn:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
-}
+.copy-btn:hover { transform: scale(1.05); opacity: 0.9; }
+
 .level-box {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
@@ -99,16 +85,11 @@ h3 {
   padding: 8px;
   border-radius: 6px;
 }
-.level-box h4 {
-  margin: 0 0 4px 0;
-  color: #ffd966;
-  font-size: 0.95rem;
-}
+.level-box h4 { margin: 0 0 4px 0; color: #ffd966; font-size: 0.95rem; }
+
 nav {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   display: flex;
   justify-content: space-around;
   background: #002244;
@@ -120,9 +101,8 @@ nav a {
   text-align: center;
   font-size: 0.8rem;
 }
-nav i {
-  font-size: 18px;
-}
+nav i { font-size: 18px; }
+
 .toast {
   position: fixed;
   bottom: 70px;
@@ -154,23 +134,14 @@ nav i {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  border: 5px showToast transparent;
   border-top: 5px solid #fff;
   background: conic-gradient(#0084FF, #A259FF, #00E6FF, #0084FF);
   animation: spin 1.2s linear infinite;
   mask-image: radial-gradient(circle, transparent 55%, black 56%);
   -webkit-mask-image: radial-gradient(circle, transparent 55%, black 56%);
 }
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-#loader p {
-  margin-top: 10px;
-  color: #fff;
-  font-size: 0.9rem;
-  letter-spacing: 1px;
-}
+@keyframes spin { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
+#loader p { margin-top: 10px; color: #fff; font-size: 0.9rem; letter-spacing: 1px; }
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -230,25 +201,23 @@ function showToast(msg,type='success'){
   const t=document.getElementById('toast');
   t.textContent=msg;
   t.className='toast show '+type;
-  setTimeout(()=>t.classList.remove('show'),2500);authauth.onAuthStateChanged(user => {
-  const loader = document.getElementById('loader');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
 
-  // Wait a bit before redirecting to avoid false redirects
+// ✅ No restrictions / no redirects
+auth.onAuthStateChanged(user => {
+  const loader = document.getElementById('loader');
+  loader.style.display = 'none';
+
+  // If not signed in, just show default static view
   if (!user) {
-    setTimeout(() => {
-      if (!auth.currentUser) {
-        window.location = 'signin.html';
-      }
-    }, 1500);
+    console.log("User not logged in — showing static page.");
     return;
   }
 
   const uid = user.uid;
 
-  // ✅ Hide loader after user is confirmed
-  loader.style.display = 'none';
-
-  // ✅ Referral link (use username if available)
+  // ✅ Referral link
   db.ref('users/' + uid + '/username').once('value').then(snap => {
     const username = snap.val();
     const refValue = username && username.trim() !== "" ? username : uid;
@@ -280,6 +249,7 @@ function showToast(msg,type='success'){
     document.getElementById('lvl2-total').textContent = data.lvl2 || 0;
     document.getElementById('lvl3-total').textContent = data.lvl3 || 0;
   });
-});criptript>
+});
+</script>
 </body>
 </html>

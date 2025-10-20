@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>QUANTUM RIO – Team</title>
 
-<!-- Firebase compat build -->
+<!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
 <script>
 // Firebase Config
@@ -129,7 +129,7 @@ nav i { font-size: 18px; }
 .toast.success {background:#28a745;}
 .toast.error {background:#c0392b;}
 
-/* Meta Gradient Spinner */
+/* Loader */
 #loader {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -158,7 +158,7 @@ nav i { font-size: 18px; }
 </head>
 <body>
 
-<!-- Loading animation -->
+<!-- Loader -->
 <div id="loader">
   <div class="spinner"></div>
   <p>Loading team data...</p>
@@ -173,7 +173,7 @@ nav i { font-size: 18px; }
 <div class="section">
   <h3>Invite Your Friends</h3>
   <div style="display:flex;align-items:center;gap:6px;">
-    <input id="ref-link" readonly placeholder="Your referral link will appear here">
+    <input id="ref-link" readonly placeholder="Loading referral link...">
     <button class="copy-btn" id="copyRefBtn">Copy Referral Link</button>
   </div>
 </div>
@@ -219,15 +219,19 @@ auth.onAuthStateChanged(user => {
   const loader = document.getElementById('loader');
   loader.style.display = 'none';
 
-  if (!user) return; // no redirect, static page
+  if (!user) {
+    document.getElementById('ref-link').value = "Login required to generate referral link";
+    return;
+  }
 
   const uid = user.uid;
 
-  // ✅ Referral link logic
+  // ✅ Generate referral link whether username exists or not
   db.ref('users/' + uid + '/username').once('value').then(snap => {
-    const username = snap.val();
-    const refValue = username && username.trim() !== "" ? username : uid;
-    const link = `https://quantumrio.github.io/QUANTUM-RIO-INVESTMENT-/signup.html?ref=${encodeURIComponent(refValue)}`;
+    let username = snap.val();
+    if (!username || username.trim() === "") username = uid;
+
+    const link = `https://quantumrio.github.io/QUANTUM-RIO-INVESTMENT-/signup.html?ref=${encodeURIComponent(username)}`;
     const refInput = document.getElementById('ref-link');
     refInput.value = link;
 

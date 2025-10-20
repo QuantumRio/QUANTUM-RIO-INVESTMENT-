@@ -154,7 +154,7 @@ nav i {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  border: 5px solid transparent;
+  border: 5px showToast transparent;
   border-top: 5px solid #fff;
   background: conic-gradient(#0084FF, #A259FF, #00E6FF, #0084FF);
   animation: spin 1.2s linear infinite;
@@ -230,15 +230,26 @@ function showToast(msg,type='success'){
   const t=document.getElementById('toast');
   t.textContent=msg;
   t.className='toast show '+type;
-  setTimeout(()=>t.classList.remove('show'),2500);
-}
+  setTimeout(()=>t.classList.remove('show'),2500);authauth.onAuthStateChanged(user => {
+  const loader = document.getElementById('loader');
 
-auth.onAuthStateChanged(user=>{
-  if(!user){window.location='signin.html';return;}
-  const uid=user.uid;
+  // Wait a bit before redirecting to avoid false redirects
+  if (!user) {
+    setTimeout(() => {
+      if (!auth.currentUser) {
+        window.location = 'signin.html';
+      }
+    }, 1500);
+    return;
+  }
 
-  // ✅ Referral link uses username if set, else UID
-  db.ref('users/'+uid+'/username').once('value').then(snap=>{
+  const uid = user.uid;
+
+  // ✅ Hide loader after user is confirmed
+  loader.style.display = 'none';
+
+  // ✅ Referral link (use username if available)
+  db.ref('users/' + uid + '/username').once('value').then(snap => {
     const username = snap.val();
     const refValue = username && username.trim() !== "" ? username : uid;
     const link = `https://quantumrio.github.io/QUANTUM-RIO-INVESTMENT-/signup.html?ref=${encodeURIComponent(refValue)}`;
@@ -256,21 +267,19 @@ auth.onAuthStateChanged(user=>{
   });
 
   // ✅ Team Size
-  db.ref('referrals/'+uid).on('value', snap=>{
+  db.ref('referrals/' + uid).on('value', snap => {
     const referrals = snap.val() || {};
-    const active = Object.values(referrals).filter(r=>r && r.joinedAt).length;
+    const active = Object.values(referrals).filter(r => r && r.joinedAt).length;
     document.getElementById('team-size').textContent = active;
   });
 
   // ✅ Commissions
-  db.ref('commissions/'+uid).on('value', snap=>{
+  db.ref('commissions/' + uid).on('value', snap => {
     const data = snap.val() || {};
     document.getElementById('lvl1-total').textContent = data.lvl1 || 0;
     document.getElementById('lvl2-total').textContent = data.lvl2 || 0;
     document.getElementById('lvl3-total').textContent = data.lvl3 || 0;
-    document.getElementById('loader').style.display = 'none';
   });
-});
-</script>
+});criptript>
 </body>
 </html>

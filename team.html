@@ -78,6 +78,16 @@ h3 { margin: 0 0 8px 0; color: #ffcc00; }
 }
 .copy-btn:hover { transform: scale(1.05); opacity: 0.9; }
 
+#ref-link {
+  flex: 1;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 0.8rem;
+}
+
 .level-box {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
@@ -119,7 +129,7 @@ nav i { font-size: 18px; }
 .toast.success {background:#28a745;}
 .toast.error {background:#c0392b;}
 
-/* 🔵🟣 Meta AI Gradient Spinner */
+/* Meta Gradient Spinner */
 #loader {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -142,9 +152,6 @@ nav i { font-size: 18px; }
 }
 @keyframes spin { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
 #loader p { margin-top: 10px; color: #fff; font-size: 0.9rem; letter-spacing: 1px; }
-
-/* Hide referral input completely */
-#ref-link { display: none; }
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -162,11 +169,11 @@ nav i { font-size: 18px; }
   <h2>QUANTUM RIO – Team</h2>
 </header>
 
-<!-- Referral Section (hidden input only) -->
+<!-- Referral Section -->
 <div class="section">
   <h3>Invite Your Friends</h3>
   <div style="display:flex;align-items:center;gap:6px;">
-    <input id="ref-link" readonly>
+    <input id="ref-link" readonly placeholder="Your referral link will appear here">
     <button class="copy-btn" id="copyRefBtn">Copy Referral Link</button>
   </div>
 </div>
@@ -212,16 +219,17 @@ auth.onAuthStateChanged(user => {
   const loader = document.getElementById('loader');
   loader.style.display = 'none';
 
-  if (!user) return; // show static if not logged in
+  if (!user) return; // no redirect, static page
 
   const uid = user.uid;
 
-  // ✅ Referral link logic (username → UID fallback)
+  // ✅ Referral link logic
   db.ref('users/' + uid + '/username').once('value').then(snap => {
     const username = snap.val();
     const refValue = username && username.trim() !== "" ? username : uid;
     const link = `https://quantumrio.github.io/QUANTUM-RIO-INVESTMENT-/signup.html?ref=${encodeURIComponent(refValue)}`;
-    document.getElementById('ref-link').value = link;
+    const refInput = document.getElementById('ref-link');
+    refInput.value = link;
 
     document.getElementById('copyRefBtn').onclick = () => {
       navigator.clipboard.writeText(link).then(() => {
@@ -251,4 +259,4 @@ auth.onAuthStateChanged(user => {
 });
 </script>
 </body>
-  </html>
+</html>

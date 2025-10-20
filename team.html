@@ -142,6 +142,9 @@ nav i { font-size: 18px; }
 }
 @keyframes spin { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
 #loader p { margin-top: 10px; color: #fff; font-size: 0.9rem; letter-spacing: 1px; }
+
+/* Hide referral input completely */
+#ref-link { display: none; }
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -159,11 +162,12 @@ nav i { font-size: 18px; }
   <h2>QUANTUM RIO – Team</h2>
 </header>
 
+<!-- Referral Section (hidden input only) -->
 <div class="section">
-  <h3>Your Referral Link</h3>
+  <h3>Invite Your Friends</h3>
   <div style="display:flex;align-items:center;gap:6px;">
-    <input id="ref-link" style="flex:1;border:none;padding:6px;" readonly>
-    <button class="copy-btn" id="copyRefBtn">Copy</button>
+    <input id="ref-link" readonly>
+    <button class="copy-btn" id="copyRefBtn">Copy Referral Link</button>
   </div>
 </div>
 
@@ -204,20 +208,15 @@ function showToast(msg,type='success'){
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// ✅ No restrictions / no redirects
 auth.onAuthStateChanged(user => {
   const loader = document.getElementById('loader');
   loader.style.display = 'none';
 
-  // If not signed in, just show default static view
-  if (!user) {
-    console.log("User not logged in — showing static page.");
-    return;
-  }
+  if (!user) return; // show static if not logged in
 
   const uid = user.uid;
 
-  // ✅ Referral link
+  // ✅ Referral link logic (username → UID fallback)
   db.ref('users/' + uid + '/username').once('value').then(snap => {
     const username = snap.val();
     const refValue = username && username.trim() !== "" ? username : uid;
@@ -252,4 +251,4 @@ auth.onAuthStateChanged(user => {
 });
 </script>
 </body>
-</html>
+  </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -36,12 +36,35 @@ header h2{margin:0;font-size:1.2rem}
 .balance-section{text-align:center;background:#002b5c;padding:18px 12px}
 .balance-section .email{font-size:.85rem;color:#ffa500}
 .balance-section .balance{font-size:1.4rem;margin:8px 0;color:#ffcc00}
+
+/* 🟣 Meta AI Gradient Buttons */
 .balance-buttons{display:flex;justify-content:space-around;margin-top:10px}
-.balance-buttons button{background:#ffcc00;color:#000;border:none;border-radius:8px;padding:8px 0;width:90px;font-weight:600;cursor:pointer}
+.balance-buttons button,
+.claim-btn {
+  background: linear-gradient(90deg, #0084FF, #A259FF, #00E6FF);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 0;
+  width: 90px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.claim-btn {
+  width: auto;
+  padding: 8px 18px;
+  font-weight: 700;
+}
+.balance-buttons button:hover,
+.claim-btn:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
 .extra-info{text-align:center;padding:16px}
 .extra-info img{max-width:92%;border-radius:8px;margin-bottom:12px}
 .extra-info p{font-size:.9rem;line-height:1.4}
-.claim-btn{background:#ffcc00;color:#000;font-weight:700;border:none;border-radius:8px;padding:8px 18px;cursor:pointer}
 .task-countdown{background:#001a33;text-align:center;padding:8px;font-weight:600;color:#ffcc00}
 .vip-list{padding:10px}
 .vip-box{display:flex;justify-content:space-between;align-items:center;background:#003366;padding:10px;margin:6px 0;border-radius:8px;
@@ -140,7 +163,6 @@ auth.onAuthStateChanged(user=>{
   const loader=document.getElementById('loader');
   const page=document.querySelector('.page-content');
 
-  // show page only when Firebase balance loads
   db.ref('users/'+uid+'/balance').on('value',snap=>{
     const bal=parseFloat(snap.val()||0);
     document.getElementById('user-balance').textContent=`Balance: UGX ${bal.toLocaleString()}`;
@@ -234,4 +256,4 @@ function showPopup(msg,red=false){
 }
 </script>
 </body>
-</html>
+                           </html>

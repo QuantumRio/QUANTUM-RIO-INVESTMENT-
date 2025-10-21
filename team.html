@@ -24,29 +24,29 @@
 </script>
 
 <style>
-body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #001f3f; color: #fff; padding-bottom: 1cm; }
-header { background: #002f6c; display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
-header img { height: 32px; } header h2 { margin: 0; font-size: 1.2rem; }
-.section { margin: 12px; padding: 12px; background: #003366; border-radius: 8px; }
-h3 { margin: 0 0 8px 0; color: #ffcc00; }
-.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.stat { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); text-align: center; padding: 6px; border-radius: 6px; font-size: 0.85rem; }
-.stat-label { color: #cfe6ff; font-size: 0.75rem; }
-.stat-value { color: #ffd966; font-size: 1rem; font-weight: 600; }
-.copy-btn { background: linear-gradient(90deg, #0084FF, #A259FF, #00E6FF); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: transform 0.2s ease, opacity 0.2s ease; }
-.copy-btn:hover { transform: scale(1.05); opacity: 0.9; }
-#ref-link { flex: 1; background: rgba(255,255,255,0.1); color: #fff; border: none; border-radius: 6px; padding: 6px; font-size: 0.8rem; }
-.level-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); margin: 8px 0; padding: 8px; border-radius: 6px; }
-.level-box h4 { margin: 0 0 4px 0; color: #ffd966; font-size: 0.95rem; }
-nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background: #002244; padding: 8px 0; }
-nav a { color: #fff; text-decoration: none; text-align: center; font-size: 0.8rem; }
-nav i { font-size: 18px; }
-.toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); padding: 10px 20px; color: #fff; border-radius: 6px; opacity: 0; transition: opacity .3s; font-size: 0.85rem; }
+body { margin:0; font-family:Arial,Helvetica,sans-serif; background:#001f3f; color:#fff; padding-bottom:1cm; }
+header { background:#002f6c; display:flex; align-items:center; gap:10px; padding:12px 16px; }
+header img { height:32px; } header h2 { margin:0; font-size:1.2rem; }
+.section { margin:12px; padding:12px; background:#003366; border-radius:8px; }
+h3 { margin:0 0 8px 0; color:#ffcc00; }
+.stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.stat { background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); text-align:center; padding:6px; border-radius:6px; font-size:0.85rem; }
+.stat-label { color:#cfe6ff; font-size:0.75rem; }
+.stat-value { color:#ffd966; font-size:1rem; font-weight:600; }
+.copy-btn { background: linear-gradient(90deg,#0084FF,#A259FF,#00E6FF); color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; transition:transform 0.2s ease,opacity 0.2s ease; }
+.copy-btn:hover { transform:scale(1.05); opacity:0.9; }
+#ref-link { flex:1; background:rgba(255,255,255,0.1); color:#fff; border:none; border-radius:6px; padding:6px; font-size:0.8rem; }
+.level-box { background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); margin:8px 0; padding:8px; border-radius:6px; }
+.level-box h4 { margin:0 0 4px 0; color:#ffd966; font-size:0.95rem; }
+nav { position:fixed; bottom:0; left:0; right:0; display:flex; justify-content:space-around; background:#002244; padding:8px 0; }
+nav a { color:#fff; text-decoration:none; text-align:center; font-size:0.8rem; }
+nav i { font-size:18px; }
+.toast { position:fixed; bottom:70px; left:50%; transform:translateX(-50%); padding:10px 20px; color:#fff; border-radius:6px; opacity:0; transition:opacity .3s; font-size:0.85rem; }
 .toast.show {opacity:1;} .toast.success {background:#28a745;} .toast.error {background:#c0392b;}
-#loader { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 9999; }
-.spinner { width: 60px; height: 60px; border-radius: 50%; border-top: 5px solid #fff; background: conic-gradient(#0084FF, #A259FF, #00E6FF, #0084FF); animation: spin 1.2s linear infinite; mask-image: radial-gradient(circle, transparent 55%, black 56%); -webkit-mask-image: radial-gradient(circle, transparent 55%, black 56%); }
-@keyframes spin { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
-#loader p { margin-top: 10px; color: #fff; font-size: 0.9rem; letter-spacing: 1px; }
+#loader { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; flex-direction:column; z-index:9999; }
+.spinner { width:60px; height:60px; border-radius:50%; border-top:5px solid #fff; background:conic-gradient(#0084FF,#A259FF,#00E6FF,#0084FF); animation:spin 1.2s linear infinite; mask-image:radial-gradient(circle,transparent 55%, black 56%); -webkit-mask-image:radial-gradient(circle,transparent 55%, black 56%); }
+@keyframes spin { 0% {transform:rotate(0deg);} 100% {transform:rotate(360deg);} }
+#loader p { margin-top:10px; color:#fff; font-size:0.9rem; letter-spacing:1px; }
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -109,8 +109,7 @@ function showToast(msg,type='success'){
 }
 
 auth.onAuthStateChanged(user=>{
-  const loader=document.getElementById('loader');
-  loader.style.display='none';
+  document.getElementById('loader').style.display='none';
   if(!user){
     document.getElementById('ref-link').value="https://quantumrio.github.io/QUANTUM-RIO-INVESTMENT-/signup.html?ref=guest";
     return;
@@ -127,17 +126,16 @@ auth.onAuthStateChanged(user=>{
     const refInput=document.getElementById('ref-link');
     refInput.value=refLink;
 
-    document.getElementById('copyRefBtn').onclick=()=>{
-      refInput.select();
-      refInput.setSelectionRange(0,99999);
-      navigator.clipboard.writeText(refInput.value).then(()=>{
+    document.getElementById('copyRefBtn').onclick=async()=>{
+      try{
+        await navigator.clipboard.writeText(refInput.value);
         showToast('Referral link copied!','success');
-        db.ref('users/'+uid+'/referralLogs').push({copiedAt:firebase.database.ServerValue.TIMESTAMP,link:refInput.value});
-      }).catch(()=>{
-        try{document.execCommand('copy'); showToast('Referral link copied!','success'); 
-        db.ref('users/'+uid+'/referralLogs').push({copiedAt:firebase.database.ServerValue.TIMESTAMP,link:refInput.value});} 
-        catch{showToast('Copy failed','error');}
-      });
+      }catch{
+        refInput.select();
+        document.execCommand('copy');
+        showToast('Referral link copied!','success');
+      }
+      db.ref('users/'+uid+'/referralLogs').push({copiedAt:firebase.database.ServerValue.TIMESTAMP,link:refInput.value});
     };
   });
 
@@ -172,4 +170,4 @@ auth.onAuthStateChanged(user=>{
 });
 </script>
 </body>
-</html>
+                           </html>

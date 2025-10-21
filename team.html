@@ -8,148 +8,43 @@
 <!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-compat.js"></script>
 <script>
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJQJERweY",
-  authDomain: "quantum-rio-uganda.firebaseapp.com",
-  databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "quantum-rio-uganda",
-  storageBucket: "quantum-rio-uganda.appspot.com",
-  messagingSenderId: "840875099079",
-  appId: "1:840875099079:web:1cd06a78276842a787cfe2",
-  measurementId: "G-97G1PNQ9JB"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db   = firebase.database();
+  const firebaseConfig = {
+    apiKey: "AIzaSyC6jW448tW3e8m6XVGjOegT8IGJQJQJERweY",
+    authDomain: "quantum-rio-uganda.firebaseapp.com",
+    databaseURL: "https://quantum-rio-uganda-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "quantum-rio-uganda",
+    storageBucket: "quantum-rio-uganda.appspot.com",
+    messagingSenderId: "840875099079",
+    appId: "1:840875099079:web:1cd06a78276842a787cfe2",
+    measurementId: "G-97G1PNQ9JB"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
 </script>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #001f3f;
-  color: #fff;
-  padding-bottom: 1cm;
-}
-header {
-  background: #002f6c;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-}
-header img { height: 32px; }
-header h2 { margin: 0; font-size: 1.2rem; }
-
-.section {
-  margin: 12px;
-  padding: 12px;
-  background: #003366;
-  border-radius: 8px;
-}
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #001f3f; color: #fff; padding-bottom: 1cm; }
+header { background: #002f6c; display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+header img { height: 32px; } header h2 { margin: 0; font-size: 1.2rem; }
+.section { margin: 12px; padding: 12px; background: #003366; border-radius: 8px; }
 h3 { margin: 0 0 8px 0; color: #ffcc00; }
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-.stat {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  text-align: center;
-  padding: 6px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-}
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); text-align: center; padding: 6px; border-radius: 6px; font-size: 0.85rem; }
 .stat-label { color: #cfe6ff; font-size: 0.75rem; }
 .stat-value { color: #ffd966; font-size: 1rem; font-weight: 600; }
-
-.copy-btn {
-  background: linear-gradient(90deg, #0084FF, #A259FF, #00E6FF);
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
+.copy-btn { background: linear-gradient(90deg, #0084FF, #A259FF, #00E6FF); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: transform 0.2s ease, opacity 0.2s ease; }
 .copy-btn:hover { transform: scale(1.05); opacity: 0.9; }
-
-#ref-link {
-  flex: 1;
-  background: rgba(255,255,255,0.1);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px;
-  font-size: 0.8rem;
-}
-
-.level-box {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  margin: 8px 0;
-  padding: 8px;
-  border-radius: 6px;
-}
+#ref-link { flex: 1; background: rgba(255,255,255,0.1); color: #fff; border: none; border-radius: 6px; padding: 6px; font-size: 0.8rem; }
+.level-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); margin: 8px 0; padding: 8px; border-radius: 6px; }
 .level-box h4 { margin: 0 0 4px 0; color: #ffd966; font-size: 0.95rem; }
-
-nav {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  display: flex;
-  justify-content: space-around;
-  background: #002244;
-  padding: 8px 0;
-}
-nav a {
-  color: #fff;
-  text-decoration: none;
-  text-align: center;
-  font-size: 0.8rem;
-}
+nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background: #002244; padding: 8px 0; }
+nav a { color: #fff; text-decoration: none; text-align: center; font-size: 0.8rem; }
 nav i { font-size: 18px; }
-
-.toast {
-  position: fixed;
-  bottom: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 20px;
-  color: #fff;
-  border-radius: 6px;
-  opacity: 0;
-  transition: opacity .3s;
-  font-size: 0.85rem;
-}
-.toast.show {opacity:1;}
-.toast.success {background:#28a745;}
-.toast.error {background:#c0392b;}
-
-/* Loader */
-#loader {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  z-index: 9999;
-}
-.spinner {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border-top: 5px solid #fff;
-  background: conic-gradient(#0084FF, #A259FF, #00E6FF, #0084FF);
-  animation: spin 1.2s linear infinite;
-  mask-image: radial-gradient(circle, transparent 55%, black 56%);
-  -webkit-mask-image: radial-gradient(circle, transparent 55%, black 56%);
-}
+.toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); padding: 10px 20px; color: #fff; border-radius: 6px; opacity: 0; transition: opacity .3s; font-size: 0.85rem; }
+.toast.show {opacity:1;} .toast.success {background:#28a745;} .toast.error {background:#c0392b;}
+#loader { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 9999; }
+.spinner { width: 60px; height: 60px; border-radius: 50%; border-top: 5px solid #fff; background: conic-gradient(#0084FF, #A259FF, #00E6FF, #0084FF); animation: spin 1.2s linear infinite; mask-image: radial-gradient(circle, transparent 55%, black 56%); -webkit-mask-image: radial-gradient(circle, transparent 55%, black 56%); }
 @keyframes spin { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
 #loader p { margin-top: 10px; color: #fff; font-size: 0.9rem; letter-spacing: 1px; }
 </style>
@@ -158,7 +53,6 @@ nav i { font-size: 18px; }
 </head>
 <body>
 
-<!-- Loader -->
 <div id="loader">
   <div class="spinner"></div>
   <p>Loading team data...</p>
@@ -169,7 +63,6 @@ nav i { font-size: 18px; }
   <h2>QUANTUM RIO – Team</h2>
 </header>
 
-<!-- Referral Section -->
 <div class="section">
   <h3>Invite Your Friends</h3>
   <div style="display:flex;align-items:center;gap:6px;">
@@ -215,67 +108,66 @@ function showToast(msg,type='success'){
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-auth.onAuthStateChanged(user => {
-  const loader = document.getElementById('loader');
-  loader.style.display = 'none';
-
-  if (!user) {
-    document.getElementById('ref-link').value = "https://quantumrio.github.io/QUANTUM-RIO-INVESTMENT-/signup.html?ref=username";
+auth.onAuthStateChanged(user=>{
+  const loader=document.getElementById('loader');
+  loader.style.display='none';
+  if(!user){
+    document.getElementById('ref-link').value="https://quantumrio.github.io/QUANTUM-RIO-INVESTMENT-/signup.html?ref=guest";
     return;
   }
 
-  const uid = user.uid;
+  const uid=user.uid;
 
-  // ✅ Generate referral link
-  db.ref('users/' + uid + '/username').once('value').then(snap => {
-    let username = snap.val();
-    if (!username || username.trim() === "") username = uid;
+  // Referral link
+  db.ref('users/'+uid+'/username').on('value',snap=>{
+    let username=snap.val();
+    if(!username || username.trim()==="") username=uid;
 
-    const link = `https://quantumrio.github.io/QUANTUM-RIO-INVESTMENT-/signup.html?ref=${encodeURIComponent(username)}`;
-    const refInput = document.getElementById('ref-link');
-    refInput.value = link;
+    const refLink=`https://quantumrio.github.io/QUANTUM-RIO-INVESTMENT-/signup.html?ref=${encodeURIComponent(username)}`;
+    const refInput=document.getElementById('ref-link');
+    refInput.value=refLink;
 
-    // ✅ Reliable Copy Function (with fallback)
-    document.getElementById('copyRefBtn').onclick = () => {
-      navigator.clipboard.writeText(link).then(() => {
-        logCopy();
-      }).catch(() => {
-        const temp = document.createElement("textarea");
-        temp.value = link;
-        document.body.appendChild(temp);
-        temp.select();
-        try {
-          document.execCommand("copy");
-          logCopy();
-        } catch (err) {
-          showToast('Copy failed', 'error');
-        }
-        document.body.removeChild(temp);
+    document.getElementById('copyRefBtn').onclick=()=>{
+      refInput.select();
+      refInput.setSelectionRange(0,99999);
+      navigator.clipboard.writeText(refInput.value).then(()=>{
+        showToast('Referral link copied!','success');
+        db.ref('users/'+uid+'/referralLogs').push({copiedAt:firebase.database.ServerValue.TIMESTAMP,link:refInput.value});
+      }).catch(()=>{
+        try{document.execCommand('copy'); showToast('Referral link copied!','success'); 
+        db.ref('users/'+uid+'/referralLogs').push({copiedAt:firebase.database.ServerValue.TIMESTAMP,link:refInput.value});} 
+        catch{showToast('Copy failed','error');}
       });
-
-      function logCopy() {
-        db.ref('users/' + uid + '/referralLogs').push({
-          copiedAt: firebase.database.ServerValue.TIMESTAMP,
-          link: link
-        });
-        showToast('Referral link copied!', 'success');
-      }
     };
   });
 
-  // ✅ Team Size
-  db.ref('referrals/' + uid).on('value', snap => {
-    const referrals = snap.val() || {};
-    const active = Object.values(referrals).filter(r => r && r.joinedAt).length;
-    document.getElementById('team-size').textContent = active;
+  // Team stats
+  db.ref('referrals/'+uid).on('value',snap=>{
+    const refs=snap.val()||{};
+    const active=Object.values(refs).filter(r=>r&&r.joinedAt).length;
+    document.getElementById('team-size').textContent=active;
+
+    let totalRecharge=0,totalWithdraw=0,firstRecharge=0,firstWithdraw=0,newTeam=0;
+    Object.values(refs).forEach(r=>{
+      if(r.recharge) totalRecharge+=r.recharge;
+      if(r.withdraw) totalWithdraw+=r.withdraw;
+      if(r.firstRecharge) firstRecharge+=r.firstRecharge;
+      if(r.firstWithdraw) firstWithdraw+=r.firstWithdraw;
+      if(r.joinedAt && r.joinedAt>Date.now()-86400000) newTeam++;
+    });
+    document.getElementById('team-recharge').textContent=totalRecharge;
+    document.getElementById('team-withdraw').textContent=totalWithdraw;
+    document.getElementById('first-recharge').textContent=firstRecharge;
+    document.getElementById('first-withdraw').textContent=firstWithdraw;
+    document.getElementById('new-team').textContent=newTeam;
   });
 
-  // ✅ Commissions
-  db.ref('commissions/' + uid).on('value', snap => {
-    const data = snap.val() || {};
-    document.getElementById('lvl1-total').textContent = data.lvl1 || 0;
-    document.getElementById('lvl2-total').textContent = data.lvl2 || 0;
-    document.getElementById('lvl3-total').textContent = data.lvl3 || 0;
+  // Commissions
+  db.ref('commissions/'+uid).on('value',snap=>{
+    const data=snap.val()||{};
+    document.getElementById('lvl1-total').textContent=data.lvl1||0;
+    document.getElementById('lvl2-total').textContent=data.lvl2||0;
+    document.getElementById('lvl3-total').textContent=data.lvl3||0;
   });
 });
 </script>
